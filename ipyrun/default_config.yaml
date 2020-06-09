@@ -1,0 +1,68 @@
+
+fdir:
+  value:
+  description: |
+    the working directory within the project. 
+    this is typically the directory of the Jupyter Notebook.
+  default: '.' 
+  
+fpth_script: #script_fpth
+  value: fpth_script
+  description: |
+    the filepath of the script to be executed
+  default: '.' 
+  
+process_name:
+  value: process_name
+  description: |
+    the name of the process - this name is used for renaming the fpth_inputs file. 
+    in that way it can be modified to allow for multiple different "runs" with 
+    different inputs but running from the same script. (e.g. model_runs analysis). 
+  default: |
+    defaults to the name of the script
+
+fpth_inputs: #script_config
+  value: fpth_inputs
+  description: |
+    the filepath of the script to be executed
+  default: |
+    searches the following locations ordered by preference: 
+      - a folder called _inputs (#config) in the project next to the notebook/app.
+      - a folder called _inputs (#config) located next to the script. 
+      - a folder called _inputs\archive (#config) in the project next to the notebook/app.
+    if multiple matches are found it gives the option to load from previous. 
+      
+pretty_name:
+  value: pretty_name
+  description: |
+    the user output name -  
+    creates the future opportunity to give more user friendly names. 
+  default: |
+    defaults to the name of the process_name.
+    
+fdir_log:
+  value: fdir\_log\process_name-log.csv
+  description: |
+    file directory of the log file that keeps a record of when the script has been run
+  default: fdir\_log
+    
+fpth_outputs:
+  - fdir: fdir_output
+    fnm: fnm_output
+    description: |
+      a description of the output file
+
+
+    
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

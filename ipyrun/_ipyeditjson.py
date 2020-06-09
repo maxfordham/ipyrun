@@ -1,0 +1,454 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: ipynb,py:light
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.4.2
+#   kernelspec:
+#     display_name: Python [conda env:mf_main] *
+#     language: python
+#     name: conda-env-mf_main-py
+# ---
+
+import os
+import pandas as pd
+from IPython.display import display, Image, JSON, Markdown, HTML, display_pdf, clear_output
+import ipywidgets as widgets
+import ipysheet
+from ipysheet import from_dataframe, to_dataframe
+from markdown import markdown
+from datetime import datetime
+from mf_modules.pydtype_operations import read_json, write_json 
+from mf_modules.file_operations import make_dir
+
+
+# +
+def _markdown(value='_Markdown_',
+              **kwargs):
+    """
+    a simple template for markdown text input that templates required input
+    fields. additional user defined fields can be added as kwargs
+    """
+    _kwargs = {}
+    _kwargs['value'] = markdown(value)  # required field
+    _kwargs.update(kwargs)  # user overides
+    return widgets.HTML(**_kwargs)
+
+class EditDictData():
+    """
+    contains form layout specs and mapping dict used for associating input
+    variables to the appropriate widget. 
+    """
+           
+    @property
+    def MF_FORM_ITEM_LAYOUT(self):
+        return widgets.Layout(
+            display='flex',
+            flex_flow='row',
+            justify_content='flex-start',
+            #border='solid 1px green',
+            grid_auto_columns='True',
+            width='80%',
+            align_items='stretch',  
+        )
+    
+    @property
+    def MF_FORM_ITEM_LAYOUT1(self):
+        return widgets.Layout(
+            display='flex',
+            flex_flow='row',
+            justify_content='flex-end',
+            #border='solid 1px green',
+            grid_auto_columns='True',
+            width='90%',
+            align_items='stretch',  
+        )
+    
+    @property
+    def MF_FORM_ITEM_LAYOUT2(self):
+        return widgets.Layout(
+            display='flex',
+            flex_flow='row',
+            justify_content='flex-start',
+            border='dashed 0.2px green',
+            grid_auto_columns='True',
+            width='100%',
+            align_items='stretch',  
+        )
+    
+    @property
+    def map_keys(self):
+        return ['value', 'options', 'min', 'max']
+    
+    @property
+    def map_widgets(self):
+        # mapping dict used to guess what widget to apply
+        return {
+            'FloatText': {
+                'value_type': "<class 'float'>",
+                'options_type': "<class 'NoneType'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+            },
+           'FloatSlider': {
+                'value_type': "<class 'float'>",
+                'options_type': "<class 'NoneType'>",
+                'min_type': "<class 'float'>",
+                'max_type': "<class 'float'>"
+           },
+           'Dropdown': {
+                'value_type': 'any',
+                'options_type': "<class 'list'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+           },
+           'SelectMultiple': {
+                'value_type': "<class 'list'>",
+                'options_type': "<class 'list'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+           },
+           'Checkbox': {
+                'value_type': "<class 'bool'>",
+                'options_type': "<class 'NoneType'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+           },
+           'Text': {
+                'value_type': "<class 'str'>",
+                'options_type': "<class 'NoneType'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+           },
+           '_recursive_guess': {
+                'value_type': "<class 'list'>",
+                'options_type': "<class 'NoneType'>",
+                'min_type': "<class 'NoneType'>",
+                'max_type': "<class 'NoneType'>"
+           }
+        }
+    
+    @property
+    def widget_lkup(self):
+        return {
+                'FloatText':widgets.FloatText,
+                'FloatSlider':widgets.FloatSlider,
+                'Dropdown':widgets.Dropdown,
+                'SelectMultiple':widgets.SelectMultiple,
+                'Checkbox':widgets.Checkbox,
+                'Text':widgets.Text,
+                'Textarea':widgets.Textarea,
+                '_recursive_guess':self._recursive_guess,
+                'ipysheet':self._ipysheet
+            }
+
+    
+class EditDict(EditDictData):
+    '''
+    a class that is passed a dict and then guesses the most appropriate 
+    widget from the values in the dict.
+    - if a nested list of dicts is passed:
+        => it will create an embedded, clickable show/hide nested input form
+    - if a json dataframe object is passed as the "value" and and the key:value
+      "widget":"ipysheet" is passed in the same dict:
+        => it will create an editable ipysheet dataframe widget
+    '''
+    def __init__(self, di):
+        self.out = widgets.Output()
+        self.di = di
+        self.form()
+ 
+    def form(self):
+        self.di = self._update_di()
+        if 'widget' not in self.di.keys():
+            self.di_types = self._get_var_types()
+            self.widget_name, self.report = self.map_widget()           
+        else:
+            self.widget_name = self.di['widget']
+        self.kwargs = self._kwargfilt()
+        self.layout = self._build_widget()
+        if self.widget_name != 'ipysheet' and self.widget_name != '_recursive_guess':
+            self._init_controls()
+          
+    def _init_controls(self):   
+        self.widget_only.observe(self._update_change, 'value') 
+
+    def _update_change(self, change):
+        self.di['value'] = self.widget_only.value
+
+    def _build_widget(self):
+        
+        if self.widget_name == '_recursive_guess':
+            self._recursive_guess()
+        elif self.widget_name == 'ipysheet':
+            self._ipysheet()
+        else:
+            self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
+        self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
+        self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
+        if 'fpth_help' in self.di.keys():
+            self.guide = widgets.ToggleButton(icon='fa-question-circle',
+                                              description='help',
+                                              tooltip='gives guidance',
+                                              style={'font_weight':'bold'},
+                                              layout=widgets.Layout(width='5%'))
+            self.guide.observe(self._guide, 'value')
+            layout = widgets.HBox([self.widget_row ,self.guide],layout=self.MF_FORM_ITEM_LAYOUT2)
+        else:
+            layout = widgets.HBox([self.widget_row ],layout=self.MF_FORM_ITEM_LAYOUT2)
+        return layout
+    
+    def _guide(self, sender):
+        with self.out:
+            if self.guide.value:  
+                display(Image(os.path.join(os.environ['mf_root'],r'engDevSetup\dev\icons\icon_png\help-icon.png')));
+            else:
+                clear_output()
+                
+    def _kwargfilt(self):
+        return {k:v for (k,v) in self.di.items() if k != 'widget' and k != 'name' and k != 'label' and k != 'fpth_help' and v is not None}
+        
+    def _update_di(self):
+
+        def add_to_dict(di, keyname='None', valuename=None):
+            if keyname not in di.keys():
+                di[keyname]=valuename
+            return di
+        tmp = self.di
+        tmp = add_to_dict(tmp,keyname='min')
+        tmp = add_to_dict(tmp,keyname='max')
+        tmp = add_to_dict(tmp,keyname='options')
+        tmp = add_to_dict(tmp,keyname='name', valuename='name')
+        tmp = add_to_dict(tmp,keyname='label', valuename='label')
+        return tmp
+        
+    def _get_var_types(self):
+
+        def int_type_to_float(di):
+            di_ = {}
+            for key, val in di.items():
+                if val == "<class 'int'>":
+                    di_[key] = "<class 'float'>"
+                else:
+                    di_[key] = val
+            return di_
+        di = self.di
+        keys = self.map_keys
+        di_filt = { key: di[key] for key in keys }
+        di_types = {key+'_type': str(type(di_filt[key])) for key in keys}
+        di_types= int_type_to_float(di_types)
+        return di_types
+    
+    def map_widget(self):
+        """
+        uses the types of the different inputs to map an input 
+        to the appropriate widget
+
+        Reference:
+            |                 | value_type      | options_type       | min_type           | max_type           |
+            |:----------------|:----------------|:-------------------|:-------------------|:-------------------|
+            | FloatText       | <class 'float'> | <class 'NoneType'> | <class 'NoneType'> | <class 'NoneType'> |
+            | FloatSlider     | <class 'float'> | <class 'NoneType'> | <class 'float'>    | <class 'float'>    |
+            | Dropdown        | <class 'float'> | <class 'list'>     | <class 'NoneType'> | <class 'NoneType'> |
+            | SelectMultiple  | <class 'list'>  | <class 'list'>     | <class 'NoneType'> | <class 'NoneType'> |
+            | Checkbox        | <class 'bool'>  | <class 'NoneType'> | <class 'NoneType'> | <class 'NoneType'> |
+            | Text            | <class 'str'>   | <class 'NoneType'> | <class 'NoneType'> | <class 'NoneType'> |
+            | _recursive_guess| <class 'list'>  | <class 'NoneType'> | <class 'NoneType'> | <class 'NoneType'> |
+        """
+        di_types = self.di_types
+        map_widgets = self.map_widgets
+        m = 0
+        for k, v in map_widgets.items():
+            # this settles ambiguity for value type from Dropdown (which could be anything)
+            #if k == widgets.Dropdown and di_types['value_type'] != "<class 'list'>":
+            if k == 'Dropdown' and di_types['value_type'] != "<class 'list'>":
+                v['value_type'] = di_types['value_type']
+            if v == di_types:
+                m=+1
+                widget_name = k
+        if m < 1:
+            report = 'no matching widget found... check inputs...'
+            print(di_types)
+            print(report)
+            widget_name = 'Text'
+        elif m == 1:
+            report = 'perfect match!'
+        else:
+            report = 'multiple matches found... check code...'
+            print(di_types)
+            print(report)
+        return widget_name, report
+    
+    # -------------------------------------------------------------------------     
+    # code that allows for embedded list of dicts -----------------------------
+    def _recursive_guess(self):
+        self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
+        self.widget_only = widgets.ToggleButton(**self.kwargs)
+        self._recursive_controls()
+        
+    def _recursive_controls(self):
+        self.widget_only.observe(self._call_GuessWidget, 'value')
+
+    def _call_GuessWidget(self, sender):
+        self.nested_g = EditListOfDicts(self.di['value'])
+        self.di['value'] = self.nested_g.li
+        with self.out:
+            if self.widget_only.value:  
+                display(self.nested_g)
+            else:
+                clear_output()
+    # --------------------------------------------------------------------------
+    # code that allows for embedded ipysheets ----------------------------------
+    def _ipysheet(self):
+        self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
+        self.widget_only = widgets.ToggleButton(**self.kwargs)
+        self.save_ipysheet = widgets.Button(description='save')
+        self._ipysheet_controls()
+        
+    def _ipysheet_controls(self):
+        self.widget_only.observe(self.call_ipysheet, 'value')
+        self.save_ipysheet.on_click(self._save_ipysheet)
+        
+    def call_ipysheet(self, sender):
+        tmp = pd.read_json(self.di['value'])
+        self.sheet = ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
+        with self.out:
+            if self.widget_only.value:  
+                display(self.save_ipysheet)
+                display(self.sheet)
+            else:
+                clear_output()
+    
+    def _save_ipysheet(self, change):
+        tmp = to_dataframe(self.sheet)
+        self.di['value'] = tmp.to_json()
+        with self.out:
+            clear_output()
+            dateTimeObj = datetime.now()
+            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+            display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
+        self.display()
+    # --------------------------------------------------------------------------
+
+    def display(self):
+        display(self.layout)
+        display(self.out)
+         
+    def _ipython_display_(self):
+        self.display()    
+
+
+# -
+
+class EditListOfDicts():
+    """
+    builds user input form from a list of dicts by creating a 
+    loop of EditDict objects.
+    """
+    def __init__(self, li):
+        self.out = widgets.Output()
+        self.li = li
+        self.form()
+        self._init_observe()
+    
+    def form(self):
+        self.widgets = []
+        for l in self.li:
+            self.widgets.append(EditDict(l))
+        
+    def _init_observe(self):  
+        for l in self.widgets:
+            l.widget_only.observe(self._update_change, 'value') 
+            
+    def _update_change(self, change):
+        self.li = []
+        for l in self.widgets:
+            self.li.append(l.di)
+        
+    def display(self):
+        out = [l.layout for l in self.widgets]
+        self.applayout = widgets.VBox(out)
+        display(self.applayout)
+        for l in self.widgets:
+            display(l.out)
+            
+    def _ipython_display_(self):
+        self.display()  
+
+
+class EditJson(EditListOfDicts):
+    """
+    inherits EditListOfDicts user input form and manages the reading and 
+    writing the data from a JSON file. 
+    """
+    #def __init__(self, fpth, fdir='.', local_fol='_mfengdev'):
+    def __init__(self, fpth_in, fpth_out=None):
+        self.out = widgets.Output()
+        self.fpth_in = fpth_in
+        if fpth_out==None:
+            self.fpth_out = fpth_in
+        else:
+            self.fpth_out = fpth_out
+        #self.fdir = fdir
+        #self.local_fol = local_fol
+        #self.fpth_out = self._fpth_out()
+        self.li = read_json(self.fpth_in)
+        self.save_changes = widgets.Button(description='save',button_style='success')
+        self.form()
+        self._init_observe()
+        self._init_controls()
+        
+    #def _fpth_out(self):
+    #    fol = os.path.join(self.fdir, self.local_fol)
+    #    make_dir(fol)
+    #    return os.path.join(fol,os.path.basename(self.fpth_in))
+    
+    def _init_controls(self):  
+        self.save_changes.on_click(self._save_changes)
+        
+    def _save_changes(self, sender):
+        self.data_out = self.li
+        #try:
+            
+        write_json(self.data_out,
+                   sort_keys=True,
+                   indent=4,
+                   fpth=self.fpth_out,
+                   print_fpth=False,
+                   openFile=False)
+        with self.out:
+            clear_output()
+            dateTimeObj = datetime.now()
+            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+            display(Markdown('{0} changes to sheet logged.  to: {1}'.format(timestampStr,self.fpth_out)))
+            
+    def display(self):
+        display(self.save_changes)
+        out = [l.layout for l in self.widgets]
+        self.applayout = widgets.VBox(out)
+        display(self.applayout)
+        for l in self.widgets:
+            display(l.out)
+        display(self.out)
+            
+    def _ipython_display_(self):
+        self.display()  
+
+
+if __name__ =='__main__':
+    # Form only example
+    # FDIR = os.path.dirname(os.path.realpath('__file__'))
+    # fpth = os.path.join(FDIR,r'_mfengdev/test.json')
+    # li = read_json(fpth)
+    # g = EditListOfDicts(li)
+    # display(g)
+    
+    FDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(FDIR,r'appdata/inputs/test.json')
+    g = EditJson(fpth)
+    display(g)
+
+

@@ -1,0 +1,3 @@
+,index,input/output?,value,description
+0,FDIR,input,nan,generally the working directory of (same folder as) the app/notebook. outputs will be relative to this location
+1,fpth_eplus,input,C:\\engDev\\git_extrnl\\EnergyPlus-develop\\EnergyPlus-develop\\src\\EnergyPlus\\PipeHeatTransfer.hh,filepath to an energyPlus software C++ script file that will be extract for parameter fields
