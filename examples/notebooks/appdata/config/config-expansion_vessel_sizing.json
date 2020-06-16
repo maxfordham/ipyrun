@@ -1,0 +1,49 @@
+{
+    "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks",
+    "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\config",
+    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs",
+    "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive",
+    "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\log",
+    "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks"
+    ],
+    "fnm_config": "config-expansion_vessel_sizing.json",
+    "fnm_log": "log-expansion_vessel_sizing.csv",
+    "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\config\\config-expansion_vessel_sizing.json",
+    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\inputs-expansion_vessel_sizing.json",
+    "fpth_inputs_options": {
+        "project": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1731-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1817-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1818-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1819-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1900-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200615_2211-jg-inputs-expansion_vessel_sizing.json"
+            ]
+        },
+        "template": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs\\inputs-expansion_vessel_sizing.json"
+            ]
+        }
+    },
+    "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\log\\log-expansion_vessel_sizing.csv",
+    "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\expansion_vessel_sizing.py",
+    "fpths_outputs": {
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\expansion_vessel_sizing.csv"
+    },
+    "jobno": "C:\\e",
+    "pretty_name": "expansion_vessel_sizing",
+    "process_name": "expansion_vessel_sizing_0_1_2",
+    "script_outputs": {
+        "0": {
+            "description": "a simple calc for sizing expansion vessels. could be expanded to size many vessels.",
+            "fdir": ".",
+            "fnm": "expansion_vessel_sizing.csv"
+        }
+    }
+}

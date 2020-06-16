@@ -6,7 +6,7 @@
         "min": null,
         "name": "reous foo ous foo st",
         "options": null,
-        "value": 10
+        "value": 9.0
     },
     {
         "label": "its a foo cake",
@@ -18,7 +18,7 @@
             "10",
             "asdf"
         ],
-        "value": "This is a very long text areas string that needs a bigger box to fit all of hte verbose nonsense",
+        "value": "asdfasdf",
         "widget": "Textarea"
     },
     {
@@ -45,7 +45,7 @@
             "10",
             "asdf"
         ],
-        "value": "10"  
+        "value": "10"
     },
     {
         "label": "its a foo cake",

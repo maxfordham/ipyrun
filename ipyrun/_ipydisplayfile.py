@@ -22,7 +22,7 @@ from ipyaggrid import Grid
 import ipywidgets as widgets
 from markdown import markdown
 
-from mf_modules.display_module_docstring import display_module_docstring
+from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.pandas_operations import del_matching
 from mf_modules.jupyter_formatting import md_fromfile
 from mf_modules.jupyter_formatting import display_python_file

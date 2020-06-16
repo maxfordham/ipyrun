@@ -4,6 +4,9 @@
     "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs",
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\archive",
     "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\log",
+    "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\data\\external"
+    ],
     "fnm_config": "config-eplus_pipework_params.json",
     "fnm_log": "log-eplus_pipework_params.csv",
     "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\config\\config-eplus_pipework_params.json",
@@ -15,7 +18,8 @@
                 "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\inputs-eplus_pipework_params-1.csv",
                 "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\inputs-eplus_pipework_params.csv",
                 "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\archive\\20200605-1625-inputs-eplus_pipework_params.csv",
-                "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\archive\\20200605-1625inputs-eplus_pipework_params.csv"
+                "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\archive\\20200605-1625inputs-eplus_pipework_params.csv",
+                "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\inputs\\archive\\20200607_1420-jg-inputs-eplus_pipework_params.csv"
             ]
         },
         "template": {
@@ -27,9 +31,10 @@
     },
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\ipyrun\\appdata\\log\\log-eplus_pipework_params.csv",
     "fpth_script": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\eplus_pipework_params.py",
-    "fpths_outputs": [
-        "..\\data\\external\\eplus_pipework_params.csv"
-    ],
+    "fpths_outputs": {
+        "0": "C:\\engDev\\git_mf\\ipyrun\\data\\external\\eplus_pipework_params.csv"
+    },
+    "jobno": "C:\\e",
     "pretty_name": "eplus_pipework_params",
     "process_name": "eplus_pipework_params",
     "script_outputs": {

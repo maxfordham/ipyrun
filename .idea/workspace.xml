@@ -1,14 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4ad5ab94-956c-46f7-b0f9-1de14f0a0b15" name="Default Changelist" comment="" />
+    <list default="true" id="4ad5ab94-956c-46f7-b0f9-1de14f0a0b15" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/ipyrun.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ipyrun.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_filecontroller.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_filecontroller.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditcsv.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditcsv.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditcsv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditcsv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditjson.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditjson.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_runconfig.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_runconfig.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_runconfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_runconfig.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/appdata/config/config-eplus_pipework_params.json" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/appdata/config/config-eplus_pipework_params.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/appdata/inputs/inputs-eplus_pipework_params.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/appdata/inputs/inputs-eplus_pipework_params.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/appdata/inputs/test.json" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/appdata/inputs/test.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/appdata/log/log-eplus_pipework_params.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/appdata/log/log-eplus_pipework_params.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/ipyrun.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/ipyrun.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/ipyrun.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/ipyrun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/notebooks/appdata/config/config-eplus_pipework_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/notebooks/appdata/inputs/eplus_pipework_params.csv" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1cqdHgA9ZKmjh8rMPuF8mYc7q4G" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.tabs" />
@@ -25,7 +58,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python._filemanager">
+  <component name="RunManager" selected="Python.expansion_vessel_sizing">
     <configuration name="_filemanager" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ipyrun" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -68,12 +101,35 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="expansion_vessel_sizing" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="ipyrun" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/scripts/expansion_vessel_sizing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python._filemanager" />
       <item itemvalue="Python.datamine_functions" />
+      <item itemvalue="Python.expansion_vessel_sizing" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.expansion_vessel_sizing" />
         <item itemvalue="Python._filemanager" />
         <item itemvalue="Python.datamine_functions" />
       </list>
@@ -91,5 +147,34 @@
       <updated>1591259970250</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/scripts/expansion_vessel_sizing.py</url>
+          <line>213</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/scripts/expansion_vessel_sizing.py</url>
+          <line>204</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

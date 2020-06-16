@@ -13,16 +13,31 @@
 #     name: conda-env-mf_main-py
 # ---
 
+# +
 import os
 import pandas as pd
 from IPython.display import display, Image, JSON, Markdown, HTML, display_pdf, clear_output
+from markdown import markdown
+from datetime import datetime
+
+# widget stuff
 import ipywidgets as widgets
 import ipysheet
 from ipysheet import from_dataframe, to_dataframe
-from markdown import markdown
-from datetime import datetime
+
+# core mf_modules
 from mf_modules.pydtype_operations import read_json, write_json 
 from mf_modules.file_operations import make_dir
+
+
+# from this repo
+# this is an unpleasant hack. should aim to find a better solution
+try:
+    from ipyrun._filecontroller import FileConfigController
+    from ipyrun._runconfig import RunConfig
+except:
+    from _filecontroller import FileConfigController
+    from _runconfig import RunConfig
 
 
 # +
@@ -349,6 +364,48 @@ class EditListOfDicts():
     loop of EditDict objects.
     """
     def __init__(self, li):
+        """
+        class that builds a user interface based on a list of dicts, where each dict is 
+        a ipywidget user interface object. The class inteprets which widget to select based on the 
+        type of the value and the keys that are passed. The keys are passed to the ipywidget 
+        object as **kwargs.
+
+        Args:
+            li (list): list of dicts. each dict must contain 'name', 'value' and 'label' as the 
+                minimum set of keys for making a ipywidget. additional keys that are passed 
+                get become **kwargs that are passed to the selected ipywidget
+                
+        Example:
+            ```
+            li = [
+                    {
+                        'name':'water_volume_m3',
+                        'value':15,
+                        'label':'total volume of water within the closed mechanical system'
+                    },
+                    {
+                        'name':'height_difference_m',
+                        'value':48,
+                        'label':'difference in height between the highest and lowest points in the system'
+                    },
+                    {
+                        'name':'eV_acceptance_fraction',
+                        'value':0.3,
+                        'min':0,
+                        'max':1,
+                        'label':'Expansion vessel acceptance factor (= additional volume / expansion vessel volume):'
+                    }
+                ]
+            ```
+            
+            >>> from ipyrun._ipyeditjson import EditListOfDicts
+            >>> ui = EditListOfDicts(li)
+            >>> ui
+            see example image above
+        Images:
+            %mf_root%\ipyrun\docs\images\eg_ui.PNG
+        """
+        
         self.out = widgets.Output()
         self.li = li
         self.form()
@@ -358,6 +415,8 @@ class EditListOfDicts():
         self.widgets = []
         for l in self.li:
             self.widgets.append(EditDict(l))
+        self.applayout = widgets.VBox([l.layout for l in self.widgets])
+        
         
     def _init_observe(self):  
         for l in self.widgets:
@@ -379,7 +438,7 @@ class EditListOfDicts():
         self.display()  
 
 
-class EditJson(EditListOfDicts):
+class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
     writing the data from a JSON file. 
@@ -438,17 +497,131 @@ class EditJson(EditListOfDicts):
         self.display()  
 
 
+class EditJson(EditListOfDicts, FileConfigController):
+    """
+    inherits EditListOfDicts user input form as well FileConfigController 
+    and manages the reading and writing the data from a JSON file. 
+    """
+    #def __init__(self, fpth, fdir='.', local_fol='_mfengdev'):
+    def __init__(self, config):
+        self.out = widgets.Output()
+        self._errors()
+        self.config = config
+        self.user_keys = list(config.keys())
+        self._update_config()
+        self.li = read_json(self.fpth_inputs)
+        self.file_control_form()
+        self._init_file_controller()
+        self.form()
+        self._init_observe()
+        
+                        
+    def _revert(self, sender):
+        """revert to last save of working inputs file"""
+        fpth = self.fpth_inputs
+        self.temp_message.value = markdown('revert to inputs in last save of: {0}'.format(fpth))
+        
+        # ADD CODE HERE TO REVERT TO LAST SAVE
+        
+        self.li = read_json(self.fpth_inputs)
+        self._update_from_file()
+        self.update_display()
+        self.display()
+
+        
+    def _update_from_file(self):
+        for idx, val in enumerate(self.li):
+            self.widgets[idx].widget_only.value = val['value']
+            
+    def _save_changes(self, sender):
+        """save changes to working inputs file"""
+        fpth = self.fpth_inputs
+        dateTimeObj = datetime.now()
+        self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
+        self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
+        
+        self.data_out = self.li 
+        # add code here to save changes to file
+        write_json(self.data_out,
+                   sort_keys=True,
+                   indent=4,
+                   fpth=fpth,
+                   print_fpth=False,
+                   openFile=False)
+        
+        self.update_display()
+        self.display()
+        
+    def _load_inputs(self,sender):
+        """launches the inputs from file dialog"""
+        self.temp_message.value = markdown('update the user input form with data from file')
+        if self.load_inputs.value:
+            self.inputform.children = [self.load_button, self.choose_inputs]
+        else:
+            self.temp_message.value = markdown('')
+            self.inputform.children = []
+        self.update_display()
+        self.display()
+
+    def _load(self,sender):
+
+        fpth = self.choose_inputs.value
+        # add code here to load form from file
+        self.li = read_json(fpth)
+        self._update_from_file()
+        self.temp_message.value = markdown('input form load data from: {0}'.format(fpth))
+        self.update_display()
+        self.display()
+        
+    def update_display(self):
+        box = widgets.VBox([
+            self.button_bar,
+            self.temp_message,
+            self.inputform,
+        ])
+        self.layout = box
+            
+    def display(self):
+        self.update_display()
+        display(self.layout)
+        #out = [l.layout for l in self.widgets]
+        #self.applayout = widgets.VBox(out)
+        display(self.applayout)
+        #for l in self.widgets:
+        #    display(l.out)
+        display(self.out)
+            
+    def _ipython_display_(self):
+        self.display()  
+
 if __name__ =='__main__':
-    # Form only example
+    
+    # FORM ONLY EXAMPLE
     # FDIR = os.path.dirname(os.path.realpath('__file__'))
     # fpth = os.path.join(FDIR,r'_mfengdev/test.json')
     # li = read_json(fpth)
     # g = EditListOfDicts(li)
     # display(g)
     
+    # EDIT JSON FILE SIMPLE EXAMPLE
     FDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(FDIR,r'appdata/inputs/test.json')
-    g = EditJson(fpth)
-    display(g)
-
-
+    simpleeditjson = SimpleEditJson(fpth)
+    display(simpleeditjson)
+    
+    # EDIT JSON FILE with custom config and file management
+    config={
+        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':'.',
+        'script_outputs': {'0': {
+            'fdir':'..\reports',
+            'fnm': r'JupyterReportDemo.pdf',
+            'description': "a pdf report from word"
+                }
+            }
+        }
+    #from pprint import pprint
+    #rc = RunConfig(config)
+    #pprint(rc.config)
+    editjson = EditJson(config)
+    display(editjson)
