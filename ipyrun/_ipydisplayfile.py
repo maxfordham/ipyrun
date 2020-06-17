@@ -21,6 +21,7 @@ import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
 from markdown import markdown
+import plotly.io as pio
 
 from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.pandas_operations import del_matching
@@ -120,8 +121,9 @@ class DisplayFile():
             '.docx':self._open_file,
         }
     """
-    def __init__(self,fpth):
+    def __init__(self,fpth, mf_excel=True):
         self.fpth = fpth
+        self.mf_excel = mf_excel
         self.ext = os.path.splitext(fpth)[1].lower()
     
     @property
@@ -131,6 +133,7 @@ class DisplayFile():
             #'.xlsx':self.xl_prev,
             '.xlsx':self._open_option,
             '.json':self.json_prev,
+            '.plotly':self.plotly_prev,
             '.yaml':self.yaml_prev,
             '.yml':self.yaml_prev,
             '.png':self.img_prev,
@@ -201,6 +204,12 @@ class DisplayFile():
         self.data = read_json(self.fpth)
         display(JSON(self.data))
         
+    def plotly_prev(self):
+        """
+        display a plotly json file
+        """
+        display(pio.read_json(self.fpth))
+            
     def yaml_prev(self):
         self.data = read_yaml(self.fpth)
         display(JSON(self.data))
@@ -220,6 +229,17 @@ class DisplayFile():
         p = PreviewPy(self.fpth)
         display(p)
         
+    def xl_prev(self):
+        """
+        
+        """
+        if self.mf_excel:
+            xl = pd.ExcelFile(filename)
+            sheets = xl.sheet_name
+        else:
+            self._open_option()
+
+
 # -
 
 class DisplayFiles():
@@ -278,7 +298,9 @@ class DisplayFiles():
 
 
 if __name__ =='__main__':
-    fdir = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\examples\eg_filetypes')
+    fdir = os.path.dirname(os.path.realpath('__file__'))
+    fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
+
     from mf_modules.datamine_functions import recursive_glob
     fpths = recursive_glob(rootdir=fdir)
     
@@ -286,7 +308,5 @@ if __name__ =='__main__':
     # d = DisplayFile(fpths[0])
     # d.preview_fpth()
     
-    d = DisplayFiles(fpths[0])
+    d = DisplayFiles(fpths)
     display(d)
-
-

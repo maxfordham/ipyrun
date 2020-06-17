@@ -96,8 +96,6 @@ def ev_sizing(water_volume_m3=15,
     # The pressure has to be sufficient to push the water to the top of the system, plus some additional pressure to remove air bubbles.
     # This pressure is know as the Cold Fill Pressure.
     # The dry side of the expansion vessel is charged with air to the Cold Fill Pressure, so that there is no water within the expansion vessel.
-
-    # margin_1_bar = 0.3  # From BS7074
     static_pressure_barg = 1000 * 9.81 * height_difference_m / 100000
     margin_2_bar = 0.15 * static_pressure_barg  # Rule of Thumb from Paul Button
     design_margin_1 = max(margin_1_bar, margin_2_bar)
@@ -139,8 +137,6 @@ def ev_sizing(water_volume_m3=15,
     heating_system_pressure_rating = y
 
     # create a df of results
-    cols = ['name', 'value']
-    df = pd.DataFrame(columns=cols)
     names = ['Heating system water volume (m³)', 'Change in height (m)', 'Expansion vessel acceptance factor',
              'Heating system pipework length (m)',
              'Pipework pressure loss (Pa/m)', 'Margin for pressure loss due to pipework fittings (fraction)',
@@ -155,7 +151,7 @@ def ev_sizing(water_volume_m3=15,
               cold_fill_pressure_barg, water_expansion_fraction, additional_water_volume, expansion_vessel_volume_m3,
               gas_volume_state_2_m3, ev_gas_pressure_state_2_barabs,
               ev_gas_pressure_state_2_barg, heating_system_pressure_barg, heating_system_pressure_rating]
-    di = dict(zip(names,values))
+    di = dict(zip(names, values))
     df = pd.DataFrame.from_dict(di,orient='index').rename(columns={0:'value'})
     return df.reset_index()
 
