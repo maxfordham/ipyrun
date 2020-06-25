@@ -301,6 +301,7 @@ class EditDict(EditDictData):
     # code that allows for embedded list of dicts -----------------------------
     def _recursive_guess(self):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
+        self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
         self._recursive_controls()
         
@@ -319,6 +320,7 @@ class EditDict(EditDictData):
     # code that allows for embedded ipysheets ----------------------------------
     def _ipysheet(self):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
+        self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
         self.save_ipysheet = widgets.Button(description='save')
         self._ipysheet_controls()
@@ -625,3 +627,5 @@ if __name__ =='__main__':
     #pprint(rc.config)
     editjson = EditJson(config)
     display(editjson)
+
+
