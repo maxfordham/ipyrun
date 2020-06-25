@@ -271,14 +271,20 @@ class RunApp(RunForm, RunConfig):
     def _preview_outputs(self, sender):
         with self.out:
             clear_output()
-            fpths = self.outputsfpth.options
-            for fpth in fpths:
-                display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(fpth))[0])))
-                display(Markdown('`{0}`'.format(fpth)))
-                d = DisplayFile(fpth)
-                d.preview_fpth()
+            
+            #fpths = self.outputsfpth.options
+            #for fpth in fpths:
+             #   display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(fpth))[0])))
+            #    display(Markdown('`{0}`'.format(fpth)))
+            #    d = DisplayFile(fpth)
+            #    d.preview_fpth()
+                
+            fpths = [v for k,v in self.fpths_outputs.items()]
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
+            else:
+
+                display(DisplayFiles(fpths))
                 
     def _show_log(self, sender):
         with self.out:
@@ -434,6 +440,8 @@ class RunApps_SS():
 
 # -
 
+
+
 if __name__ =='__main__':
     
     # dumb form
@@ -559,4 +567,3 @@ RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and 
     display(runapps)
     display(Markdown('---'))  
     display(Markdown('')) 
-

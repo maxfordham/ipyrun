@@ -3,11 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4ad5ab94-956c-46f7-b0f9-1de14f0a0b15" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/notebooks/01_CreatingABatchProcess.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/notebooks/01_CreatingABatchProcess.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/scripts/expansion_vessel_sizing.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/scripts/expansion_vessel_sizing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/ipyrun.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/ipyrun.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/ipyrun.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/ipyrun.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

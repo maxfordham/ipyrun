@@ -21,7 +21,9 @@
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1818-jg-inputs-expansion_vessel_sizing.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1819-jg-inputs-expansion_vessel_sizing.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200612_1900-jg-inputs-expansion_vessel_sizing.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200615_2211-jg-inputs-expansion_vessel_sizing.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200615_2211-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200616_1020-jg-inputs-expansion_vessel_sizing.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive\\20200616_1021-jg-inputs-expansion_vessel_sizing.json"
             ]
         },
         "template": {
@@ -38,7 +40,7 @@
     },
     "jobno": "C:\\e",
     "pretty_name": "expansion_vessel_sizing",
-    "process_name": "expansion_vessel_sizing_0_1_2",
+    "process_name": "expansion_vessel_sizing",
     "script_outputs": {
         "0": {
             "description": "a simple calc for sizing expansion vessels. could be expanded to size many vessels.",

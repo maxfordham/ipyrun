@@ -33,6 +33,28 @@ from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 
 # +
 
+def default_ipyagrid(df):
+    
+    """
+    returns a default ipyagrid class
+    
+    Reference:
+        https://dgothrek.gitlab.io/ipyaggrid/
+    """
+    #https://dgothrek.gitlab.io/ipyaggrid/
+    grid_options = {
+        #'columnDefs' : column_defs,
+        'enableSorting': True,
+        'enableFilter': True,
+        'enableColResize': True,
+        'enableRangeSelection': True,
+    }
+    g = Grid(grid_data=df,
+            grid_options=grid_options,
+            quick_filter=True,
+            theme='ag-theme-balham')
+    return g
+
 def _markdown(value='_Markdown_',
               **kwargs):
     """
@@ -121,7 +143,10 @@ class DisplayFile():
             '.docx':self._open_file,
         }
     """
-    def __init__(self,fpth, mf_excel=True):
+    def __init__(self,
+                 fpth=os.path.join(os.environ['mf_root'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
+                 description=None,
+                 mf_excel=True):
         self.fpth = fpth
         self.mf_excel = mf_excel
         self.ext = os.path.splitext(fpth)[1].lower()
@@ -130,8 +155,8 @@ class DisplayFile():
     def _map(self):
         return {
             '.csv':self.df_prev,
-            #'.xlsx':self.xl_prev,
-            '.xlsx':self._open_option,
+            '.xlsx':self.xl_prev,
+            #'.xlsx':self._open_option,
             '.json':self.json_prev,
             '.plotly':self.plotly_prev,
             '.yaml':self.yaml_prev,
@@ -144,15 +169,17 @@ class DisplayFile():
             '.py':self.py_prev,
             '.pdf':self._open_option,
             '.docx':self._open_option,
-        }
+        }        
     
-
     def preview_fpth(self): 
         self.ext_map = self._map
         if self.ext not in list(self.ext_map.keys()):
             self.ext_map[self.ext]=self._open_option           
         fn = self.ext_map[self.ext]
         fn()
+        
+    def _display_meta(self):
+        self.text = _markdown('`{0}`'.format(self.fpth))
         
     def _init_controls(self):
         self.open_file.on_click(self._open_file)
@@ -174,7 +201,6 @@ class DisplayFile():
         time.sleep(5)
         self.text.value = markdown('`{0}`'.format(self.fpth))
         
-        
     def df_prev(self):
         """
         previes dataframe using the awesome ipyagrid
@@ -184,18 +210,7 @@ class DisplayFile():
         """
         self.data = del_matching(pd.read_csv(self.fpth),'Unnamed')
         try:
-            #https://dgothrek.gitlab.io/ipyaggrid/
-            grid_options = {
-                #'columnDefs' : column_defs,
-                'enableSorting': True,
-                'enableFilter': True,
-                'enableColResize': True,
-                'enableRangeSelection': True,
-            }
-            g = Grid(grid_data=self.data,
-                    grid_options=grid_options,
-                    quick_filter=True,
-                    theme='ag-theme-balham')
+            g = default_ipyagrid(self.data)
             display(g)
         except:
             display(self.data.style)
@@ -234,8 +249,13 @@ class DisplayFile():
         
         """
         if self.mf_excel:
-            xl = pd.ExcelFile(filename)
-            sheets = xl.sheet_name
+            cols = ['sheet_name','description']
+            li = pd.read_excel(self.fpth,sheet_name='readme').set_index('index').T[cols].to_dict(orient='rows')
+            for l in li:
+                l['grid'] = default_ipyagrid(pd.read_excel(self.fpth,sheet_name=l['sheet_name']))
+                display(Markdown('### {0}'.format(l['sheet_name'])))
+                display(Markdown('{0}'.format(l['description'])))
+                display(l['grid'])
         else:
             self._open_option()
 
@@ -271,11 +291,12 @@ class DisplayFiles():
         
     def _init_controls(self):
         self.show_hide.observe(self._show_hide, 'value')
+        self.outputsfpth.observe(self._show_hide, 'value')
     
     def display_previews(self):
         for file in self.outputsfpth.value:
             display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
-            s = str(d.map_previews[file]._map[d.map_previews[file].ext])
+            s = str(self.map_previews[file]._map[self.map_previews[file].ext])
             if 'DisplayFile._open_option' not in s:
                 display(Markdown('`{0}`'.format(self.map_fpths[file])))
             self.map_previews[file].preview_fpth()
@@ -297,6 +318,19 @@ class DisplayFiles():
         self.display() 
 
 
+
+# +
+from inspect import getmembers, isfunction, isclass
+from mf_modules import mydocstring_display
+
+functions_list = [o for o in getmembers(mydocstring_display) if isfunction(o[1])]
+class_list = [o for o in getmembers(mydocstring_display) if isclass(o[1])]
+
+
+functions_list
+#class_list
+# -
+
 if __name__ =='__main__':
     fdir = os.path.dirname(os.path.realpath('__file__'))
     fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
@@ -310,3 +344,5 @@ if __name__ =='__main__':
     
     d = DisplayFiles(fpths)
     display(d)
+
+
