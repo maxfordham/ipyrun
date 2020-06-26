@@ -15,7 +15,7 @@
 
 # +
 import os
-FDIR = os.path.dirname(os.path.realpath('__file__'))
+NBFDIR = os.path.dirname(os.path.realpath('__file__'))
 import pandas as pd
 from IPython.display import display, Image, JSON, Markdown, HTML, clear_output
 import subprocess
@@ -150,7 +150,7 @@ class RunApp(RunForm, RunConfig):
             ```
             config={
                 'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-                'fdir':FDIR,
+                'fdir':NBFDIR,
                 }    
 
             r = RunApp(config) 
@@ -454,7 +454,7 @@ if __name__ =='__main__':
     # EDIT JSON FILE with custom config and file management
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':FDIR,
+        'fdir':NBFDIR,
         'script_outputs': {'0': {
             'fdir':r'..\reports',
             'fnm': r'JupyterReportDemo.pdf',
@@ -486,9 +486,9 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
         #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
         #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':FDIR,
-        #'fpth_log':os.path.join(FDIR,'notebooks',config),
-        #'fdir_outputs':os.path.join(FDIR,'notebooks')
+        'fdir':NBFDIR,
+        #'fpth_log':os.path.join(NBFDIR,'notebooks',config),
+        #'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         #'RunApp_help':RunApp_help
         }  
     rcsv = RunAppEditCsv(di)  
@@ -514,13 +514,13 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
         #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
         #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':os.path.join(FDIR,'notebooks'),
-        'fdir_outputs':os.path.join(FDIR,'notebooks')
+        'fdir':os.path.join(NBFDIR,'notebooks'),
+        'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         }  
 
     defaultrunapp={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':FDIR,
+        'fdir':NBFDIR,
         'script_outputs': {'0': {
             'fdir':r'..\reports',
             'fnm': r'JupyterReportDemo.pdf',
@@ -543,13 +543,13 @@ RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and 
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
         #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
         #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':os.path.join(FDIR,'notebooks'),
-        'fdir_outputs':os.path.join(FDIR,'notebooks')
+        'fdir':os.path.join(NBFDIR,'notebooks'),
+        'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         }  
 
     defaultrunapp={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':FDIR,
+        'fdir':NBFDIR,
         'script_outputs': {'0': {
             'fdir':r'..\reports',
             'fnm': r'JupyterReportDemo.pdf',
@@ -567,3 +567,12 @@ RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and 
     display(runapps)
     display(Markdown('---'))  
     display(Markdown('')) 
+fpth_script = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py')
+config={
+    'fpth_script':os.path.realpath(fpth_script),
+    'fdir':NBFDIR,
+    }  
+r = RunApp(config)
+r 
+
+

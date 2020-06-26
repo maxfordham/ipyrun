@@ -429,7 +429,7 @@ class EditListOfDicts():
         for l in self.widgets:
             self.li.append(l.di)
         
-    def display(self):
+    def _lidi_display(self):
         out = [l.layout for l in self.widgets]
         self.applayout = widgets.VBox(out)
         display(self.applayout)
@@ -437,9 +437,10 @@ class EditListOfDicts():
             display(l.out)
             
     def _ipython_display_(self):
-        self.display()  
+        self._lidi_display()  
 
 
+# + jupyter={"source_hidden": true}
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
@@ -498,6 +499,8 @@ class SimpleEditJson(EditListOfDicts):
     def _ipython_display_(self):
         self.display()  
 
+
+# -
 
 class EditJson(EditListOfDicts, FileConfigController):
     """
@@ -576,12 +579,16 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.display()
         
     def update_display(self):
+        #self._lidi_display()
         box = widgets.VBox([
             self.button_bar,
             self.temp_message,
             self.inputform,
         ])
         self.layout = box
+        for l in self.widgets:
+            with self.out:
+                display(l.out)
             
     def display(self):
         self.update_display()
@@ -595,22 +602,33 @@ class EditJson(EditListOfDicts, FileConfigController):
             
     def _ipython_display_(self):
         self.display()  
+        #self._lidi_display()  
 
 if __name__ =='__main__':
     
     # FORM ONLY EXAMPLE
-    # FDIR = os.path.dirname(os.path.realpath('__file__'))
-    # fpth = os.path.join(FDIR,r'_mfengdev/test.json')
-    # li = read_json(fpth)
-    # g = EditListOfDicts(li)
-    # display(g)
+    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(NBFDIR,r'appdata\inputs\test.json')
+    li = read_json(fpth)
+    g = EditListOfDicts(li)
+    display(Markdown('### Example0'))
+    display(Markdown('''Edit list of dicts'''))
+    display(g)
+    display(Markdown('---'))  
+    display(Markdown('')) 
     
-    # EDIT JSON FILE SIMPLE EXAMPLE
+    # Example1
     FDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(FDIR,r'appdata/inputs/test.json')
     simpleeditjson = SimpleEditJson(fpth)
+    # display
+    display(Markdown('### Example1'))
+    display(Markdown('''Simple Edit Json'''))
     display(simpleeditjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
     
+    # Example2
     # EDIT JSON FILE with custom config and file management
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
@@ -622,10 +640,27 @@ if __name__ =='__main__':
                 }
             }
         }
-    #from pprint import pprint
-    #rc = RunConfig(config)
-    #pprint(rc.config)
     editjson = EditJson(config)
+    # display
+    display(Markdown('### Example2'))
+    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
     display(editjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+    
 
+    
+    # Example3
+    # EDIT NESTED JSON FILE with custom config and file management
+    nestedconfig={
+        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
+        'fdir':'.',
+        }
+    editnestedjson = EditJson(nestedconfig)
+    # display
+    display(Markdown('### Example3'))
+    display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
+    display(editnestedjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
 
