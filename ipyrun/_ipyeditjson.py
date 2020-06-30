@@ -152,6 +152,7 @@ class EditDictData():
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
+                'DatePicker':widgets.DatePicker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
                 'Text':widgets.Text,
@@ -192,7 +193,13 @@ class EditDict(EditDictData):
         self.widget_only.observe(self._update_change, 'value') 
 
     def _update_change(self, change):
-        self.di['value'] = self.widget_only.value
+        value = None
+        if(self.widget_name == "DatePicker"):
+            print(self.widget_only.value)
+            value = self.widget_only.value.strftime('%d/%m/%Y')
+        else:
+            value = self.widget_only.value
+        self.di['value'] = value
 
     def _build_widget(self):
         
@@ -200,6 +207,9 @@ class EditDict(EditDictData):
             self._recursive_guess()
         elif self.widget_name == 'ipysheet':
             self._ipysheet()
+        elif self.widget_name == "DatePicker":
+            value = datetime.strptime(self.kwargs['value'], '%d/%m/%Y')
+            self.widget_only = self.widget_lkup[self.widget_name](value=value)
         else:
             self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
