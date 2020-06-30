@@ -1,0 +1,64 @@
+{
+    "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks",
+    "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\config",
+    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs",
+    "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\archive",
+    "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\log",
+    "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\raw",
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\interim",
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\processed",
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\processed"
+    ],
+    "fnm_config": "config-gbxml.json",
+    "fnm_log": "log-gbxml.csv",
+    "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\config\\config-gbxml.json",
+    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\inputs-gbxml.json",
+    "fpth_inputs_options": {
+        "project": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\inputs\\inputs-gbxml.json"
+            ]
+        },
+        "template": {
+            "fdir": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\template_inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\template_inputs\\inputs-gbxml.json"
+            ]
+        }
+    },
+    "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\appdata\\log\\log-gbxml.csv",
+    "fpth_script": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\gbxml.py",
+    "fpths_outputs": {
+        "gbjson": "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\interim\\gbjson.json",
+        "gbxml": "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\raw\\gbxml.xml",
+        "gbxml_datagrab": "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\processed\\gbxml_datagrab.xlsx",
+        "gbxml_spcs-treemap": "C:\\engDev\\git_mf\\ipyrun\\examples\\data\\processed\\gbxml_spcs-treemap.png"
+    },
+    "jobno": "C:\\e",
+    "pretty_name": "gbxml",
+    "process_name": "gbxml",
+    "script_outputs": {
+        "gbjson": {
+            "description": "the processed gbxml file converted to json format",
+            "fdir": "..\\data\\interim",
+            "fnm": "gbjson.json"
+        },
+        "gbxml": {
+            "description": "the reference gbxml file converted to json format",
+            "fdir": "..\\data\\raw",
+            "fnm": "gbxml.xml"
+        },
+        "gbxml_datagrab": {
+            "description": "a summary of salient data extract extracted from the gbXML simulation model",
+            "fdir": "..\\data\\processed",
+            "fnm": "gbxml_datagrab.xlsx"
+        },
+        "gbxml_spcs-treemap": {
+            "description": "a waffle chart with a floor by floor breakdown of space type and usage.",
+            "fdir": "..\\data\\processed",
+            "fnm": "gbxml_spcs-treemap.png"
+        }
+    }
+}
