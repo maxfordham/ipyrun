@@ -318,20 +318,21 @@ class DisplayFiles():
         self.display() 
 
 
-
-# +
-from inspect import getmembers, isfunction, isclass
-from mf_modules import mydocstring_display
-
-functions_list = [o for o in getmembers(mydocstring_display) if isfunction(o[1])]
-class_list = [o for o in getmembers(mydocstring_display) if isclass(o[1])]
-
-
-functions_list
-#class_list
-# -
-
 if __name__ =='__main__':
+    # NOTE FOR FUTURE:
+    # the below can be used to make documentation that looks at all functions or classes 
+    # rather than only the module level docstring. this would be an update to the PreviewPy class
+    # +
+    from inspect import getmembers, isfunction, isclass
+    from mf_modules import mydocstring_display
+
+    functions_list = [o for o in getmembers(mydocstring_display) if isfunction(o[1])]
+    class_list = [o for o in getmembers(mydocstring_display) if isclass(o[1])]
+    #functions_list
+    #class_list
+    # -
+    
+    
     fdir = os.path.dirname(os.path.realpath('__file__'))
     fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
 
@@ -344,5 +345,3 @@ if __name__ =='__main__':
     
     d = DisplayFiles(fpths)
     display(d)
-
-
