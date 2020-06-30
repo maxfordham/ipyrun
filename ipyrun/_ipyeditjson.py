@@ -440,7 +440,6 @@ class EditListOfDicts():
         self._lidi_display()  
 
 
-# + jupyter={"source_hidden": true}
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
@@ -499,8 +498,6 @@ class SimpleEditJson(EditListOfDicts):
     def _ipython_display_(self):
         self.display()  
 
-
-# -
 
 class EditJson(EditListOfDicts, FileConfigController):
     """
