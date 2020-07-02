@@ -15,7 +15,8 @@
         "project": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs",
             "fpths": [
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\inputs-create_model_run_file.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\inputs-create_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\archive\\20200630_1357-RW-inputs-create_model_run_file.json"
             ]
         },
         "template": {

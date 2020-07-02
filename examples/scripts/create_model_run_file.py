@@ -2,11 +2,11 @@
 Creates Model Run File
 
     Args:
-        ** Set of Model Run Inputs
+        ** Model Run: Set of Inputs for this Model
 
     Returns:
-        ** Filepath, where data has been written to
-
+        ** Filepath: Where data has been written to
+        
     References:
         -   N/A
 

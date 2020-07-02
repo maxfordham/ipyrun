@@ -39,12 +39,12 @@ from mf_modules.jupyter_formatting import display_python_file
 try:
     from ipyrun._runconfig import RunConfig
     from ipyrun._ipyeditcsv import EditCsv
-    from ipyrun._ipyeditjson import EditJson
+    from ipyrun._ipyeditjson import EditJson, EditJsonModelRun
     from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
 except:
     from _runconfig import RunConfig
     from _ipyeditcsv import EditCsv
-    from _ipyeditjson import EditJson
+    from _ipyeditjson import EditJson, EditJsonModelRun
     from _ipydisplayfile import DisplayFile, DisplayFiles
 
 def get_mfuser_initials():
@@ -154,7 +154,8 @@ class RunApp(RunForm, RunConfig):
                 }    
 
             r = RunApp(config) 
-            from ipyrun._ipyeditjson import EditListOfDicts
+            from ipyrun._ipyeditjson import 
+            
             ui = EditListOfDicts(li)
             ui
             ```
@@ -301,7 +302,17 @@ class RunApp(RunForm, RunConfig):
         
     def _ipython_display_(self):
         self.display()    
-        
+
+class RunAppModelRun(RunApp):
+    """
+    Modified version of EditJson, for Model Run spreadsheet
+    Functionality for DerivedText has been added
+    """
+    def _edit_inputs(self, sender):
+        with self.out:
+            clear_output()
+            display(EditJsonModelRun(self.config))
+    
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that 
 # as a first estimate. we could also then keep an ongoing record of time-taken to run a script within
@@ -463,7 +474,7 @@ if __name__ =='__main__':
             }
         }    
 
-    rjson = RunApp(config)  
+    rjson = RunAppModelRun(config)  
     display(Markdown('### Example1'))
     display(Markdown('''default RunApp.'''))
     display(rjson)

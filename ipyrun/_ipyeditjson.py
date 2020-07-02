@@ -152,6 +152,7 @@ class EditDictData():
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
+                'DerivedText':widgets.HTML,
                 'DatePicker':widgets.DatePicker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
@@ -195,7 +196,6 @@ class EditDict(EditDictData):
     def _update_change(self, change):
         value = None
         if(self.widget_name == "DatePicker"):
-            print(self.widget_only.value)
             value = self.widget_only.value.strftime('%d/%m/%Y')
         else:
             value = self.widget_only.value
@@ -368,8 +368,7 @@ class EditDict(EditDictData):
         self.display()    
 
 
-# -
-
+# +
 class EditListOfDicts():
     """
     builds user input form from a list of dicts by creating a 
@@ -417,7 +416,6 @@ class EditListOfDicts():
         Images:
             %mf_root%\ipyrun\docs\images\eg_ui.PNG
         """
-        
         self.out = widgets.Output()
         self.li = li
         self.form()
@@ -427,13 +425,15 @@ class EditListOfDicts():
         self.widgets = []
         for l in self.li:
             self.widgets.append(EditDict(l))
+        self._layout()
+    
+    def _layout(self):
         self.applayout = widgets.VBox([l.layout for l in self.widgets])
         
-        
-    def _init_observe(self):  
+    def _init_observe(self): 
         for l in self.widgets:
-            l.widget_only.observe(self._update_change, 'value') 
-            
+            l.widget_only.observe(self._update_change, "value") 
+    
     def _update_change(self, change):
         self.li = []
         for l in self.widgets:
@@ -449,6 +449,55 @@ class EditListOfDicts():
     def _ipython_display_(self):
         self._lidi_display()  
 
+class EditListOfDictsModelRun(EditListOfDicts):
+    """
+    Modified version of EditJson, for Model Run spreadsheet
+    Functionality for DerivedText has been added
+    """
+    
+    def __init__(self, li):
+        super().__init__(li)
+
+    def _update_label(self, index, l):
+        labelVal = ""
+        firstVal = True
+        for opt in l.di['options']:
+            try:
+                if(index+opt < 0):
+                    raise Exception("Can only get values of positive indices")
+
+                value = self.widgets[index+opt].di["value"]
+
+                if(value == ""):
+                    value = "XX"
+
+                if(isinstance(value, float)):
+                    if(value.is_integer()):
+                        value = int(value)
+
+                if not firstVal:
+                    labelVal += "_"
+
+                labelVal += str(value)
+
+                firstVal = False
+            except Exception as e:
+                pass
+        return "<b>{0}</b>".format(labelVal)
+    
+    def _update_change(self, change):
+        self.li = []
+        for index, l in enumerate(self.widgets):
+            if(l.widget_name=="DerivedText"):
+                l.widget_only.value = self._update_label(index, l)
+            self.li.append(l.di)
+    
+    def _layout(self):
+        self._update_change("value")
+        super()._layout()
+
+
+# -
 
 class SimpleEditJson(EditListOfDicts):
     """
@@ -509,6 +558,7 @@ class SimpleEditJson(EditListOfDicts):
         self.display()  
 
 
+# +
 class EditJson(EditListOfDicts, FileConfigController):
     """
     inherits EditListOfDicts user input form as well FileConfigController 
@@ -521,13 +571,15 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.config = config
         self.user_keys = list(config.keys())
         self._update_config()
-        self.li = read_json(self.fpth_inputs)
         self.file_control_form()
+        self.li = read_json(self.fpth_inputs)
         self._init_file_controller()
+        self.__build_widgets()
+        
+    def __build_widgets(self):
         self.form()
         self._init_observe()
         
-                        
     def _revert(self, sender):
         """revert to last save of working inputs file"""
         fpth = self.fpth_inputs
@@ -611,6 +663,18 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.display()  
         #self._lidi_display()  
 
+class EditJsonModelRun(EditListOfDictsModelRun, EditJson):
+    """
+    Modified version of EditJson, for Model Run spreadsheet
+    Functionality for DerivedText has been added
+    """
+    def __build_widgets(self):
+        EditListOfDictsModelRun.form()
+        EditListOfDictsModelRun._init_observe()
+
+
+# -
+
 if __name__ =='__main__':
     
     # FORM ONLY EXAMPLE
@@ -663,11 +727,38 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
         'fdir':'.',
         }
-    editnestedjson = EditJson(nestedconfig)
+    editnestedjson = EditJsonModelRun(nestedconfig)
     # display
     display(Markdown('### Example3'))
     display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
     display(editnestedjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+        
+    # FORM ONLY EXAMPLE
+    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
+    li = read_json(fpth)
+    g = EditListOfDictsModelRun(li)
+    display(Markdown('### Example0'))
+    display(Markdown('''Edit list of dicts'''))
+    display(g)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -3,10 +3,10 @@
         "label": "Test",
         "max": null,
         "min": null,
-        "name": "Date Picker",
-        "options": null,
-        "value": "29/06/2020",
-        "widget": "DatePicker"
+        "name": "Derived",
+        "options": [1,2],
+        "value": "Value",
+        "widget": "DerivedText"
     },
     {
         "label": "Number, using to prefix the file name",
@@ -82,7 +82,8 @@
         "min": null,
         "name": "Date",
         "options": null,
-        "value": "01/01/2020"
+        "value": "01/01/2020",
+        "widget": "DatePicker"
     },
     {
         "label": "",

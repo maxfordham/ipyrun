@@ -1,0 +1,55 @@
+[
+
+    {
+        "label": "Test",
+        "max": null,
+        "min": null,
+        "name": "Date Picker",
+        "options": null,
+        "value": "29/06/2020",
+        "widget": "DatePicker"
+    },
+    {
+        "label": "Test",
+        "max": null,
+        "min": null,
+        "name": "Derived",
+        "options": [-1,2,3,4,5,10,-3,-100],
+        "value": "Value",
+        "widget": "DerivedText"
+    },
+    {
+        "label": "Number, using to prefix the file name",
+        "max": null,
+        "min": null,
+        "name": "File Prefix",
+        "options": null,
+        "value": 16.0
+    },
+    {
+        "label": "Tag for the Model, used within file naming",
+        "max": null,
+        "min": null,
+        "name": "File Tag",
+        "options": null,
+        "value": "YY-OverheatingAnalysis"
+    },
+    {
+        "label": "General Description of the Model",
+        "max": null,
+        "min": null,
+        "name": "Model Desc",
+        "options": null,
+        "value": "",
+        "widget": "Textarea"
+    },
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Report Model Run?",
+        "options": null,
+        "value": true,
+        "widget": "Checkbox"
+    }
+]
