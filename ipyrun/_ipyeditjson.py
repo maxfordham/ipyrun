@@ -467,6 +467,7 @@ class EditListOfDictsModelRun(EditListOfDicts):
         firstVal = True
         for opt in l.di['options']:
             try:
+                
                 if(index+opt < 0):
                     raise Exception("Can only get values of positive indices")
 
@@ -474,10 +475,10 @@ class EditListOfDictsModelRun(EditListOfDicts):
 
                 if(value == ""):
                     value = "XX"
-
+                
                 if(isinstance(value, float)):
                     if(value.is_integer()):
-                        value = int(value)
+                        value = str(int(value)).zfill(3)
 
                 if not firstVal:
                     labelVal += "_"
@@ -492,9 +493,10 @@ class EditListOfDictsModelRun(EditListOfDicts):
     def _update_change(self, change):
         self.li = []
         for index, l in enumerate(self.widgets):
+            self.li.append(l.di)
             if(l.widget_name=="DerivedText"):
                 l.widget_only.value = self._update_label(index, l)
-            self.li.append(l.di)
+            
     
     def _layout(self):
         self._update_change("value")
@@ -755,6 +757,42 @@ if __name__ =='__main__':
     display(g)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
