@@ -152,7 +152,7 @@ class EditDictData():
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
-                'DerivedText':widgets.HTML,
+                'DerivedText':widgets.Label,
                 'DatePicker':widgets.DatePicker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
@@ -199,6 +199,7 @@ class EditDict(EditDictData):
             value = self.widget_only.value.strftime('%d/%m/%Y')
         else:
             value = self.widget_only.value
+
         self.di['value'] = value
 
     def _build_widget(self):
@@ -210,6 +211,9 @@ class EditDict(EditDictData):
         elif self.widget_name == "DatePicker":
             value = datetime.strptime(self.kwargs['value'], '%d/%m/%Y')
             self.widget_only = self.widget_lkup[self.widget_name](value=value)
+        elif self.widget_name == "DerivedText":   
+            self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
+            self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
         else:
             self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
@@ -483,7 +487,7 @@ class EditListOfDictsModelRun(EditListOfDicts):
                 firstVal = False
             except Exception as e:
                 pass
-        return "<b>{0}</b>".format(labelVal)
+        return "{0}".format(labelVal)
     
     def _update_change(self, change):
         self.li = []
@@ -668,6 +672,10 @@ class EditJsonModelRun(EditListOfDictsModelRun, EditJson):
     Modified version of EditJson, for Model Run spreadsheet
     Functionality for DerivedText has been added
     """
+    
+    def __init__(self, config):
+        EditJson.__init__(self, config)
+        
     def __build_widgets(self):
         EditListOfDictsModelRun.form()
         EditListOfDictsModelRun._init_observe()
@@ -736,16 +744,29 @@ if __name__ =='__main__':
     display(Markdown('')) 
 
         
-    # FORM ONLY EXAMPLE
+    # Example4
+    # EDIT JSON with DatePicker and DerivedText widgets
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
     li = read_json(fpth)
     g = EditListOfDictsModelRun(li)
-    display(Markdown('### Example0'))
-    display(Markdown('''Edit list of dicts'''))
+    display(Markdown('### Example4'))
+    display(Markdown('''EDIT JSON with DatePicker and DerivedText widgetss'''))
     display(g)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
