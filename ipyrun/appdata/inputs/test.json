@@ -1,6 +1,6 @@
 [
     {
-        "fpth_help": "asdf",
+        "fpth_help": "C:\\engDev\\git_mf\\engDevSetup\\dev\\icons\\icon_png\\help-icon.png",
         "label": "its a delicious foo cake",
         "max": null,
         "min": null,
@@ -72,7 +72,7 @@
         "options": null,
         "value": [
             {
-                "fpth_help": "asdf",
+                "fpth_help": "C:\\engDev\\git_mf\\engDevSetup\\dev\\icons\\icon_png\\help-icon.png",
                 "label": "its a delicious foo cake",
                 "max": null,
                 "min": null,
