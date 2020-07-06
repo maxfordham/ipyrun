@@ -741,11 +741,15 @@ if __name__ =='__main__':
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
     li = read_json(fpth)
     g = EditListOfDictsModelRun(li)
-    display(Markdown('### Example0'))
-    display(Markdown('''Edit list of dicts'''))
+    display(Markdown('### Example4'))
+    display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
     display(g)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
+
+
 
 
 
