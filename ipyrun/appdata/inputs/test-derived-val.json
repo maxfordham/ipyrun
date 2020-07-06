@@ -1,7 +1,7 @@
 [
 
     {
-        "label": "Test",
+        "label": "Example use of the DatePicker Widget",
         "max": null,
         "min": null,
         "name": "Date Picker",
@@ -10,12 +10,12 @@
         "widget": "DatePicker"
     },
     {
-        "label": "Test",
+        "label": "Example use of the DerivedText Widget",
         "max": null,
         "min": null,
-        "name": "Derived",
-        "options": [-1,2,3,4,5,10,-3,-100],
-        "value": "Value",
+        "name": "Derived Text",
+        "options": [1],
+        "value": "N/A",
         "widget": "DerivedText"
     },
     {
