@@ -35,9 +35,11 @@ from mf_modules.file_operations import make_dir
 try:
     from ipyrun._filecontroller import FileConfigController
     from ipyrun._runconfig import RunConfig
+    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
 except:
     from _filecontroller import FileConfigController
     from _runconfig import RunConfig
+    from _ipydisplayfile import DisplayFile, DisplayFiles
 
 
 # +
@@ -152,7 +154,7 @@ class EditDictData():
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
-                'DerivedText':widgets.Label,
+                'DerivedText':widgets.HTML,
                 'DatePicker':widgets.DatePicker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
@@ -233,7 +235,13 @@ class EditDict(EditDictData):
     def _guide(self, sender):
         with self.out:
             if self.guide.value:  
-                display(Image(os.path.join(os.environ['mf_root'],r'engDevSetup\dev\icons\icon_png\help-icon.png')));
+                if self.di['fpth_help']==list:
+                    d = DisplayFiles(self.di['fpth_help'])
+                    #display(Image(os.path.join(os.environ['mf_root'],r'engDevSetup\dev\icons\icon_png\help-icon.png')));
+                    display(d)
+                else:
+                    d = DisplayFile(self.di['fpth_help'])
+                    display(d.preview_fpth())
             else:
                 clear_output()
                 
@@ -753,60 +761,14 @@ if __name__ =='__main__':
     li = read_json(fpth)
     g = EditListOfDictsModelRun(li)
     display(Markdown('### Example4'))
+
+    display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
+
     display(Markdown('''EDIT JSON with DatePicker and DerivedText widgetss'''))
+
     display(g)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

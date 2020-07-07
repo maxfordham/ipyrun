@@ -265,7 +265,7 @@ class DisplayFile():
 class DisplayFiles():
     def __init__(self, fpths):
         self.out = widgets.Output();
-        if type(fpths)!=list:
+        if type(fpths) != list:
             self.fpths = [fpths]
         else:
             self.fpths = fpths
@@ -318,6 +318,7 @@ class DisplayFiles():
         self.display() 
 
 
+# +
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
     # the below can be used to make documentation that looks at all functions or classes 
@@ -340,8 +341,24 @@ if __name__ =='__main__':
     fpths = recursive_glob(rootdir=fdir)
     
     # single file
-    # d = DisplayFile(fpths[0])
-    # d.preview_fpth()
+    d0 = DisplayFile(fpths[0])
+    display(Markdown('### Example0'))
+    display(Markdown('''display single file'''))
+    display(d0.preview_fpth())
+    display(Markdown('---'))  
+    display(Markdown('')) 
     
-    d = DisplayFiles(fpths)
-    display(d)
+    # multiple file
+    d1 = DisplayFiles(fpths)
+    display(Markdown('### Example1'))
+    display(Markdown('''display single file'''))
+    display(d1)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+
+
+# -
+
+
+
+
