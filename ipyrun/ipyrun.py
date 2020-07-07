@@ -313,6 +313,13 @@ class RunAppModelRun(RunApp):
             clear_output()
             display(EditJsonModelRun(self.config))
     
+    '''def _fpth_inputs(self):
+        src = self.fpth_template_input
+        dstn = os.path.join(self.fdir_inputs, '{0}{1}'.format(self.process_name,os.path.splitext(src)[1]))
+        if not os.path.isfile(dstn):
+            copyfile(src, dstn)
+        return dstn'''
+    
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that 
 # as a first estimate. we could also then keep an ongoing record of time-taken to run a script within
@@ -364,14 +371,19 @@ class RunApps():
         self.run_batch = widgets.Button(description='run batch',
                                 tooltip='execute checked processes below',
                                 button_style='success',
+                                style={'font_weight':'add'})
+        self.add_run = widgets.Button(description='add run',
+                                tooltip='add new run, based on another run',
+                                button_style='warning',
                                 style={'font_weight':'bold'})
-        self.form = widgets.HBox([self.reset, self.help, self.run_batch],
+        self.form = widgets.HBox([self.reset, self.help, self.run_batch, self.add_run],
                         layout=widgets.Layout(width='100%',align_items='stretch'))   
     
     def _init_controls(self):
         self.help.on_click(self._help)
         self.reset.on_click(self._reset)
         self.run_batch.on_click(self._run_batch)
+        self.add_run.on_click(self._add_run)
         
     def _help(self, sender):
         
@@ -385,7 +397,57 @@ class RunApps():
             clear_output()
         for l in self.li:
             l._reset(sender)
+
+    def _add_run(self, sender):
+        self.process_names = [process['config']['process_name'] for process in self.processes]
+        self.add_run_dd = widgets.Dropdown(
+                options=[process['config']['process_name'] for process in self.processes],
+                description='Run to Copy:',
+                disabled=False)
+        self.add_run_btn = widgets.Button(description='add chosen run',
+                    tooltip='add chosen run',
+                    button_style='primary',
+                    style={'font_weight':'bold'})
+        self.add_run_btn.on_click(self._run_add_run)
+                    
+        with self.out:
+            clear_output()
+            
+            '''import pprint
+            pp = pprint.PrettyPrinter(depth=4)
+            for process in self.processes:
+                pp.pprint(process['config'])'''
+           
+            display(self.add_run_dd)
+            display(self.add_run_btn)
     
+    def _run_add_run(self,sender):
+        dd_val = self.add_run_dd.value
+        dd_process_name_base = "_".join(str(self.add_run_dd.value).split('_')[:-1])
+        num_exists = True
+        current_num = 0
+        new_process_name = ""
+        while (num_exists):
+            new_process_name = '{0}_{1}'.format(dd_process_name_base,current_num)
+            if new_process_name in self.process_names:
+                current_num = current_num + 1   
+            else:
+                num_exists = False
+        print(new_process_name)
+        new_process = None
+        for process in self.processes:
+            if(process['config']['process_name'] == dd_val):
+                new_process = process        
+        src = new_process['config']['fpth_inputs']
+        dst = os.path.join(new_process['config']['fdir_inputs'], '{0}{1}'.format(new_process_name,os.path.splitext(src)[1]))
+        copyfile(src,dst)
+        new_process['config']['fpth_inputs'] = dst
+        self.processes.append(new_process)
+        self.li.append(new_process['app'](new_process['config']))   
+        with self.out:
+            display(Markdown(str(dd_val)))
+            display()
+
     def _run_batch(self, sender):
         cnt = 0
         ttl = 0
@@ -450,9 +512,6 @@ class RunApps_SS():
      
 
 # -
-
-
-
 if __name__ =='__main__':
     
     # dumb form
@@ -463,6 +522,7 @@ if __name__ =='__main__':
     # Example1 --------------------------
     # RunApp example, using a default JSON file
     # EDIT JSON FILE with custom config and file management
+     
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
@@ -546,44 +606,93 @@ if __name__ =='__main__':
 
     display(Markdown('### Example3'))
     display(Markdown('''
-demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
-RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:  
+    demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
+    RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:  
 
-```
-    di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':os.path.join(NBFDIR,'notebooks'),
-        'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-        }  
+    ```
+        di={
+            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+            #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
+            #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
+            'fdir':os.path.join(NBFDIR,'notebooks'),
+            'fdir_outputs':os.path.join(NBFDIR,'notebooks')
+            }  
 
-    defaultrunapp={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': {'0': {
-            'fdir':r'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
+        defaultrunapp={
+            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+            'fdir':NBFDIR,
+            'script_outputs': {'0': {
+                'fdir':r'..\reports',
+                'fnm': r'JupyterReportDemo.pdf',
+                'description': "a pdf report from word"
+                    }
                 }
             }
-        }
 
-    runappcsv = {'app':RunAppEditCsv,'config':di}
-    configs = [runappcsv,defaultrunapp,runappcsv]
-    runapps = RunApps(configs)  
-    display(runapps)
-```
+        runappcsv = {'app':RunAppEditCsv,'config':di}
+        configs = [runappcsv,defaultrunapp,runappcsv]
+        runapps = RunApps(configs)  
+        display(runapps)
+    ```
     '''))
     display(runapps)
     display(Markdown('---'))  
     display(Markdown('')) 
-fpth_script = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py')
-config={
-    'fpth_script':os.path.realpath(fpth_script),
-    'fdir':NBFDIR,
+    fpth_script = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py')
+    config={
+        'fpth_script':os.path.realpath(fpth_script),
+        'fdir':NBFDIR
+        }  
+    r = RunApp(config)
+    r
+    
+   # Example4 --------------------------
+    fpth_script = r'..\examples\scripts\create_model_run_file.py'
+    di={
+        'fpth_script':os.path.realpath(fpth_script),
+        'fdir':os.path.join(NBFDIR),
     }  
-r = RunApp(config)
-r 
+    
+    iters = 3
+    batch = []
+    di_config = RunApp(config).config
+    for n in range(0,iters):
+        tmp = di.copy()
+        process_name = os.path.splitext(os.path.basename(di['fpth_script']))[0] + '_' + str(n)
+        tmp['fpth_inputs'] = os.path.join(di_config['fdir_inputs'],'{0}{1}'.format(process_name,'.json'))
+        print(process_name)
+        print(tmp['fpth_inputs'])
+        tmp.update({'process_name':process_name})
+        batch.append({'app':RunAppModelRun,'config':tmp})
+    
+    runapps = RunApps(batch)  
+
+    display(Markdown('### Example4'))
+    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
+    display(runapps)
+
+    # Example5 --------------------------
+    # EDIT JSON FILE with custom config and file management
+    
+    fpth_input = r'.\testjson\inputs-create_model_run_file.json'
+    fpth_script = r'..\examples\scripts\create_model_run_file.py'
+    config = {
+        'fpth_script':os.path.realpath(fpth_script),
+        'fdir':NBFDIR,
+        'fpth_inputs':os.path.realpath(fpth_input)
+    }    
+
+    rjson = RunApp(config)  
+    display(Markdown('### Example5'))
+    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
+    display(rjson)
+
+    display(Markdown('---'))  
+    display(Markdown(''))  
+    
+
+
+
+
 
 
