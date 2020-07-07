@@ -499,15 +499,12 @@ class EditListOfDictsModelRun(EditListOfDicts):
         return "{0}".format(labelVal)
     
     def _update_change(self, change):
-        self.li = []
         for index, l in enumerate(self.widgets):
-            self.li.append(l.di)
             if(l.widget_name=="DerivedText"):
                 l.widget_only.value = self._update_label(index, l)
-            
     
     def _layout(self):
-        self._update_change("value")
+        self._update_change(change=None)
         super()._layout()
 
 
@@ -614,10 +611,11 @@ class EditJson(EditListOfDicts, FileConfigController):
     def _save_changes(self, sender):
         """save changes to working inputs file"""
         fpth = self.fpth_inputs
+        
         dateTimeObj = datetime.now()
         self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
         self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
-        
+        print(self.li)
         self.data_out = self.li 
         # add code here to save changes to file
         write_json(self.data_out,

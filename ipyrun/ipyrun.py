@@ -511,7 +511,7 @@ class RunApps_SS():
 
      
 
-# -
+# +
 if __name__ =='__main__':
     
     # dumb form
@@ -656,40 +656,27 @@ if __name__ =='__main__':
     iters = 3
     batch = []
     di_config = RunApp(config).config
+
     for n in range(0,iters):
         tmp = di.copy()
         process_name = os.path.splitext(os.path.basename(di['fpth_script']))[0] + '_' + str(n)
-        tmp['fpth_inputs'] = os.path.join(di_config['fdir_inputs'],'{0}{1}'.format(process_name,'.json'))
-        print(process_name)
-        print(tmp['fpth_inputs'])
+        fdir_modelruninput = os.path.join(di_config['fdir_inputs'], r'modelruninputs')
+        fpth_modelruninput = os.path.join(fdir_modelruninput, '{0}{1}'.format(process_name,'.json'))
+        tmp['fpth_inputs'] = fpth_modelruninput
+        tmp['fdir_inputs'] = fdir_modelruninput
+        print(tmp)
         tmp.update({'process_name':process_name})
         batch.append({'app':RunAppModelRun,'config':tmp})
-    
+
     runapps = RunApps(batch)  
 
     display(Markdown('### Example4'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
     display(runapps)
 
-    # Example5 --------------------------
-    # EDIT JSON FILE with custom config and file management
-    
-    fpth_input = r'.\testjson\inputs-create_model_run_file.json'
-    fpth_script = r'..\examples\scripts\create_model_run_file.py'
-    config = {
-        'fpth_script':os.path.realpath(fpth_script),
-        'fdir':NBFDIR,
-        'fpth_inputs':os.path.realpath(fpth_input)
-    }    
 
-    rjson = RunApp(config)  
-    display(Markdown('### Example5'))
-    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
-    display(rjson)
+# -
 
-    display(Markdown('---'))  
-    display(Markdown(''))  
-    
 
 
 

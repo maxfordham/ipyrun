@@ -4,8 +4,13 @@
         "max": null,
         "min": null,
         "name": "Model Run Name",
-        "options": [1,2,3,4],
-        "value": "Value",
+        "options": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "value": "025_YY-OverheatingAnalysisasdasdasd_asdadasdasd_False",
         "widget": "DerivedText"
     },
     {
@@ -14,7 +19,7 @@
         "min": null,
         "name": "File Prefix",
         "options": null,
-        "value": 0
+        "value": 25.0
     },
     {
         "label": "Tag for the Model, used within file naming",
@@ -22,7 +27,7 @@
         "min": null,
         "name": "File Tag",
         "options": null,
-        "value": "YY-OverheatingAnalysis"
+        "value": "YY-OverheatingAnalysisasdasdasd"
     },
     {
         "label": "General Description of the Model",
@@ -30,7 +35,7 @@
         "min": null,
         "name": "Model Desc",
         "options": null,
-        "value": "",
+        "value": "asdadasdasd",
         "widget": "Textarea"
     },
     {
@@ -39,7 +44,7 @@
         "min": null,
         "name": "Report Model Run?",
         "options": null,
-        "value": true,
+        "value": false,
         "widget": "Checkbox"
     },
     {
@@ -56,12 +61,16 @@
         "max": null,
         "min": null,
         "name": "Filtered Runs to Graph?",
+        "options": null,
         "value": false,
         "widget": "Checkbox"
     },
     {
         "label": "",
+        "max": null,
+        "min": null,
         "name": "Refs & Linked Files",
+        "options": null,
         "value": [
             {
                 "label": "File path of the Results Spreadsheet (.xlsx)",
@@ -116,7 +125,10 @@
     },
     {
         "label": "",
+        "max": null,
+        "min": null,
         "name": "Fabrics",
+        "options": null,
         "value": [
             {
                 "label": "Expressed as a Percentage",
