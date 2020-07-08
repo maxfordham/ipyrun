@@ -33,11 +33,11 @@ from mf_modules.file_operations import make_dir
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 try:
-    from ipyrun._filecontroller import FileConfigController
+    from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
     from ipyrun._runconfig import RunConfig
     from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
 except:
-    from _filecontroller import FileConfigController
+    from _filecontroller import FileConfigController, SelectEditSaveMfJson
     from _runconfig import RunConfig
     from _ipydisplayfile import DisplayFile, DisplayFiles
 
@@ -513,6 +513,79 @@ class EditListOfDictsModelRun(EditListOfDicts):
 
 # -
 
+class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
+    """
+    
+    """
+    def __init__(self, fdir):
+        self.out = widgets.Output()
+        super().__init__(fdir)
+        
+    def _save_changes(self, sender):
+        """save changes to working inputs file"""
+        self.fpth_out = self.file_chooser.selected
+        dateTimeObj = datetime.now()
+        self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
+        self.temp_message.value = markdown('{0} saved at: {1}'.format(self.fpth_out, self.save_timestampStr))
+        
+        # add code here to save changes to file
+        self.data_out = self.li            
+        write_json(self.data_out,
+                   sort_keys=True,
+                   indent=4,
+                   fpth=self.fpth_out,
+                   print_fpth=False,
+                   openFile=False)
+        
+        #with self.out:
+        #    clear_output()
+        #    dateTimeObj = datetime.now()
+        #    timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+        #    display(Markdown('{0} changes to sheet logged.  to: {1}'.format(timestampStr,self.fpth_out)))
+            
+        self.update_sse_display()
+        self.sse_display()
+        
+    def _edit_file(self, sender):
+        """save changes to working inputs file"""
+        if self.edit_file.value:
+            fpth = self.file_chooser.selected
+            self.temp_message.value = markdown('edit inputs below and save to: {0}'.format(fpth))
+            if os.path.isfile(fpth):
+                self.li = read_json(fpth)
+                self.form()
+                self._init_observe()
+                
+                with self.out:
+                    clear_output()
+                    out = [l.layout for l in self.widgets]
+                    self.applayout = widgets.VBox(out)
+                    display(self.applayout)
+                    for l in self.widgets:
+                        display(l.out)
+            else:
+                with self.out:
+                    clear_output()
+                    display(markdown('{0} not a file'.format(fpth)))
+
+        else:
+            with self.out:
+                self.temp_message.value = markdown('')
+                clear_output()
+        # add code here to save changes to file
+
+
+        self._display()
+        
+    def _display(self):
+        self.update_sse_display()
+        self.sse_display()
+        display(self.out)
+                    
+    def _ipython_display_(self):
+        self._display()
+
+
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
@@ -689,9 +762,16 @@ class EditJsonModelRun(EditListOfDictsModelRun, EditJson):
     def __build_widgets(self):
         EditListOfDictsModelRun.form()
         EditListOfDictsModelRun._init_observe()
-
-
 # -
+
+
+
+
+
+
+
+
+
 
 if __name__ =='__main__':
     
@@ -760,26 +840,19 @@ if __name__ =='__main__':
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
     li = read_json(fpth)
     g = EditListOfDictsModelRun(li)
+    
     display(Markdown('### Example4'))
-
     display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
-
     display(Markdown('''EDIT JSON with DatePicker and DerivedText widgetss'''))
-
     display(g)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    # Example5
+    editmfjson = EditMfJson(r'appdata\inputs')
+    # display
+    display(Markdown('### Example5'))
+    display(Markdown('''select mf json file and edit'''))
+    display(editmfjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
