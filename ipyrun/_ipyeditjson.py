@@ -484,9 +484,9 @@ class EditListOfDictsModelRun(EditListOfDicts):
                 if(value == ""):
                     value = "XX"
                 
-                if(isinstance(value, float)):
-                    if(value.is_integer()):
-                        value = str(int(value)).zfill(3)
+                split_val = str(value).split(".")
+                if(split_val[-1] == "0" and split_val[0].isdigit()):
+                    value = str(int(value)).zfill(3)
 
                 if not firstVal:
                     labelVal += "_"

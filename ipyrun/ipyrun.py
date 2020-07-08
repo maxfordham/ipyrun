@@ -17,11 +17,12 @@
 import os
 NBFDIR = os.path.dirname(os.path.realpath('__file__'))
 import pandas as pd
-from IPython.display import display, Image, JSON, Markdown, HTML, clear_output
+from IPython.display import update_display, display, Image, JSON, Markdown, HTML, clear_output
 import subprocess
 from shutil import copyfile
 import getpass
 import importlib.util
+import copy 
 
 # widget stuff
 import ipywidgets as widgets
@@ -50,6 +51,7 @@ except:
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
+
 
 
 # +
@@ -171,7 +173,7 @@ class RunApp(RunForm, RunConfig):
                       tooltip='shows the raw python code in the preview window below',
                       button_style='info')
         self._init_controls()
-        
+
     def _init_controls(self):
         self.help.on_click(self._help)
         self.reset.on_click(self._reset)
@@ -299,9 +301,9 @@ class RunApp(RunForm, RunConfig):
              
     def display(self):
         display(self.layout, self.out)
-        
+            
     def _ipython_display_(self):
-        self.display()    
+        self.display()
 
 class RunAppModelRun(RunApp):
     """
@@ -312,13 +314,6 @@ class RunAppModelRun(RunApp):
         with self.out:
             clear_output()
             display(EditJsonModelRun(self.config))
-    
-    '''def _fpth_inputs(self):
-        src = self.fpth_template_input
-        dstn = os.path.join(self.fdir_inputs, '{0}{1}'.format(self.process_name,os.path.splitext(src)[1]))
-        if not os.path.isfile(dstn):
-            copyfile(src, dstn)
-        return dstn'''
     
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that 
@@ -343,6 +338,7 @@ class RunApps():
         self.li = []
         self._form()
         self._init_controls()
+         
         for process in self.processes:
             self.li.append(process['app'](process['config']))   
         self.out = widgets.Output()
@@ -350,16 +346,19 @@ class RunApps():
     def _update_configs(self):
         newconfigs = []
         for config in self.inputconfigs:
-            if list(config.keys()) == ['app','config']:
-                # app to use already explicitly specified
-                newconfigs.append(config)     
-            else:
-                # assume the config got passed without the associated app
-                newconfigs.append({'app': RunApp, 'config': config})     
+            newconfigs.append(self._create_config(config))
         return newconfigs
+
+    def _create_config(self, config):
+        if list(config.keys()) == ['app','config']:
+            # app to use already explicitly specified
+            return config  
+        else:
+            # assume the config got passed without the associated app
+            return{'app': RunApp, 'config': config}
+
         
     def _form(self):
-        
         self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
                                 tooltip='removes temporary output view',
                                 style={'font_weight':'bold'},
@@ -386,7 +385,6 @@ class RunApps():
         self.add_run.on_click(self._add_run)
         
     def _help(self, sender):
-        
         with self.out:
             clear_output()
             fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunBatch.png')
@@ -398,55 +396,81 @@ class RunApps():
         for l in self.li:
             l._reset(sender)
 
+    def _get_process_names(self):
+        return [process['config']['process_name'] for process in self.processes]
+    
+    def _get_apps_layout(self):
+        return [widgets.VBox([l.layout, l.out]) for l in self.li]
+        
     def _add_run(self, sender):
-        self.process_names = [process['config']['process_name'] for process in self.processes]
+        
+        # Create Dropdown & Run Button
         self.add_run_dd = widgets.Dropdown(
-                options=[process['config']['process_name'] for process in self.processes],
+                options=self._get_process_names(),
                 description='Run to Copy:',
                 disabled=False)
         self.add_run_btn = widgets.Button(description='add chosen run',
                     tooltip='add chosen run',
                     button_style='primary',
                     style={'font_weight':'bold'})
-        self.add_run_btn.on_click(self._run_add_run)
-                    
+        
+        self.add_run_btn.on_click(self._run_add_run) # OnClick method
         with self.out:
             clear_output()
-            
-            '''import pprint
-            pp = pprint.PrettyPrinter(depth=4)
-            for process in self.processes:
-                pp.pprint(process['config'])'''
-           
             display(self.add_run_dd)
             display(self.add_run_btn)
     
     def _run_add_run(self,sender):
+        
+        # Pull selected process from dropdown
         dd_val = self.add_run_dd.value
-        dd_process_name_base = "_".join(str(self.add_run_dd.value).split('_')[:-1])
-        num_exists = True
+        dd_split = str(self.add_run_dd.value).split('_')
+        
+        # Get basename of selected process
+        if(dd_split[-1].isdigit()):
+            dd_process_name_base = "_".join(dd_split[:-1])
+        else:
+            dd_process_name_base = dd_val
+            
+        # Create new process name, by
+        # appending the next number to the basename
         current_num = 0
+        num_exists = True
         new_process_name = ""
         while (num_exists):
             new_process_name = '{0}_{1}'.format(dd_process_name_base,current_num)
-            if new_process_name in self.process_names:
+            if new_process_name in self._get_process_names():
                 current_num = current_num + 1   
             else:
                 num_exists = False
-        print(new_process_name)
+
+        # Copy the selected process to the new process
         new_process = None
         for process in self.processes:
             if(process['config']['process_name'] == dd_val):
-                new_process = process        
+                new_process = copy.deepcopy(process)
+        
+        # Copy old inputs file, to create new inputs file
         src = new_process['config']['fpth_inputs']
-        dst = os.path.join(new_process['config']['fdir_inputs'], '{0}{1}'.format(new_process_name,os.path.splitext(src)[1]))
+        fdir_inputs = new_process['config']['fdir_inputs']
+        dst = os.path.join(fdir_inputs , '{0}{1}'.format(new_process_name,os.path.splitext(src)[1]))
         copyfile(src,dst)
+        
+        # Update config of new process
         new_process['config']['fpth_inputs'] = dst
+        new_process['config']['process_name'] = new_process_name
+        new_process = self._create_config(new_process)
+        
+        # Add new process to data within RunApps 
+        self.inputconfigs.append(new_process)
         self.processes.append(new_process)
-        self.li.append(new_process['app'](new_process['config']))   
-        with self.out:
-            display(Markdown(str(dd_val)))
-            display()
+        self.li.append(new_process['app'](new_process['config']))
+        self.add_run_dd.options=self._get_process_names() # Update Dropdown
+        
+        # Display new process
+        self.apps_layout.children = self._get_apps_layout()
+        '''with self.out:
+            display(self.li[-1])'''
 
     def _run_batch(self, sender):
         cnt = 0
@@ -464,11 +488,12 @@ class RunApps():
                     display(Markdown('running: {0}'.format(l.config['process_name'])))
                     l._run_script('sender')
                     l._log() # 'sender'
-
+                    
     def display(self):
         display(self.form)
         display(self.out)
-        [display(l) for l in self.li]; 
+        self.apps_layout = widgets.VBox(self._get_apps_layout())
+        display(self.apps_layout)
         
     def _ipython_display_(self):
         self.display() 
@@ -509,10 +534,12 @@ class RunApps_SS():
         for l in self.li:
             display(l.out)
 
-     
+
 
 # +
 if __name__ =='__main__':
+
+    
     
     # dumb form
     #form = RunForm()
@@ -522,7 +549,7 @@ if __name__ =='__main__':
     # Example1 --------------------------
     # RunApp example, using a default JSON file
     # EDIT JSON FILE with custom config and file management
-     
+
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
@@ -568,7 +595,7 @@ if __name__ =='__main__':
     RunApp and overwriting the _edit_inputs
     take a simple csv file as an input instead of a JSON file...
     the main funtions that can be overwritten to extend the class in this way are:
-    
+
     - _help
     - _show_guide
     - _edit_inputs
@@ -645,41 +672,43 @@ if __name__ =='__main__':
         }  
     r = RunApp(config)
     r
-    
+
    # Example4 --------------------------
     fpth_script = r'..\examples\scripts\create_model_run_file.py'
     di={
         'fpth_script':os.path.realpath(fpth_script),
         'fdir':os.path.join(NBFDIR),
-    }  
-    
-    iters = 3
+    } 
     batch = []
-    di_config = RunApp(config).config
-
-    for n in range(0,iters):
+    fdir_modelruninput = os.path.join(di_config['fdir_inputs'], r'modelruninputs')
+    
+    def add_to_batch(process_name, fdir_modelruninput, di, batch):
         tmp = di.copy()
-        process_name = os.path.splitext(os.path.basename(di['fpth_script']))[0] + '_' + str(n)
-        fdir_modelruninput = os.path.join(di_config['fdir_inputs'], r'modelruninputs')
         fpth_modelruninput = os.path.join(fdir_modelruninput, '{0}{1}'.format(process_name,'.json'))
         tmp['fpth_inputs'] = fpth_modelruninput
         tmp['fdir_inputs'] = fdir_modelruninput
-        print(tmp)
         tmp.update({'process_name':process_name})
         batch.append({'app':RunAppModelRun,'config':tmp})
+        return batch
+    
+    for filename in os.listdir(fdir_modelruninput):
+        if filename.endswith(".json"):
+            batch = add_to_batch(os.path.splitext(filename)[0], fdir_modelruninput, di, batch)
 
+    filename = os.path.basename(fpth_script)
+    process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'0')
+    if not batch:
+        batch = add_to_batch(process_name, fdir_modelruninput, di, batch)
+        
     runapps = RunApps(batch)  
-
     display(Markdown('### Example4'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
-    display(runapps)
+    display(runapps, display_id=True)
+    
+
 
 
 # -
-
-
-
-
 
 
 

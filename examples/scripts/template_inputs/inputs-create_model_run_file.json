@@ -4,7 +4,7 @@
         "max": null,
         "min": null,
         "name": "Model Run Name",
-        "options": [1,2,3,4],
+        "options": [1,2],
         "value": "Value",
         "widget": "DerivedText"
     },
