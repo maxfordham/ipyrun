@@ -418,7 +418,3 @@ users to edit the JSON file'''))
     display(simpleedit)
     display(Markdown('---'))  
     display(Markdown('')) 
-# -
-
-
-

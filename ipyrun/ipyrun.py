@@ -623,11 +623,6 @@ class RunApps_SS():
         for l in self.li:
             display(l.out)
 
-# -
-
-
-
-
 # +
 if __name__ =='__main__':
 
@@ -863,7 +858,6 @@ if __name__ =='__main__':
 
 
 
-# -
 
 
 

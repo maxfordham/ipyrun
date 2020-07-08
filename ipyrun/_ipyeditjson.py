@@ -509,80 +509,6 @@ class EditListOfDictsModelRun(EditListOfDicts):
 
 
 # -
-
-class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
-    """
-    
-    """
-    def __init__(self, fdir):
-        self.out = widgets.Output()
-        super().__init__(fdir)
-        
-    def _save_changes(self, sender):
-        """save changes to working inputs file"""
-        self.fpth_out = self.file_chooser.selected
-        dateTimeObj = datetime.now()
-        self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
-        self.temp_message.value = markdown('{0} saved at: {1}'.format(self.fpth_out, self.save_timestampStr))
-        
-        # add code here to save changes to file
-        self.data_out = self.li            
-        write_json(self.data_out,
-                   sort_keys=True,
-                   indent=4,
-                   fpth=self.fpth_out,
-                   print_fpth=False,
-                   openFile=False)
-        
-        #with self.out:
-        #    clear_output()
-        #    dateTimeObj = datetime.now()
-        #    timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
-        #    display(Markdown('{0} changes to sheet logged.  to: {1}'.format(timestampStr,self.fpth_out)))
-            
-        self.update_sse_display()
-        self.sse_display()
-        
-    def _edit_file(self, sender):
-        """save changes to working inputs file"""
-        if self.edit_file.value:
-            fpth = self.file_chooser.selected
-            self.temp_message.value = markdown('edit inputs below and save to: {0}'.format(fpth))
-            if os.path.isfile(fpth):
-                self.li = read_json(fpth)
-                self.form()
-                self._init_observe()
-                
-                with self.out:
-                    clear_output()
-                    out = [l.layout for l in self.widgets]
-                    self.applayout = widgets.VBox(out)
-                    display(self.applayout)
-                    for l in self.widgets:
-                        display(l.out)
-            else:
-                with self.out:
-                    clear_output()
-                    display(markdown('{0} not a file'.format(fpth)))
-
-        else:
-            with self.out:
-                self.temp_message.value = markdown('')
-                clear_output()
-        # add code here to save changes to file
-
-
-        self._display()
-        
-    def _display(self):
-        self.update_sse_display()
-        self.sse_display()
-        display(self.out)
-                    
-    def _ipython_display_(self):
-        self._display()
-
-
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
@@ -678,8 +604,15 @@ class EditJson(EditListOfDicts, FileConfigController):
 
         
     def _update_from_file(self):
-        for idx, val in enumerate(self.li):
-            self.widgets[idx].widget_only.value = val['value']
+        
+        self.widgets = []
+        for l in self.li:
+            self.widgets.append(EditDict(l))
+            
+        self.applayout.children = []
+        self.applayout.children = [w.layout for w in self.widgets]
+        #for w in self.widgets:
+        #    self.applayout.children.append(w.layout)
             
     def _save_changes(self, sender):
         """save changes to working inputs file"""
@@ -732,6 +665,7 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.layout = box
         for l in self.widgets:
             with self.out:
+                clear_output()
                 display(l.out)
             
     def display(self):
@@ -760,16 +694,80 @@ class EditJsonModelRun(EditListOfDictsModelRun, EditJson):
     def __build_widgets(self):
         EditListOfDictsModelRun.form()
         EditListOfDictsModelRun._init_observe()
+
+
 # -
+class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
+    """
+    
+    """
+    def __init__(self, fdir, fnm=None):
+        self.out = widgets.Output()
+        super().__init__(fdir, fnm=fnm)
+        
+    def _save_changes(self, sender):
+        """save changes to working inputs file"""
+        self.fpth_out = self.file_chooser.selected
+        dateTimeObj = datetime.now()
+        self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
+        self.temp_message.value = markdown('{0} saved at: {1}'.format(self.fpth_out, self.save_timestampStr))
+        
+        # add code here to save changes to file
+        self.data_out = self.li            
+        write_json(self.data_out,
+                   sort_keys=True,
+                   indent=4,
+                   fpth=self.fpth_out,
+                   print_fpth=False,
+                   openFile=False)
+        
+        #with self.out:
+        #    clear_output()
+        #    dateTimeObj = datetime.now()
+        #    timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+        #    display(Markdown('{0} changes to sheet logged.  to: {1}'.format(timestampStr,self.fpth_out)))
+            
+        self.update_sse_display()
+        self.sse_display()
+        
+    def _edit_file(self, sender):
+        """save changes to working inputs file"""
+        if self.edit_file.value:
+            fpth = self.file_chooser.selected
+            self.temp_message.value = markdown('edit inputs below and save to: {0}'.format(fpth))
+            if os.path.isfile(fpth):
+                self.li = read_json(fpth)
+                self.form()
+                self._init_observe()
+                
+                with self.out:
+                    clear_output()
+                    out = [l.layout for l in self.widgets]
+                    self.applayout = widgets.VBox(out)
+                    display(self.applayout)
+                    for l in self.widgets:
+                        display(l.out)
+            else:
+                with self.out:
+                    clear_output()
+                    display(markdown('{0} not a file'.format(fpth)))
+
+        else:
+            with self.out:
+                self.temp_message.value = markdown('')
+                clear_output()
+        # add code here to save changes to file
 
 
-
-
-
-
-
-
-
+        self._display()
+        
+    def _display(self):
+        self.update_sse_display()
+        self.sse_display()
+        display(self.out)
+                    
+    def _ipython_display_(self):
+        self._display()
 
 if __name__ =='__main__':
     
@@ -823,7 +821,7 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
         'fdir':'.',
         }
-    editnestedjson = EditJsonModelRun(nestedconfig)
+    editnestedjson = EditJson(nestedconfig)
     # display
     display(Markdown('### Example3'))
     display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
@@ -846,10 +844,26 @@ if __name__ =='__main__':
     display(Markdown('---'))  
     display(Markdown('')) 
     
+    
+    # Example5
+    # EDIT NESTED JSON FILE with custom config and file management
+    nestedconfig={
+        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
+        'fdir':'.',
+        }
+    editnestedjson = EditJsonModelRun(nestedconfig)
+    # display
+    display(Markdown('### Example5'))
+    display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
+    display(editnestedjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+    
+    
     # Example5
     editmfjson = EditMfJson(r'appdata\inputs')
     # display
-    display(Markdown('### Example5'))
+    display(Markdown('### Example6'))
     display(Markdown('''select mf json file and edit'''))
     display(editmfjson)
     display(Markdown('---'))  

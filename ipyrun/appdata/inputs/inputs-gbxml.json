@@ -1,36 +1,57 @@
 [
     {
         "label": "input gbxml filepath",
+        "max": null,
+        "min": null,
         "name": "fpth_in",
+        "options": null,
         "value": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\examples\\gbxml\\105_LiveseyExchange_heatpump-normal-fabric.xml"
     },
     {
         "label": "defines the logic of the space naming. use default value where practical.",
+        "max": null,
+        "min": null,
         "name": "spc_name_index",
+        "options": null,
         "value": [
             {
                 "label": "1st section of space name code",
+                "max": null,
+                "min": null,
                 "name": "0",
+                "options": null,
                 "value": "BlockCode"
             },
             {
                 "label": "2nd section of space name code",
+                "max": null,
+                "min": null,
                 "name": "1",
+                "options": null,
                 "value": "Level"
             },
             {
                 "label": "3rd section of space name code (enter None if 3rd section doesn't exist)",
+                "max": null,
+                "min": null,
                 "name": "2",
+                "options": null,
                 "value": "TM46Category"
             },
             {
                 "label": "4th section of space name code (enter None if 4th section doesn't exist)",
+                "max": null,
+                "min": null,
                 "name": "3",
+                "options": null,
                 "value": "SpaceId"
             },
             {
                 "label": "5th section of space name code (enter None if 5th section doesn't exist)",
+                "max": null,
+                "min": null,
                 "name": "4",
+                "options": null,
                 "value": "SpaceType"
             }
         ]
