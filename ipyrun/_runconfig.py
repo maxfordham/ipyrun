@@ -208,7 +208,12 @@ class RunConfig():
 
     def _fpth_inputs(self):
         src = self.fpth_template_input
-        dstn = os.path.join(self.fdir_inputs, os.path.basename(src))
+        
+        if 'fpth_inputs' in self.user_keys:
+            dstn = self.config['fpth_inputs']
+        else:
+            dstn = os.path.join(self.fdir_inputs, os.path.basename(src))
+
         if not os.path.isfile(dstn):
             copyfile(src, dstn)
         return dstn
@@ -327,8 +332,15 @@ if __name__ =='__main__':
     config = {
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
         'fdir':'.',
+        #'fpth_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test\test.csv',
+        #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     from pprint import pprint
     rc = RunConfig(config)
     pprint(rc.config)
+
+
+# -
+
+
 
