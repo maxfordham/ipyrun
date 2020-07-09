@@ -438,38 +438,7 @@ class EditListOfDicts():
         for l in self.li:
             self.widgets.append(EditDict(l))
         self._layout()
-    
-    def _layout(self):
-        self.applayout = widgets.VBox([l.layout for l in self.widgets])
         
-    def _init_observe(self): 
-        for l in self.widgets:
-            l.widget_only.observe(self._update_change, "value") 
-    
-    def _update_change(self, change):
-        self.li = []
-        for l in self.widgets:
-            self.li.append(l.di)
-        
-    def _lidi_display(self):
-        out = [l.layout for l in self.widgets]
-        self.applayout = widgets.VBox(out)
-        display(self.applayout)
-        for l in self.widgets:
-            display(l.out)
-            
-    def _ipython_display_(self):
-        self._lidi_display()  
-
-class EditListOfDictsModelRun(EditListOfDicts):
-    """
-    Modified version of EditJson, for Model Run spreadsheet
-    Functionality for DerivedText has been added
-    """
-    
-    def __init__(self, li):
-        super().__init__(li)
-
     def _update_label(self, index, l):
         labelVal = ""
         firstVal = True
@@ -505,7 +474,21 @@ class EditListOfDictsModelRun(EditListOfDicts):
     
     def _layout(self):
         self._update_change(change=None)
-        super()._layout()
+        self.applayout = widgets.VBox([l.layout for l in self.widgets])
+        
+    def _init_observe(self): 
+        for l in self.widgets:
+            l.widget_only.observe(self._update_change, "value") 
+        
+    def _lidi_display(self):
+        out = [l.layout for l in self.widgets]
+        self.applayout = widgets.VBox(out)
+        display(self.applayout)
+        for l in self.widgets:
+            display(l.out)
+            
+    def _ipython_display_(self):
+        self._lidi_display()  
 
 
 # -
@@ -568,7 +551,6 @@ class SimpleEditJson(EditListOfDicts):
         self.display()  
 
 
-# +
 class EditJson(EditListOfDicts, FileConfigController):
     """
     inherits EditListOfDicts user input form as well FileConfigController 
@@ -682,21 +664,6 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.display()  
         #self._lidi_display()  
 
-class EditJsonModelRun(EditListOfDictsModelRun, EditJson):
-    """
-    Modified version of EditJson, for Model Run spreadsheet
-    Functionality for DerivedText has been added
-    """
-    
-    def __init__(self, config):
-        EditJson.__init__(self, config)
-        
-    def __build_widgets(self):
-        EditListOfDictsModelRun.form()
-        EditListOfDictsModelRun._init_observe()
-
-
-# -
 class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
     """
     
@@ -835,7 +802,7 @@ if __name__ =='__main__':
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
     li = read_json(fpth)
-    g = EditListOfDictsModelRun(li)
+    g = EditListOfDicts(li)
     
     display(Markdown('### Example4'))
     display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
@@ -851,7 +818,7 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
         'fdir':'.',
         }
-    editnestedjson = EditJsonModelRun(nestedconfig)
+    editnestedjson = EditJson(nestedconfig)
     # display
     display(Markdown('### Example5'))
     display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
