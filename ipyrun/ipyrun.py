@@ -622,7 +622,6 @@ class RunApps_SS():
         display(self.applayout)
         for l in self.li:
             display(l.out)
-
 # +
 if __name__ =='__main__':
 
@@ -839,6 +838,9 @@ if __name__ =='__main__':
         batch.append({'app':RunAppModelRun,'config':tmp})
         return batch
     
+    if not os.path.exists(fdir_modelruninput):
+        os.makedirs(fdir_modelruninput)
+    
     for filename in os.listdir(fdir_modelruninput):
         if filename.endswith(".json"):
             batch = add_to_batch(os.path.splitext(filename)[0], fdir_modelruninput, di, batch)
@@ -856,6 +858,16 @@ if __name__ =='__main__':
 
 
 
+
+
+
+
+
+
+
+
+
+# -
 
 
 

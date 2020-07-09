@@ -198,7 +198,7 @@ class EditDict(EditDictData):
     def _update_change(self, change):
         value = None
         if(self.widget_name == "DatePicker"):
-            value = self.widget_only.value.strftime('%d/%m/%Y')
+            value = self.widget_only.value.strftime('%Y%m%d')
         else:
             value = self.widget_only.value
 
@@ -211,7 +211,7 @@ class EditDict(EditDictData):
         elif self.widget_name == 'ipysheet':
             self._ipysheet()
         elif self.widget_name == "DatePicker":
-            value = datetime.strptime(self.kwargs['value'], '%d/%m/%Y')
+            value = datetime.strptime(self.kwargs['value'], '%Y%m%d')
             self.widget_only = self.widget_lkup[self.widget_name](value=value)
         elif self.widget_name == "DerivedText":   
             self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
@@ -868,3 +868,5 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+

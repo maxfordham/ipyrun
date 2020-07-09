@@ -6,7 +6,7 @@
         "min": null,
         "name": "Date Picker",
         "options": null,
-        "value": "29/06/2020",
+        "value": "20200629",
         "widget": "DatePicker"
     },
     {
@@ -14,7 +14,7 @@
         "max": null,
         "min": null,
         "name": "Derived Text",
-        "options": [1],
+        "options": [1,2,-1],
         "value": "N/A",
         "widget": "DerivedText"
     },
