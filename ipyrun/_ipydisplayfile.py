@@ -318,7 +318,6 @@ class DisplayFiles():
         self.display() 
 
 
-# +
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
     # the below can be used to make documentation that looks at all functions or classes 
@@ -355,9 +354,6 @@ if __name__ =='__main__':
     display(d1)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
-# -
 
 
 

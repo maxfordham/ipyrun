@@ -25,7 +25,7 @@ from datetime import datetime
 import time
 
 from mf_modules.pydtype_operations import read_json, read_yaml
-from ipyfilechooser import FileChooser
+#from ipyfilechooser import FileChooser
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
@@ -418,3 +418,7 @@ users to edit the JSON file'''))
     display(simpleedit)
     display(Markdown('---'))  
     display(Markdown('')) 
+# -
+
+
+

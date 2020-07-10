@@ -69,7 +69,7 @@
                 "min": null,
                 "name": "Results File Path",
                 "options": null,
-                "value": ""
+                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\TM59-raw__001_Holmsdale_blkA_TM59Overheating.xlsx"
             },
             {
                 "label": "File path of the IES model (.mit)",
@@ -85,7 +85,7 @@
                 "min": null,
                 "name": "Date",
                 "options": null,
-                "value": "01/01/2020",
+                "value": "2020-01-01",
                 "widget": "DatePicker"
             },
             {

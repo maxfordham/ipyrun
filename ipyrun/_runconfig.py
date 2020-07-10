@@ -300,6 +300,7 @@ class RunConfig():
             di = {}
             for k, v in self.script_outputs_template.items():
                 di[k] = v
+                print(v)
                 for _k,_v in v.items():
                     di[k][_k] = self.config['script_outputs'][k][_k]
             return di
@@ -341,6 +342,8 @@ if __name__ =='__main__':
 
 
 # -
+
+
 
 
 

@@ -1,22 +1,21 @@
 {
     "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating",
     "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\config",
-    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs",
+    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs",
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\archive",
     "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\log",
     "fdir_outputs": [
-        "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating"
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\reports"
     ],
     "fnm_config": "config-create_model_run_file.json",
     "fnm_log": "log-create_model_run_file.csv",
     "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\config\\config-create_model_run_file.json",
-    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\inputs-create_model_run_file.json",
+    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs\\inputs-create_model_run_file.json",
     "fpth_inputs_options": {
         "project": {
-            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs",
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs",
             "fpths": [
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\inputs-create_model_run_file.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\archive\\20200630_1357-RW-inputs-create_model_run_file.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\template_inputs\\inputs-create_model_run_file.json"
             ]
         },
         "template": {
@@ -29,16 +28,16 @@
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\log\\log-create_model_run_file.csv",
     "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\create_model_run_file.py",
     "fpths_outputs": {
-        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\create_model_run.xlsx"
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\reports\\JupyterReportDemo.pdf"
     },
     "jobno": "C:\\e",
     "pretty_name": "create_model_run_file",
     "process_name": "create_model_run_file",
     "script_outputs": {
         "0": {
-            "description": "Creates model run file.",
-            "fdir": ".",
-            "fnm": "create_model_run.xlsx"
+            "description": "a pdf report from word",
+            "fdir": "..\\reports",
+            "fnm": "JupyterReportDemo.pdf"
         }
     }
 }

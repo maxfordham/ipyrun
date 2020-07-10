@@ -198,7 +198,7 @@ class EditDict(EditDictData):
     def _update_change(self, change):
         value = None
         if(self.widget_name == "DatePicker"):
-            value = self.widget_only.value.strftime('%Y%m%d')
+            value = self.widget_only.value.strftime('%Y-%m-%d')
         else:
             value = self.widget_only.value
 
@@ -211,7 +211,7 @@ class EditDict(EditDictData):
         elif self.widget_name == 'ipysheet':
             self._ipysheet()
         elif self.widget_name == "DatePicker":
-            value = datetime.strptime(self.kwargs['value'], '%Y%m%d')
+            value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
             self.widget_only = self.widget_lkup[self.widget_name](value=value)
         elif self.widget_name == "DerivedText":   
             self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
@@ -380,7 +380,8 @@ class EditDict(EditDictData):
         self.display()    
 
 
-# +
+# -
+
 class EditListOfDicts():
     """
     builds user input form from a list of dicts by creating a 
@@ -489,9 +490,6 @@ class EditListOfDicts():
             
     def _ipython_display_(self):
         self._lidi_display()  
-
-
-# -
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
@@ -549,8 +547,6 @@ class SimpleEditJson(EditListOfDicts):
             
     def _ipython_display_(self):
         self.display()  
-
-
 class EditJson(EditListOfDicts, FileConfigController):
     """
     inherits EditListOfDicts user input form as well FileConfigController 
@@ -663,7 +659,6 @@ class EditJson(EditListOfDicts, FileConfigController):
     def _ipython_display_(self):
         self.display()  
         #self._lidi_display()  
-
 class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
     """
     
@@ -735,7 +730,6 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
                     
     def _ipython_display_(self):
         self._display()
-
 if __name__ =='__main__':
     
     # FORM ONLY EXAMPLE
@@ -800,7 +794,7 @@ if __name__ =='__main__':
     # Example4
     # EDIT JSON with DatePicker and DerivedText widgets
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(NBFDIR,r'appdata\inputs\test-derived-val.json')
+    fpth = r'C:\engDev\git_mf\ipyrun\examples\scripts\template_inputs\inputs-create_model_run_file.json'
     li = read_json(fpth)
     g = EditListOfDicts(li)
     
@@ -835,5 +829,7 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
 
 

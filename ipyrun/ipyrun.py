@@ -547,7 +547,7 @@ class RunAppsMruns():
         self.add_run_dd.options=self._get_process_names() # Update Dropdown
         
         # Display new process
-        self.apps_layout.children = self._get_apps_layout()
+        #self.apps_layout.children = self._get_apps_layout()
         '''with self.out:
             display(self.li[-1])'''
 
@@ -571,8 +571,9 @@ class RunAppsMruns():
     def display(self):
         display(self.form)
         display(self.out)
-        self.apps_layout = widgets.VBox(self._get_apps_layout())
-        display(self.apps_layout)
+        '''self.apps_layout = widgets.VBox(self._get_apps_layout())'''
+        [display(l) for l in self.li]
+        #display(self.apps_layout)
         
     def _ipython_display_(self):
         self.display() 
@@ -631,13 +632,14 @@ if __name__ =='__main__':
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
-        'script_outputs': {'0': {
-            'fdir':r'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
-                }
+        'script_outputs': {
+            '0': {
+                    'fdir':r'..\reports',
+                    'fnm': r'JupyterReportDemo.pdf',
+                    'description': "a pdf report from word"
             }
-        }    
+        }
+    }    
 
     rjson = RunApp(config)  
     display(Markdown('### Example1'))
@@ -801,8 +803,6 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     
-    
-    
     fpth_script = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py')
     config={
         'fpth_script':os.path.realpath(fpth_script),
@@ -846,7 +846,6 @@ if __name__ =='__main__':
     display(Markdown('### Example5'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
     display(runapps, display_id=True)
-
 
 
 
