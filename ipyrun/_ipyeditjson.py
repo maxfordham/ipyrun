@@ -24,6 +24,7 @@ from datetime import datetime
 import ipywidgets as widgets
 import ipysheet
 from ipysheet import from_dataframe, to_dataframe
+from ipyfilechooser import FileChooser
 
 # core mf_modules
 from mf_modules.pydtype_operations import read_json, write_json 
@@ -42,7 +43,8 @@ except:
     from _ipydisplayfile import DisplayFile, DisplayFiles
 
 
-# +
+# -
+
 def _markdown(value='_Markdown_',
               **kwargs):
     """
@@ -53,6 +55,9 @@ def _markdown(value='_Markdown_',
     _kwargs['value'] = markdown(value)  # required field
     _kwargs.update(kwargs)  # user overides
     return widgets.HTML(**_kwargs)
+
+# +
+
 
 class EditDictData():
     """
@@ -100,62 +105,76 @@ class EditDictData():
     def map_keys(self):
         return ['value', 'options', 'min', 'max']
     
+    
+    
     @property
     def map_widgets(self):
         # mapping dict used to guess what widget to apply
-        return {
-            'FloatText': {
-                'value_type': "<class 'float'>",
-                'options_type': "<class 'NoneType'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-            },
-           'FloatSlider': {
-                'value_type': "<class 'float'>",
-                'options_type': "<class 'NoneType'>",
-                'min_type': "<class 'float'>",
-                'max_type': "<class 'float'>"
-           },
-           'Dropdown': {
-                'value_type': 'any',
-                'options_type': "<class 'list'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-           },
-           'SelectMultiple': {
-                'value_type': "<class 'list'>",
-                'options_type': "<class 'list'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-           },
-           'Checkbox': {
-                'value_type': "<class 'bool'>",
-                'options_type': "<class 'NoneType'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-           },
-           'Text': {
-                'value_type': "<class 'str'>",
-                'options_type': "<class 'NoneType'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-           },
-           '_recursive_guess': {
-                'value_type': "<class 'list'>",
-                'options_type': "<class 'NoneType'>",
-                'min_type': "<class 'NoneType'>",
-                'max_type': "<class 'NoneType'>"
-           }
-        }
+        
+        try: 
+            # if its already been defined return the as defined value
+            # this allows for self.map_widgets_di to be extended more easily
+            return self.map_widgets_di
+        except:
+            self.map_widgets_di = {
+                'FloatText': {
+                    'value_type': "<class 'float'>",
+                    'options_type': "<class 'NoneType'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+                },
+               'FloatSlider': {
+                    'value_type': "<class 'float'>",
+                    'options_type': "<class 'NoneType'>",
+                    'min_type': "<class 'float'>",
+                    'max_type': "<class 'float'>"
+               },
+               'Dropdown': {
+                    'value_type': 'any',
+                    'options_type': "<class 'list'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+               },
+               'SelectMultiple': {
+                    'value_type': "<class 'list'>",
+                    'options_type': "<class 'list'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+               },
+               'Checkbox': {
+                    'value_type': "<class 'bool'>",
+                    'options_type': "<class 'NoneType'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+               },
+               'Text': {
+                    'value_type': "<class 'str'>",
+                    'options_type': "<class 'NoneType'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+               },
+               '_recursive_guess': {
+                    'value_type': "<class 'list'>",
+                    'options_type': "<class 'NoneType'>",
+                    'min_type': "<class 'NoneType'>",
+                    'max_type': "<class 'NoneType'>"
+               }
+            }
+            return self.map_widgets_di
     
     @property
     def widget_lkup(self):
-        return {
+        try: 
+            # if its already been defined return the as defined value
+            # this allows for self.widget_lkup_di to be extended more easily
+            return self.widget_lkup_di
+        except:
+            self.widget_lkup_di = {
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
-                'DerivedText':widgets.HTML,
-                'DatePicker':widgets.DatePicker,
+                'DerivedText':self._derived_text,
+                'DatePicker':self._date_picker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
                 'Text':widgets.Text,
@@ -163,6 +182,8 @@ class EditDictData():
                 '_recursive_guess':self._recursive_guess,
                 'ipysheet':self._ipysheet
             }
+            return self.widget_lkup_di
+
 
     
 class EditDict(EditDictData):
@@ -183,41 +204,35 @@ class EditDict(EditDictData):
     def form(self):
         self.di = self._update_di()
         if 'widget' not in self.di.keys():
+            # if widget type isn't defined then the code will make a best guess
             self.di_types = self._get_var_types()
             self.widget_name, self.report = self.map_widget()           
         else:
+            # otherwise it will revert to the user defined value
             self.widget_name = self.di['widget']
         self.kwargs = self._kwargfilt()
         self.layout = self._build_widget()
+        
+        # UPDATE THIS - LIST OF WIDGETS NOT TO WATCH
         if self.widget_name != 'ipysheet' and self.widget_name != '_recursive_guess':
             self._init_controls()
-          
-    def _init_controls(self):   
-        self.widget_only.observe(self._update_change, 'value') 
-
-    def _update_change(self, change):
-        value = None
-        if(self.widget_name == "DatePicker"):
-            value = self.widget_only.value.strftime('%Y-%m-%d')
-        else:
-            value = self.widget_only.value
-
-        self.di['value'] = value
-
+            
+    def _kwargfilt(self):
+        """
+        widget, name, label, fpth_help are NOT passed as kwargs when building the widget. 
+        all others are. 
+        """
+        return {k:v for (k,v) in self.di.items() if k != 'widget' and k != 'name' and k != 'label' and k != 'fpth_help' and v is not None}
+    
     def _build_widget(self):
         
-        if self.widget_name == '_recursive_guess':
-            self._recursive_guess()
-        elif self.widget_name == 'ipysheet':
-            self._ipysheet()
-        elif self.widget_name == "DatePicker":
-            value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
-            self.widget_only = self.widget_lkup[self.widget_name](value=value)
-        elif self.widget_name == "DerivedText":   
-            self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
-            self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
+        if str(type(self.widget_lkup[self.widget_name]))=="<class 'method'>":
+            # then it is a developer defined custom widget that requires a class method to define
+            self.widget_lkup[self.widget_name]()
         else:
+            # it is a vanilla widget 
             self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
+
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
         self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
         if 'fpth_help' in self.di.keys():
@@ -232,6 +247,18 @@ class EditDict(EditDictData):
             layout = widgets.HBox([self.widget_row ],layout=self.MF_FORM_ITEM_LAYOUT2)
         return layout
     
+    def _init_controls(self):   
+        self.widget_only.observe(self._update_change, 'value') 
+
+    def _update_change(self, change):
+        value = None
+        if(self.widget_name == "DatePicker"):
+            value = self.widget_only.value.strftime('%Y-%m-%d')
+        else:
+            value = self.widget_only.value
+        self.di['value'] = value
+
+
     def _guide(self, sender):
         with self.out:
             if self.guide.value:  
@@ -245,9 +272,6 @@ class EditDict(EditDictData):
             else:
                 clear_output()
                 
-    def _kwargfilt(self):
-        return {k:v for (k,v) in self.di.items() if k != 'widget' and k != 'name' and k != 'label' and k != 'fpth_help' and v is not None}
-        
     def _update_di(self):
 
         def add_to_dict(di, keyname='None', valuename=None):
@@ -371,7 +395,18 @@ class EditDict(EditDictData):
             display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
         self.display()
     # --------------------------------------------------------------------------
-
+    
+    # --------------------------------------------------------------------------
+    # other custom widgets -----------------------------------------------------
+    def _derived_text(self):
+        self.widget_only = widgets.HTML(**self.kwargs)
+        self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
+    
+    def _date_picker(self):
+        value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
+        self.widget_only = widgets.DatePicker(value=value)
+    # --------------------------------------------------------------------------
+    
     def display(self):
         display(self.layout)
         display(self.out)
@@ -380,8 +415,7 @@ class EditDict(EditDictData):
         self.display()    
 
 
-# -
-
+# +
 class EditListOfDicts():
     """
     builds user input form from a list of dicts by creating a 
@@ -441,6 +475,9 @@ class EditListOfDicts():
         self._layout()
         
     def _update_label(self, index, l):
+        """
+        this is used for the DerivedText widget
+        """
         labelVal = ""
         firstVal = True
         for opt in l.di['options']:
@@ -490,12 +527,12 @@ class EditListOfDicts():
             
     def _ipython_display_(self):
         self._lidi_display()  
+        
 class SimpleEditJson(EditListOfDicts):
     """
     inherits EditListOfDicts user input form and manages the reading and 
     writing the data from a JSON file. 
     """
-    #def __init__(self, fpth, fdir='.', local_fol='_mfengdev'):
     def __init__(self, fpth_in, fpth_out=None):
         self.out = widgets.Output()
         self.fpth_in = fpth_in
@@ -503,19 +540,11 @@ class SimpleEditJson(EditListOfDicts):
             self.fpth_out = fpth_in
         else:
             self.fpth_out = fpth_out
-        #self.fdir = fdir
-        #self.local_fol = local_fol
-        #self.fpth_out = self._fpth_out()
         self.li = read_json(self.fpth_in)
         self.save_changes = widgets.Button(description='save',button_style='success')
         self.form()
         self._init_observe()
         self._init_controls()
-        
-    #def _fpth_out(self):
-    #    fol = os.path.join(self.fdir, self.local_fol)
-    #    make_dir(fol)
-    #    return os.path.join(fol,os.path.basename(self.fpth_in))
     
     def _init_controls(self):  
         self.save_changes.on_click(self._save_changes)
@@ -547,6 +576,7 @@ class SimpleEditJson(EditListOfDicts):
             
     def _ipython_display_(self):
         self.display()  
+        
 class EditJson(EditListOfDicts, FileConfigController):
     """
     inherits EditListOfDicts user input form as well FileConfigController 
@@ -730,6 +760,8 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
                     
     def _ipython_display_(self):
         self._display()
+
+# -
 if __name__ =='__main__':
     
     # FORM ONLY EXAMPLE
@@ -829,7 +861,5 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
 
 
