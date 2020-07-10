@@ -547,7 +547,7 @@ class RunAppsMruns():
         self.add_run_dd.options=self._get_process_names() # Update Dropdown
         
         # Display new process
-        #self.apps_layout.children = self._get_apps_layout()
+        self.apps_layout.children = self._get_apps_layout()
         '''with self.out:
             display(self.li[-1])'''
 
@@ -571,9 +571,8 @@ class RunAppsMruns():
     def display(self):
         display(self.form)
         display(self.out)
-        '''self.apps_layout = widgets.VBox(self._get_apps_layout())'''
-        [display(l) for l in self.li]
-        #display(self.apps_layout)
+        self.apps_layout = widgets.VBox(self._get_apps_layout())
+        display(self.apps_layout)
         
     def _ipython_display_(self):
         self.display() 

@@ -191,7 +191,7 @@ class TM59Plotter:
         table.update_layout(
             title_text=titleText,
             title_font_size=17)
-        table.write_image("test.jpeg")
+        table.write_image(self.output_fpth)
 
         
     def read_data_make_summary(self):
@@ -278,7 +278,7 @@ def main(inputs, outputs):
 script_outputs = {
     '0': {
         'fdir':'.', # relative to the location of the App / Notebook file
-        'fnm': r'create_model_run.plotly',
+        'fnm': r'./create_model_run.plotly',
         'description': "Creates model run file."
     }
 }
