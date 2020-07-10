@@ -191,7 +191,7 @@ class TM59Plotter:
         table.update_layout(
             title_text=titleText,
             title_font_size=17)
-        table.write_image(self.output_fpth)
+        table.write_json(self.output_fpth)
 
         
     def read_data_make_summary(self):
