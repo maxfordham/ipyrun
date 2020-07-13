@@ -27,9 +27,12 @@ import plotly.figure_factory as ff
 from mf_modules.jupyter_formatting import highlight_cell
 from mf_modules.excel_in import ExcelIn
 import os
+import sys
 import pandas as pd
 import numpy as np
 from shutil import copyfile
+from mf_modules.pydtype_operations import read_json
+from mf_modules.file_operations import make_dir
 
 def list_names_split_string (list_names, separator, maxsplit):
     '''
@@ -144,7 +147,7 @@ class TM59Plotter:
         else:
             return np.nansum(x)
     
-    def show_table(self,air_speed):
+    def make_tables(self,air_speed):
         values_pviot = 'TM59_values'
         index_pivot = self.tag_names
         columns_pivot = ['TM59_value_names']
@@ -192,6 +195,7 @@ class TM59Plotter:
             title_text=titleText,
             title_font_size=17)
         table.write_json(self.output_fpth)
+        table.write_image(os.path.splitext(self.output_fpth)[0] + '.jpeg')
 
         
     def read_data_make_summary(self):
@@ -270,56 +274,58 @@ class TM59Plotter:
         return dfs
 
 def main(inputs, outputs):
-    plotter = TM59Plotter(input_fpth=inputs["Results File Path"], output_fpth=outputs['0'])
+    plotter = TM59Plotter(input_fpth=inputs["Model File Path"], output_fpth=outputs['0'])
     plotter.read_data_make_summary()
-    plotter.show_table(0.15)
+    plotter.make_tables(inputs["Air Speed"])
     return
 
 script_outputs = {
     '0': {
         'fdir':'.', # relative to the location of the App / Notebook file
-        'fnm': r'./create_model_run.plotly',
+        'fnm': r'./modelrunoutputs/create_model_run.plotly',
         'description': "Creates model run file."
     }
 }
 
 if __name__ == '__main__':
 
-    print('test')
-    import sys
-    import os
     fpth_config = sys.argv[1]
     fpth_inputs = sys.argv[2]
-    print('fpth_script]: {0}'.format(sys.argv[0]))
+    print('fpth_script: {0}'.format(sys.argv[0]))
     print('fpth_config: {0}'.format(fpth_config))
     print('fpth_inputs: {0}'.format(fpth_inputs))
-    from mf_modules.pydtype_operations import read_json
-    from mf_modules.file_operations import make_dir
+    print('---')
+    
 
     # get config and input data
     # config
-    print(fpth_config)
+
     config = read_json(fpth_config)
+    print(config['process_name'])
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
-    [make_dir(fdir) for fdir in config['fdir_outputs']]
+
+    '''
+    print(config['fpths_outputs'])
+    with open("test.txt", "w") as text_file:
+        print("{0}".format(config['fpths_outputs']), file=text_file)
+    '''
+
     inputs = read_json(fpth_inputs)
 
     # this is the only bit that will change between scripts
     calc_inputs = {}
-    def f(values, inputs):
+
+    def get_inputs(values, inputs):
         for l in values:
             if type(l['value']) is list:
-                print(l['value'])
-                inputs = f(l['value'], inputs)
+                inputs = get_inputs(l['value'], inputs)
             else:
                 inputs[l['name']] = l['value']
         return inputs
 
-    calc_inputs = f(inputs, calc_inputs)
+    calc_inputs = get_inputs(inputs, calc_inputs)
 
-    with open("calc_inputs.txt", "w") as text_file:
-        print("{}".format(list(map(list, [[k, v] for k, v in calc_inputs.items()]))), file=text_file)
     main(calc_inputs,outputs)
     print('done')
 

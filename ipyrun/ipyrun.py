@@ -517,7 +517,7 @@ class RunAppsMruns():
         num_exists = True
         new_process_name = ""
         while (num_exists):
-            new_process_name = '{0}_{1}'.format(dd_process_name_base,current_num)
+            new_process_name = '{0}_{1}'.format(dd_process_name_base,str(current_num).zfill(3))
             if new_process_name in self._get_process_names():
                 current_num = current_num + 1   
             else:
@@ -538,6 +538,7 @@ class RunAppsMruns():
         # Update config of new process
         new_process['config']['fpth_inputs'] = dst
         new_process['config']['process_name'] = new_process_name
+        new_process['config']['script_outputs']['0']['fnm'] = '{0}{1}'.format(new_process_name,'.plotly')
         new_process = self._create_config(new_process)
         
         # Add new process to data within RunApps 
@@ -815,6 +816,13 @@ if __name__ =='__main__':
     di={
         'fpth_script':os.path.realpath(fpth_script),
         'fdir':os.path.join(NBFDIR),
+        "script_outputs": {
+            "0": {
+                "description": "Creates model run file test",
+                "fdir": '.',
+                "fnm": ''
+            }
+        }
     } 
     di_config = RunConfig(di).config
     batch = []
@@ -825,6 +833,7 @@ if __name__ =='__main__':
         fpth_modelruninput = os.path.join(fdir_modelruninput, '{0}{1}'.format(process_name,'.json'))
         tmp['fpth_inputs'] = fpth_modelruninput
         tmp['fdir_inputs'] = fdir_modelruninput
+        tmp['script_outputs']['0']['fnm'] = '{0}{1}'.format(process_name,'.plotly')
         tmp.update({'process_name':process_name})
         batch.append({'app':RunApp,'config':tmp})
         return batch
@@ -837,7 +846,7 @@ if __name__ =='__main__':
             batch = add_to_batch(os.path.splitext(filename)[0], fdir_modelruninput, di, batch)
 
     filename = os.path.basename(fpth_script)
-    process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'0')
+    process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'000')
     if not batch:
         batch = add_to_batch(process_name, fdir_modelruninput, di, batch)
         
@@ -845,6 +854,8 @@ if __name__ =='__main__':
     display(Markdown('### Example5'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
     display(runapps, display_id=True)
+
+
 
 
 

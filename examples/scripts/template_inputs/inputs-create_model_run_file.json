@@ -64,20 +64,12 @@
         "name": "Refs & Linked Files",
         "value": [
             {
-                "label": "File path of the Results Spreadsheet (.xlsx)",
-                "max": null,
-                "min": null,
-                "name": "Results File Path",
-                "options": null,
-                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\TM59-raw__001_Holmsdale_blkA_TM59Overheating.xlsx"
-            },
-            {
                 "label": "File path of the IES model (.mit)",
                 "max": null,
                 "min": null,
                 "name": "Model File Path",
                 "options": null,
-                "value": ""
+                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\TM59-raw__001_Holmsdale_blkA_TM59Overheating.xlsx"
             },
             {
                 "label": "Date of Model Creation",
@@ -356,6 +348,12 @@
                 "options": null,
                 "value": false,
                 "widget": "Checkbox"
+            },
+            {
+                "label": "Summer (Elevated) Speed, Units: m/s",
+                "name": "Air Speed",
+                "options": [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+                "value": 0.1
             }
         ]
     }
