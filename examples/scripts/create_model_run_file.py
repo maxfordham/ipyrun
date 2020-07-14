@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore')# warnings.filterwarnings(action='once')
 from ipywidgets import widgets
 from IPython.display import display, HTML, clear_output
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
+from plotly.subplots import make_subplots
 from mf_modules.jupyter_formatting import highlight_cell
 from mf_modules.excel_in import ExcelIn
 import os
@@ -33,7 +33,8 @@ import numpy as np
 from shutil import copyfile
 from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
-
+import datetime as dt
+import re
 def list_names_split_string (list_names, separator, maxsplit):
     '''
     ## given a list of names, returns list of split names ##
@@ -126,10 +127,11 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
     return dict_dfs
 
 class TM59Plotter:
-    def __init__(self, input_fpth, output_fpth):
+    def __init__(self, input_fpth, data_fpth, output_fpth):
         self.tag_names = ['block_number','level_number', 'flat_code', 'room_code', 'space_name']
         self.input_fpth = input_fpth
         self.output_fpth = output_fpth
+        self.data_fpth = data_fpth
         self.dfs={}
     
     def agg(self,x):
@@ -147,11 +149,7 @@ class TM59Plotter:
         else:
             return np.nansum(x)
     
-    def make_tables(self,air_speed):
-        values_pviot = 'TM59_values'
-        index_pivot = self.tag_names
-        columns_pivot = ['TM59_value_names']
-
+    def make_analysis_figs(self,air_speed):
         
         colours = {'pass':'#b6f0b1',
                    'PASS':'#a1d99c',
@@ -197,7 +195,69 @@ class TM59Plotter:
         table.write_json(self.output_fpth)
         table.write_image(os.path.splitext(self.output_fpth)[0] + '.jpeg')
 
-        
+    def make_data_figs(self):
+        year = 2010
+
+        colors = ["Coral",
+                "DeepSkyBlue",
+                "Gold",
+                "ForestGreen",
+                "Silver",
+                "DarkBlue",
+                "Orchid",
+                "Tomato",
+                "HotPink",
+                "LightSlateGray",
+                "Peru",
+                "DarkOrchid",
+                "DarkOrange"]
+
+        dfs = pd.read_excel(self.data_fpth,None)
+
+
+        def toDate(num):
+            date = dt.datetime.fromordinal((int) (num/24)+1)
+            return date.replace(hour=num%24, year=2010)
+        color = 0        
+        for sheet in dfs:
+            df = dfs[sheet]
+            sheet_fname = re.sub('[^A-Za-z0-9_]+', '', sheet).lower()
+            plotly_fig = make_subplots(rows=len(list(df)[1:]), cols=1, subplot_titles=tuple(list(df)[1:]))
+            fig_layout = {
+                "title":"Maximum {0}".format(sheet),
+                "xaxis_title":"Date",
+                "yaxis_title":"Value",
+                "paper_bgcolor":"white",
+                "template":'plotly_white',
+                "showlegend":False,
+                "xaxis":dict(tickformat="%d %b")
+            }
+            plotly_fig.update_layout(fig_layout)
+            plotly_fig.update_layout(height=400*len(list(df)[1:]))
+            for r_index, roomName in enumerate(list(df)[1:]):
+                if roomName != "date" and roomName != "index":
+
+                    df_maxday = df
+                    df_maxday['date'] = [toDate(x) for x in df_maxday['index']] 
+
+                    max_day = df_maxday.iloc[df_maxday[roomName].idxmax()].loc['date']
+
+                    df_maxday = df_maxday[df_maxday.apply(lambda x: abs((x['date'] - max_day).days) < 4,axis=1)]
+
+                    data = go.Scatter(x=df_maxday['date'], y=df_maxday[roomName], 
+                                    line=dict(color = colors[color % len(colors)]))
+                    color += 1
+                    plotly_fig.add_trace(data, row=1, col=1)
+
+                    img_fig = go.Figure(data=data)
+                    img_fig.update_layout(fig_layout)
+                    img_fig.update_layout(title="Maximum {0} ({1})".format(sheet, roomName))
+                    room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName)
+                    img_fig.write_image(os.path.join(self.output_fpth, "{0}_{1}.jpeg".format(sheet_fname, room_fname)))
+            
+            plotly_fig.write_json(os.path.join(self.output_fpth, sheet_fname + '.plotly'))
+            
+
     def read_data_make_summary(self):
 
         IES_TM59_output_fpth=self.input_fpth
@@ -238,7 +298,6 @@ class TM59Plotter:
                                       index = list_of_tag_names,\
                                       columns=['TM59_value_names','air_speed'],\
                                       aggfunc=np.sum).T
-
             ## 8 ## split data by unique values of given key - air speed
             df = df_tm59_ies_output_compiled
             list_keyvalues = ['air_speed']
@@ -274,15 +333,29 @@ class TM59Plotter:
         return dfs
 
 def main(inputs, outputs):
-    plotter = TM59Plotter(input_fpth=inputs["Model File Path"], output_fpth=outputs['0'])
+    input_dir = os.path.dirname(inputs["Model File Path"])
+    input_fpth = ""
+    data_fpth = ""
+    for file in os.listdir(input_dir):
+        if file.endswith(".xlsx"):
+            tag = file.split("__")[0]
+            path = str(os.path.join(input_dir, file))
+            if tag == "data":
+                data_fpth = path
+            elif tag == "TM59-raw":
+                input_fpth = path
+            
+
+    plotter = TM59Plotter(input_fpth=input_fpth, data_fpth=data_fpth, output_fpth=outputs['0'])
     plotter.read_data_make_summary()
-    plotter.make_tables(inputs["Air Speed"])
+    #plotter.make_analysis_figs(inputs["Air Speed"])
+    plotter.make_data_figs()
     return
 
 script_outputs = {
     '0': {
         'fdir':'.', # relative to the location of the App / Notebook file
-        'fnm': r'./modelrunoutputs/create_model_run.plotly',
+        'fnm': r'./modelrunoutputs/',
         'description': "Creates model run file."
     }
 }
@@ -305,12 +378,9 @@ if __name__ == '__main__':
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
 
-    '''
-    print(config['fpths_outputs'])
-    with open("test.txt", "w") as text_file:
-        print("{0}".format(config['fpths_outputs']), file=text_file)
-    '''
-
+    for output in list(outputs.values()):
+        if not os.path.exists(output):
+            os.mkdir(output)
     inputs = read_json(fpth_inputs)
 
     # this is the only bit that will change between scripts

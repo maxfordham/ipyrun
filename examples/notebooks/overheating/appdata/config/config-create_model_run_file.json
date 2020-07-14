@@ -5,7 +5,7 @@
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\inputs\\archive",
     "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\log",
     "fdir_outputs": [
-        "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\reports"
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating"
     ],
     "fnm_config": "config-create_model_run_file.json",
     "fnm_log": "log-create_model_run_file.csv",
@@ -28,16 +28,16 @@
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\appdata\\log\\log-create_model_run_file.csv",
     "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\scripts\\create_model_run_file.py",
     "fpths_outputs": {
-        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\reports\\JupyterReportDemo.pdf"
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\modelrunoutputs"
     },
     "jobno": "C:\\e",
     "pretty_name": "create_model_run_file",
     "process_name": "create_model_run_file",
     "script_outputs": {
         "0": {
-            "description": "a pdf report from word",
-            "fdir": "..\\reports",
-            "fnm": "JupyterReportDemo.pdf"
+            "description": "Creates model run file.",
+            "fdir": ".",
+            "fnm": "./modelrunoutputs/"
         }
     }
 }
