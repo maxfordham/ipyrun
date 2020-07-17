@@ -606,19 +606,13 @@ class RunAppsMruns():
                     l._log() # 'sender'
                     
     def _compare_runs(self, sender):
-        cnt = 0
-        ttl = 0
-        for l in self.li:
-            ttl = ttl + 1
-            if l.check.value:
-                cnt = cnt + 1
         
         with self.out:
             clear_output()
             display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl)))
 
             self.compare_run_dd = widgets.Dropdown(
-                    options=self._update_dd_compare(),
+                    options=self._update_compare_dd(),
                     description='Pick graph:',
                     disabled=False)
             self.compare_run_btn = widgets.Button(description='Compare',
@@ -630,9 +624,8 @@ class RunAppsMruns():
             display(self.compare_run_dd)
             display(self.compare_run_btn)
     
-    def _update_dd_compare(self):
+    def _update_compare_dd(self):
         self.l_checked = []
-        l_check_count = 0
         graphs_count = {}
         graphs_tocompare = []
         for l in self.li:
@@ -653,34 +646,46 @@ class RunAppsMruns():
     def _run_compare_runs(self, sender):
         
         with self.out:
-            self.compare_run_dd.options = self._update_dd_compare()
+            
+            self.compare_run_dd.options = self._update_compare_dd()
             filename = self.compare_run_dd.value
 
             data_raw = []
             for l in self.l_checked:
-                data_raw.append(pio.read_json(os.path.join(l, filename)))
-
-            tups = [(x['layout']['title']['text'].split(' - ')[-1], x['data']) for x in data_raw]
-
+                data_raw.append((l,pio.read_json(os.path.join(l, filename))))
+                
+            layout = data_raw[0][1]['layout']
+            data_interim = [(x[0], x[1]['data']) for x in data_raw]
+            
+            clear_output()
             legend_names = []
-            data_out = []
-
-            for tup in tups:
-                for sca in tup[1]:
-                    if sca['name'] not in legend_names:
-                        plot = sca
-                        if sca['name'] != "External temperature":
-                            plot['name'] = sca['name'] + ' - ' + tup[0]
+            data_display = []
+            
+            colors = ["lightskyblue",
+                    "mediumseagreen",
+                    "goldenrod",
+                    "deeppink",
+                    "LightGray",
+                    "mediumspringgreen",
+                     "darksalmon"]
+            color_index = 0
+            
+            for dataset in data_interim:
+                for scatter in dataset[1]:
+                    if scatter['name'] not in legend_names:
+                        plot = scatter
+                        if scatter['name'] != "External temperature":
+                            plot['name'] = scatter['name'] + ' - ' + os.path.basename(tup[0]
+                            plot['line']['color'] = colors[color_index]
+                            color_index += 1
                         data_out.append(plot)
                         legend_names.append(plot['name'])
 
-
             fig = go.Figure(
                 data=tuple(data_out),
-                layout=data_raw[0]['layout']
+                layout=layout
             )
             
-            clear_output()
             display(self.compare_run_dd)
             display(self.compare_run_btn)
             fig.show()
@@ -951,3 +956,9 @@ if __name__ =='__main__':
     display(Markdown('### Example5'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
     display(runapps, display_id=True)
+
+
+
+
+
+

@@ -198,28 +198,12 @@ class TM59Plotter:
 
     def make_data_figs(self):
         year = 2010
-
-        colors = ["Coral",
-                "DeepSkyBlue",
-                "Gold",
-                "ForestGreen",
-                "Silver",
-                "DarkBlue",
-                "Orchid",
-                "Tomato",
-                "HotPink",
-                "LightSlateGray",
-                "Peru",
-                "DarkOrchid",
-                "DarkOrange"]
-
         dfs = pd.read_excel(self.data_fpth,None)
-
 
         def toDate(num):
             date = dt.datetime.fromordinal((int) (num/24)+1)
             return date.replace(hour=num%24, year=2010)
-        color = 0        
+
         for sheet in dfs:
             if sheet != self.comparison_data[0]:
                 df = dfs[sheet]
@@ -244,14 +228,14 @@ class TM59Plotter:
                         df_exttemp = dfs[self.comparison_data[0]][start_day:end_day]
                         data = []
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_maxweek[roomName], name=sheet,
-                                        line=dict(color = "DarkBlue")))
+                                        line=dict(color = "lightskyblue")))
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_exttemp[self.comparison_data[1]], name=self.comparison_data[0],
-                                        line=dict(color = "DarkOrange")))
+                                        line=dict(color = "crimson")))
                         color += 1
 
                         fig = go.Figure(data=data)
                         fig.update_layout(fig_layout)
-                        fig.update_layout(title="Maximum {0} ({1})".format(sheet, roomName))
+                        fig.update_layout(title="Maximum {0} - {1}".format(sheet, roomName))
                         room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName)
                         fig.write_image(os.path.join(self.output_fpth, "{0}_{1}.jpeg".format(sheet_fname, room_fname)))
                         fig.write_json(os.path.join(self.output_fpth, "{0}_{1}.plotly".format(sheet_fname, room_fname)))
