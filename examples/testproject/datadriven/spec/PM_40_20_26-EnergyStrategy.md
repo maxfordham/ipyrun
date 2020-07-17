@@ -1,0 +1,17 @@
+# PM_40_20_26-Energy Strategy
+
+## DESIGN PARAMETERS
+
+### Industry Standards
+
+### Project Specific Requirements
+
+## SYSTEM DESCRIPTION
+
+## CONTROL REQUIREMENTS
+
+## REFERENCE SPECIFICATION CLAUSES
+
+## SYSTEM DRAWINGS / SCHEMATICS
+
+\newpage

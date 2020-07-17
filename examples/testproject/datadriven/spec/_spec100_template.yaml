@@ -1,0 +1,11 @@
+--- 
+spec100:
+  __system_name__: "# "
+  DESIGN PARAMETERS: "## "
+  Industry Standards: "### "
+  Project Specific Requirements: "### "
+  SYSTEM DESCRIPTION: "## "
+  CONTROL REQUIREMENTS: "## "
+  REFERENCE SPECIFICATION CLAUSES: "## "
+  SYSTEM DRAWINGS / SCHEMATICS: "## "
+  newpage: "\\"
