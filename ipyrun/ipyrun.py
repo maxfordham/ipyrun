@@ -606,7 +606,12 @@ class RunAppsMruns():
                     l._log() # 'sender'
                     
     def _compare_runs(self, sender):
-        
+        cnt = 0
+        ttl = 0
+        for l in self.li:
+            ttl = ttl + 1
+            if l.check.value:
+                cnt = cnt + 1
         with self.out:
             clear_output()
             display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl)))
@@ -659,7 +664,7 @@ class RunAppsMruns():
             
             clear_output()
             legend_names = []
-            data_display = []
+            data_out = []
             
             colors = ["lightskyblue",
                     "mediumseagreen",
@@ -675,7 +680,7 @@ class RunAppsMruns():
                     if scatter['name'] not in legend_names:
                         plot = scatter
                         if scatter['name'] != "External temperature":
-                            plot['name'] = scatter['name'] + ' - ' + os.path.basename(tup[0]
+                            plot['name'] = scatter['name'] + ' - ' + os.path.basename(dataset[0])
                             plot['line']['color'] = colors[color_index]
                             color_index += 1
                         data_out.append(plot)
@@ -956,6 +961,8 @@ if __name__ =='__main__':
     display(Markdown('### Example5'))
     display(Markdown('''Batch Run of RunApps, for ModelRun'''))
     display(runapps, display_id=True)
+
+
 
 
 
