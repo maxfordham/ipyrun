@@ -33,13 +33,28 @@ from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 
 # +
 
-def default_ipyagrid(df):
+def default_ipyagrid(df,**kwargs):
     
     """
     returns a default ipyagrid class
     
     Reference:
         https://dgothrek.gitlab.io/ipyaggrid/
+        
+    Code:
+        from ipyaggrid import Grid
+        grid_options = {
+            #'columnDefs' : column_defs,
+            'enableSorting': True,
+            'enableFilter': True,
+            'enableColResize': True,
+            'enableRangeSelection': True,
+        }
+        g = Grid(grid_data=df,
+                grid_options=grid_options,
+                quick_filter=True,
+                theme='ag-theme-balham')
+        return g
     """
     #https://dgothrek.gitlab.io/ipyaggrid/
     grid_options = {
@@ -49,10 +64,14 @@ def default_ipyagrid(df):
         'enableColResize': True,
         'enableRangeSelection': True,
     }
-    g = Grid(grid_data=df,
-            grid_options=grid_options,
-            quick_filter=True,
-            theme='ag-theme-balham')
+    _kwargs = {
+        'grid_data':df,
+        'grid_options':grid_options,
+        'quick_filter':True,
+        'theme':'ag-theme-balham',
+    }
+    _kwargs.update(kwargs)  # user overides
+    g = Grid(**_kwargs)
     return g
 
 def _markdown(value='_Markdown_',
