@@ -1,0 +1,17 @@
+# Ss_70_30_80_00-Small Power
+
+## DESIGN PARAMETERS
+
+### Industry Standards
+
+### Project Specific Requirements
+
+## SYSTEM DESCRIPTION
+
+## CONTROL REQUIREMENTS
+
+## REFERENCE SPECIFICATION CLAUSES
+
+## SYSTEM DRAWINGS / SCHEMATICS
+
+\newpage
