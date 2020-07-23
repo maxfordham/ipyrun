@@ -211,7 +211,7 @@ class TM59Plotter:
                 fig_layout = {
                     "title":"Maximum {0}".format(sheet),
                     "xaxis_title":"Date",
-                    "yaxis_title":"Value",
+                    "yaxis_title":"Temperature (C)",
                     "paper_bgcolor":"white",
                     "template":'plotly_white',
                     "showlegend":True,
@@ -231,7 +231,6 @@ class TM59Plotter:
                                         line=dict(color = "lightskyblue")))
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_exttemp[self.comparison_data[1]], name=self.comparison_data[0],
                                         line=dict(color = "crimson")))
-                        color += 1
 
                         fig = go.Figure(data=data)
                         fig.update_layout(fig_layout)
