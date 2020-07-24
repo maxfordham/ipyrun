@@ -776,8 +776,8 @@ class RunAppsMruns():
             if filename.endswith(".json"):
                 self.batch.append(self._create_process(process_name=os.path.splitext(filename)[0], di=di)) 
 
-        filename = os.path.basename(fpth_script)
-        process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'_template')
+        filename = os.path.basename(di_config['fpth_script'])
+        process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'000')
         
         if not self.batch:
             self.batch.append(self._create_process(process_name=process_name, di=di))
@@ -879,11 +879,6 @@ class RunAppsMruns():
                     tooltip='add chosen run',
                     button_style='primary',
                     style={'font_weight':'bold'})
-        self.add_run_txt = widgets.Text(
-                                value='',
-                                placeholder='New Process Name',
-                                description='Name:',
-                                disabled=False)
         
         self.add_run_btn.on_click(self._run_add_run) # OnClick method
         with self.out:
@@ -928,13 +923,8 @@ class RunAppsMruns():
         # Pull selected process from dropdown
         dd_val = self.add_run_dd.value
         dd_split = str(self.add_run_dd.value).split('_')
-        new_process_name = self.add_run_txt.value
-        if not new_process_name:
-            with self.out:
-                display(Markdown('Empty Name'))
-            return
-            
-        '''# Get basename of selected process
+
+        # Get basename of selected process
         if(dd_split[-1].isdigit()):
             dd_process_name_base = "_".join(dd_split[:-1])
         else:
@@ -950,7 +940,7 @@ class RunAppsMruns():
             if new_process_name in self._get_process_names():
                 current_num = current_num + 1   
             else:
-                num_exists = False'''
+                num_exists = False
     
         
         # Copy the selected process to the new process
@@ -1035,198 +1025,6 @@ class RunAppComparison(RunApp):
 
 if __name__ == '__main__':
 
-    # dumb form
-    #form = RunForm()
-    #form
-
-
-    # Example1 --------------------------
-    # RunApp example, using a default JSON file
-    # EDIT JSON FILE with custom config and file management
-
-    config={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': {
-            '0': {
-                    'fdir':r'..\reports',
-                    'fnm': r'JupyterReportDemo.pdf',
-                    'description': "a pdf report from word"
-            }
-        }
-    }    
-
-    rjson = RunApp(config)  
-    display(Markdown('### Example1'))
-    display(Markdown('''default RunApp.'''))
-    display(rjson)
-
-    display(Markdown('---'))  
-    display(Markdown(''))  
-
-    # Example2 --------------------------
-    class RunAppEditCsv(RunApp):
-
-        def __init__(self, config):
-            super().__init__(config)
-
-        def _edit_inputs(self, sender):
-            with self.out:
-                clear_output()
-                display(EditCsv(self.config))
-
-    di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':NBFDIR,
-        #'fpth_log':os.path.join(NBFDIR,'notebooks',config),
-        #'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-        #'RunApp_help':RunApp_help
-        }  
-    rcsv = RunAppEditCsv(di)  
-    display(Markdown('### Example2'))
-    display(Markdown('''example where the RunApp class has been extended by inheriting the 
-    RunApp and overwriting the _edit_inputs
-    take a simple csv file as an input instead of a JSON file...
-    the main funtions that can be overwritten to extend the class in this way are:
-
-    - _help
-    - _show_guide
-    - _edit_inputs
-    - _run
-    - _preview_outputs'''))
-    display(rcsv)
-    display(Markdown('---'))  
-    display(Markdown(''))  
-
-    # Example3 --------------------------
-    di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':os.path.join(NBFDIR,'notebooks'),
-        'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-        }  
-
-    defaultrunapp={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': {'0': {
-            'fdir':r'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
-                }
-            }
-        }
-
-    runappcsv = {'app':RunAppEditCsv,'config':di}
-    configs = [runappcsv,defaultrunapp,runappcsv]
-    runapps = RunApps(configs)  
-
-    display(Markdown('### Example3'))
-    display(Markdown('''
-    demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
-    RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:  
-
-    ```
-        di={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-            #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-            #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-            'fdir':os.path.join(NBFDIR,'notebooks'),
-            'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-            }  
-
-        defaultrunapp={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-            'fdir':NBFDIR,
-            'script_outputs': {'0': {
-                'fdir':r'..\reports',
-                'fnm': r'JupyterReportDemo.pdf',
-                'description': "a pdf report from word"
-                    }
-                }
-            }
-
-        runappcsv = {'app':RunAppEditCsv,'config':di}
-        configs = [runappcsv,defaultrunapp,runappcsv]
-        runapps = RunApps(configs)  
-        display(runapps)
-    ```
-    '''))
-    display(runapps)
-    display(Markdown('---'))  
-    display(Markdown('')) 
-
-    # Example4 --------------------------
-    di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-        'fdir':os.path.join(NBFDIR,'notebooks'),
-        'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-        }  
-
-    defaultrunapp={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': {'0': {
-            'fdir':r'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
-                }
-            }
-        }
-
-    runappcsv = {'app':RunAppEditCsv,'config':di}
-    configs = [runappcsv,defaultrunapp,runappcsv]
-    runapps = RunApps(configs)  
-
-    display(Markdown('### Example4'))
-    display(Markdown('''
-    as above but with an add run feature added. 
-
-    ```
-        di={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-            #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-            #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
-            'fdir':os.path.join(NBFDIR,'notebooks'),
-            'fdir_outputs':os.path.join(NBFDIR,'notebooks')
-            }  
-
-        defaultrunapp={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-            'fdir':NBFDIR,
-            'script_outputs': {'0': {
-                'fdir':r'..\reports',
-                'fnm': r'JupyterReportDemo.pdf',
-                'description': "a pdf report from word"
-                    }
-                }
-            }
-
-        runappcsv = {'app':RunAppEditCsv,'config':di}
-        configs = [runappcsv,defaultrunapp,runappcsv]
-        runapps = RunApps(configs)  
-        display(runapps)
-    ```
-    '''))
-    display(runapps)
-    display(Markdown('---'))  
-    display(Markdown('')) 
-
-
-    fpth_script = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py')
-    config={
-        'fpth_script':os.path.realpath(fpth_script),
-        'fdir':NBFDIR
-        }  
-    r = RunApp(config)
-    r
-
-
 
     # Example6 --------------------------
     # Set of RunApps and comparison tools, for ModelRun
@@ -1281,11 +1079,13 @@ if __name__ == '__main__':
     compare_runs = RunAppComparison(compare_config)  
 
     # Display Model Runs
-    display(Markdown('### Example6'))
-    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
-    display(runapps, display_id=True)
-    display(Markdown('Compare Runs'))
-    display(compare_runs)
+    display(Markdown('### Overheating Analysis - Toolbox'))
     display(Markdown('---'))
-
+    display(Markdown('##### Step 1: Setup Inputs and Run Models'))
+    display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
+    display(runapps, display_id=True)
+    display(Markdown('---'))
+    display(Markdown('##### Step 2: Compare Runs'))
+    display(Markdown('''Choose multiple runs, which can be compared'''))
+    display(compare_runs)
 

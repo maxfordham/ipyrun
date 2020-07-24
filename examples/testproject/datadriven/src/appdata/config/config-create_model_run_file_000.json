@@ -21,7 +21,9 @@
         },
         "template": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs",
-            "fpths": []
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs\\inputs-create_model_run_file.json"
+            ]
         }
     },
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-create_model_run_file_000.csv",

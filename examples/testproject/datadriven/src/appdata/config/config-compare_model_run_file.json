@@ -1,0 +1,50 @@
+{
+    "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src",
+    "fdir_compareinputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim",
+    "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config",
+    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
+    "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive",
+    "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log",
+    "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison"
+    ],
+    "fnm_config": "config-compare_model_run_file.json",
+    "fnm_log": "log-compare_model_run_file.csv",
+    "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config\\config-compare_model_run_file.json",
+    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-compare_model_run_file.json",
+    "fpth_inputs_options": {
+        "project": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1015-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1022-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1109-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1213-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1214-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200724_1216-RW-inputs-compare_model_run_file.json"
+            ]
+        },
+        "template": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs\\inputs-compare_model_run_file.json"
+            ]
+        }
+    },
+    "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-compare_model_run_file.csv",
+    "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\compare_model_run_file.py",
+    "fpths_outputs": {
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison"
+    },
+    "jobno": "C:\\e",
+    "pretty_name": "compare_model_run_file",
+    "process_name": "compare_model_run_file",
+    "script_outputs": {
+        "0": {
+            "description": "a pdf report from word",
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison",
+            "fnm": ""
+        }
+    }
+}
