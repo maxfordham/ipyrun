@@ -36,11 +36,11 @@ from mf_modules.file_operations import make_dir
 try:
     from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
     from ipyrun._runconfig import RunConfig
-    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
+    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
 except:
     from _filecontroller import FileConfigController, SelectEditSaveMfJson
     from _runconfig import RunConfig
-    from _ipydisplayfile import DisplayFile, DisplayFiles
+    from _ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
 
 
 # -
@@ -105,8 +105,6 @@ class EditDictData():
     def map_keys(self):
         return ['value', 'options', 'min', 'max']
     
-    
-    
     @property
     def map_widgets(self):
         # mapping dict used to guess what widget to apply
@@ -169,21 +167,36 @@ class EditDictData():
             # this allows for self.widget_lkup_di to be extended more easily
             return self.widget_lkup_di
         except:
-            self.widget_lkup_di = {
+            self.standard_widgets =  {
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
-                'DerivedText':self._derived_text,
-                'DatePicker':self._date_picker,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
                 'Text':widgets.Text,
-                'Textarea':widgets.Textarea,
-                '_recursive_guess':self._recursive_guess,
-                'ipysheet':self._ipysheet
-            }
-            return self.widget_lkup_di
+                'Textarea':widgets.Textarea}
 
+            self.mfcustom_widgets = {
+                'DerivedText':self._derived_text,
+                'DatePicker':self._date_picker,
+                '_recursive_guess':self._recursive_guess,
+                'ipysheet':self._ipysheet,
+                'ipyagrid':self._ipyagrid
+            }
+            
+            self.widget_lkup_di = dict(self.standard_widgets, **self.mfcustom_widgets)
+            return self.widget_lkup_di
+        
+    @property   
+    def dont_watch(self):
+        """won't called _init_controls function that watches when the 'value' of 'di' in an EditDict instance changes"""
+        standard = list(self.standard_widgets.keys()) + list(self.mfcustom_widgets.keys())
+        dont = ['_recursive_guess','ipysheet','ipyagrid']
+        if self.widget_name not in standard:
+            # don't watch cust widgets as standard
+            dont.append(self.widget_name)
+        return dont
+        
 
     
 class EditDict(EditDictData):
@@ -195,6 +208,13 @@ class EditDict(EditDictData):
     - if a json dataframe object is passed as the "value" and and the key:value
       "widget":"ipysheet" is passed in the same dict:
         => it will create an editable ipysheet dataframe widget
+    Example:
+        di = {
+        'name':'name',
+        'value':'value',
+        'label':'label'
+        }
+        EditDict(di)
     '''
     def __init__(self, di):
         self.out = widgets.Output()
@@ -214,7 +234,7 @@ class EditDict(EditDictData):
         self.layout = self._build_widget()
         
         # UPDATE THIS - LIST OF WIDGETS NOT TO WATCH
-        if self.widget_name != 'ipysheet' and self.widget_name != '_recursive_guess':
+        if self.widget_name not in self.dont_watch:
             self._init_controls()
             
     def _kwargfilt(self):
@@ -397,6 +417,42 @@ class EditDict(EditDictData):
     # --------------------------------------------------------------------------
     
     # --------------------------------------------------------------------------
+    # code that allows for embedded ipysheets ----------------------------------
+    def _ipyagrid(self):
+        self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
+        self.kwargs['icon'] = 'arrow-down'
+        self.widget_only = widgets.ToggleButton(**self.kwargs)
+        self.save_ipyagrid = widgets.Button(description='save')
+        self._ipyagrid_controls()
+        
+    def _ipyagrid_controls(self):
+        self.widget_only.observe(self.call_ipyagrid, 'value')
+        self.save_ipyagrid.on_click(self._save_ipyagrid)
+        
+    def call_ipyagrid(self, sender):
+        tmp = pd.read_json(self.di['value'])
+        
+        self.grid = default_ipyagrid(tmp,show_toggle_edit=True)
+        #ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
+        with self.out:
+            if self.widget_only.value:  
+                display(self.save_ipyagrid)
+                display(self.grid)
+            else:
+                clear_output()
+    
+    def _save_ipyagrid(self, change):
+        tmp = self.grid.grid_data_out['grid']
+        self.di['value'] = tmp.to_json()
+        with self.out:
+            clear_output()
+            dateTimeObj = datetime.now()
+            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+            display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
+        self.display()
+    # --------------------------------------------------------------------------
+    
+    # --------------------------------------------------------------------------
     # other custom widgets -----------------------------------------------------
     def _derived_text(self):
         self.widget_only = widgets.HTML(**self.kwargs)
@@ -413,6 +469,12 @@ class EditDict(EditDictData):
          
     def _ipython_display_(self):
         self.display()    
+# -
+
+di = {'name':'name','value':pd.DataFrame.from_dict({'a':['b','c'],'b':['c','d']}).to_json(),'widget':'ipyagrid'}
+#class(EditDict)
+EditDict(di)
+
 
 
 # +
@@ -465,13 +527,25 @@ class EditListOfDicts():
         """
         self.out = widgets.Output()
         self.li = li
+        self.li_apps = self._update_li()
         self.form()
         self._init_observe()
+        
+    def _update_li(self):
+        li_apps = []
+        for l in self.li:
+            if list(l.keys()) == ['app','config']:
+                # app to use already explicitly specified
+                li_apps.append(l)     
+            else:
+                # assume the config got passed without the associated app
+                li_apps.append({'app': EditDict, 'config': l})     
+        return li_apps
     
     def form(self):
         self.widgets = []
-        for l in self.li:
-            self.widgets.append(EditDict(l))
+        for l in self.li_apps:
+            self.widgets.append(l['app'](l['config']))
         self._layout()
         
     def _update_label(self, index, l):
@@ -541,6 +615,7 @@ class SimpleEditJson(EditListOfDicts):
         else:
             self.fpth_out = fpth_out
         self.li = read_json(self.fpth_in)
+        self.li_apps = self._update_li()
         self.save_changes = widgets.Button(description='save',button_style='success')
         self.form()
         self._init_observe()
@@ -591,6 +666,7 @@ class EditJson(EditListOfDicts, FileConfigController):
         self._update_config()
         self.file_control_form()
         self.li = read_json(self.fpth_inputs)
+        self.li_apps = self._update_li()
         self._init_file_controller()
         self.__build_widgets()
         
@@ -689,6 +765,7 @@ class EditJson(EditListOfDicts, FileConfigController):
     def _ipython_display_(self):
         self.display()  
         #self._lidi_display()  
+        
 class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
     """
     
@@ -804,8 +881,7 @@ if __name__ =='__main__':
     display(Markdown('''EDIT JSON FILE with custom config and file management'''))
     display(editjson)
     display(Markdown('---'))  
-    display(Markdown('')) 
-    
+    display(Markdown(''))    
 
     
     # Example3
@@ -861,5 +937,3 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
