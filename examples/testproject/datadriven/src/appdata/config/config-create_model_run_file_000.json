@@ -16,16 +16,12 @@
         "project": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs",
             "fpths": [
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_000.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_001.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_002.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_000.json"
             ]
         },
         "template": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs",
-            "fpths": [
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs\\inputs-create_model_run_file.json"
-            ]
+            "fpths": []
         }
     },
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-create_model_run_file_000.csv",

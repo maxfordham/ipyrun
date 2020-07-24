@@ -772,7 +772,6 @@ class RunAppsMruns():
         
         if not os.path.exists(self.fdir_input):
             os.makedirs(self.fdir_input)
-        print(di)
         for filename in os.listdir(self.fdir_input):
             if filename.endswith(".json"):
                 self.batch.append(self._create_process(process_name=os.path.splitext(filename)[0], di=di)) 
@@ -836,9 +835,13 @@ class RunAppsMruns():
                                 style={'font_weight':'add'})
         self.add_run = widgets.Button(description='add run',
                                 tooltip='add new run, based on another run',
-                                button_style='warning',
+                                button_style='primary',
                                 style={'font_weight':'bold'})
-        self.form = widgets.HBox([self.reset, self.help, self.run_batch, self.add_run],
+        self.del_run = widgets.Button(description='delete run',
+                                tooltip='delete a run',
+                                button_style='danger',
+                                style={'font_weight':'bold'})
+        self.form = widgets.HBox([self.reset, self.help, self.run_batch, self.add_run, self.del_run],
                         layout=widgets.Layout(width='100%',align_items='stretch'))   
     
     def _init_controls(self):
@@ -846,6 +849,7 @@ class RunAppsMruns():
         self.reset.on_click(self._reset)
         self.run_batch.on_click(self._run_batch)
         self.add_run.on_click(self._add_run)
+        self.del_run.on_click(self._del_run)
         
     def _help(self, sender):
         with self.out:
@@ -866,7 +870,6 @@ class RunAppsMruns():
         return [widgets.VBox([l.layout, l.out]) for l in self.li]
         
     def _add_run(self, sender):
-        
         # Create Dropdown & Run Button
         self.add_run_dd = widgets.Dropdown(
                 options=self._get_process_names(),
@@ -882,6 +885,38 @@ class RunAppsMruns():
             clear_output()
             display(self.add_run_dd)
             display(self.add_run_btn)
+    
+    def _del_run(self, sender):
+        # Create Dropdown & Run Button
+        self.del_run_dd = widgets.Dropdown(
+                options=self._get_process_names(),
+                description='Run to Delete:',
+                disabled=False)
+        self.del_run_btn = widgets.Button(description='delete chosen run',
+                    tooltip='delete chosen run',
+                    button_style='danger',
+                    style={'font_weight':'bold'})
+        
+        self.del_run_btn.on_click(self._run_del_run) # OnClick method
+        with self.out:
+            clear_output()
+            display(self.del_run_dd)
+            display(self.del_run_btn)
+        
+    def _run_del_run(self, sender):
+        dd_val = self.del_run_dd.value
+        for process in self.processes:
+            if(process['config']['process_name'] == dd_val):
+                self.inputconfigs.remove(process)
+                self.processes.remove(process)
+        
+        for l in self.li:
+            if(l.config['process_name'] == dd_val):
+                os.remove(l.config['fpth_inputs'])
+                self.li.remove(l)
+            
+        self.del_run_dd.options=self._get_process_names() # Update Dropdown
+        self.apps_layout.children = self._get_apps_layout()
     
     def _run_add_run(self,sender):
         
@@ -1243,6 +1278,10 @@ if __name__ =='__main__':
     display(Markdown('Compare Runs'))
     display(compare_runs)
     display(Markdown('---'))
+
+
+
+
 
 
 
