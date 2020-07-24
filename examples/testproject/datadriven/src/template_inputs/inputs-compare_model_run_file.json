@@ -1,0 +1,10 @@
+[
+    {
+        "label": "Choose which files to compare",
+        "max": null,
+        "min": null,
+        "name": "Comparison",
+        "options": [],
+        "value": []
+    }
+]
