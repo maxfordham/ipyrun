@@ -597,7 +597,6 @@ class RunApp(RunForm, RunConfig):
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
-
                 display(DisplayFiles(fpths))
                 
     def _show_log(self, sender):
@@ -753,7 +752,7 @@ class RunApps_SS():
 class RunAppsMruns():
     # Archived version of RunAppsMruns,
     # with inline compare files function
-    def __init__(self, di, fdir_input, fdir_output):
+    def __init__(self, di, fdir_input, fdir_data, fdir_analysis):
         """
         Args:
             di (object): list of RunApp input configs. 
@@ -761,18 +760,19 @@ class RunAppsMruns():
                 the list 
             fdir_input (filename): Directory, where Model Run JSON files 
                             will be stored
-            fdir_output (filename): Directory, where output files
+            fdir_data (filename): Directory, where output files
                             will be stored
         """
         
         di_config = RunConfig(di).config
         self.batch = []
         self.fdir_input = os.path.join(di_config['fdir_inputs'], r'modelruninputs')
-        self.fdir_output = fdir_output
+        self.fdir_data = fdir_data
+        self.fdir_analysis = fdir_analysis
         
         if not os.path.exists(self.fdir_input):
             os.makedirs(self.fdir_input)
-
+        print(di)
         for filename in os.listdir(self.fdir_input):
             if filename.endswith(".json"):
                 self.batch.append(self._create_process(process_name=os.path.splitext(filename)[0], di=di)) 
@@ -792,12 +792,14 @@ class RunAppsMruns():
         
         for process in self.processes:
             self.li.append(process['app'](process['config']))   
+            #print(process['config'])
         self.out = widgets.Output()
 
     def _create_process(self, process_name, di):
         tmp = copy.deepcopy(di)
         fpth_input = os.path.join(self.fdir_input, process_name + '.json')
-        tmp['script_outputs']['0']['fnm'] = os.path.join(self.fdir_output, process_name)
+        tmp['script_outputs']['0']['fnm'] = os.path.join(self.fdir_data, process_name)
+        tmp['script_outputs']['1']['fnm'] = os.path.realpath(self.fdir_analysis)
         tmp['fpth_inputs'] = fpth_input
         tmp['fdir_inputs'] = self.fdir_input
         tmp.update({'process_name':process_name})
@@ -959,8 +961,10 @@ class RunAppsMruns():
         self.display() 
 
 class RunAppComparison(RunApp):
+        
     def _edit_inputs(self, sender):
         comp_vals = []
+        
         if "fdir_compareinputs" in self.config:
             comp_vals_dir = self.config["fdir_compareinputs"]
             for dir in os.listdir(comp_vals_dir):
@@ -1178,82 +1182,67 @@ if __name__ =='__main__':
     r = RunApp(config)
     r
 
-   # Example5 --------------------------
-    fpth_script = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src\create_model_run_file.py')
-    fdir = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-    di={
-        'fpth_script':os.path.realpath(fpth_script),
-        'fdir':os.path.join(fdir),
-        "script_outputs": {
-            "0": {
-                "description": "Creates model run file test",
-                "fdir": '.',
-                "fnm": ''
-            }
-        }
-    } 
 
-    fdir_modelrunoutput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data\interim')
-    fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
-
-        
-    runapps = RunAppsMrunsOld(di=di, fdir_input=fdir_modelruninput, fdir_output=fdir_modelrunoutput)  
-    display(Markdown('### Example5'))
-    display(Markdown('''ARCHIVED - INLINE COMPARE FILES FUNCTION'''))
-    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
-    display(runapps, display_id=True)
-    display(Markdown('---'))
     
     # Example6 --------------------------
-    fpth_script = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src\create_model_run_file.py')
-    fdir = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-    di={
-        'fpth_script':os.path.realpath(fpth_script),
-        'fdir':os.path.join(fdir),
+    # Set of RunApps and comparison tools, for ModelRun
+    
+    # Parameters
+    fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
+    fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
+    fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
+    
+    # Create Model Run Outputs
+    fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
+    
+    create_config = {
+        'fpth_script':os.path.realpath(fpth_create_script),
+        'fdir':os.path.join(fdir_scripts),
         "script_outputs": {
-            "0": {
-                "description": "Creates model run file test",
-                "fdir": '.',
-                "fnm": ''
+            '0': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for data output"
+            },
+            '1': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for analysis output"
             }
         }
     } 
 
-    fdir_modelrunoutput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data\interim')
-    fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
-
-        
-    runapps = RunAppsMruns(di=di, fdir_input=fdir_modelruninput, fdir_output=fdir_modelrunoutput)  
-    display(Markdown('### Example6'))
-    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
-    display(runapps, display_id=True)
+    # Compare Model Run Outputs
+    fdir_interim_data = os.path.join(fdir_data,r'interim')
+    fdir_processed_data = os.path.join(fdir_data,r'processed')
     
-    fpth_compare_script = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src\compare_model_run_file.py')
-    f = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data\processed\datacomparison')
-    compare_config={
-        'fpth_script':os.path.realpath(fpth_compare_script),
-        'fdir':fdir,
+    fdir_tm59 = os.path.join(fdir_processed_data, r'tm59')
+    fpth_comp_script = os.path.join(fdir_scripts, r'compare_model_run_file.py')
+    fdir_comp_out = os.path.join(fdir_processed_data, r'datacomparison')
+    
+    compare_config = {
+        'fpth_script':os.path.realpath(fpth_comp_script),
+        'fdir':fdir_scripts,
         'script_outputs': {
             '0': {
-                    'fdir':os.path.realpath(f),
+                    'fdir':os.path.realpath(fdir_comp_out),
                     'fnm': '',
                     'description': "a pdf report from word"
             }
         },
-        'fdir_compareinputs': fdir_modelrunoutput
+        'fdir_compareinputs': fdir_interim_data
     }    
 
+    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_interim_data, fdir_analysis=fdir_tm59)  
     compare_runs = RunAppComparison(compare_config)  
+    
+    # Display Model Runs
+    display(Markdown('### Example6'))
+    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
+    display(runapps, display_id=True)
     display(Markdown('Compare Runs'))
     display(compare_runs)
-
     display(Markdown('---'))
-
-
-
-
-
-
 
 
 

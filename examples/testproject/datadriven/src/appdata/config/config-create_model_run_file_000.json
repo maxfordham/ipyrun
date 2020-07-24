@@ -5,6 +5,7 @@
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive",
     "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log",
     "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\ipyrun",
         "C:\\engDev\\git_mf\\ipyrun\\ipyrun"
     ],
     "fnm_config": "config-create_model_run_file_000.json",
@@ -15,27 +16,37 @@
         "project": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs",
             "fpths": [
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_000.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_000.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_001.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\modelruninputs\\create_model_run_file_002.json"
             ]
         },
         "template": {
             "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs",
-            "fpths": []
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs\\inputs-create_model_run_file.json"
+            ]
         }
     },
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-create_model_run_file_000.csv",
     "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\create_model_run_file.py",
     "fpths_outputs": {
-        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\create_model_run_file_000"
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\create_model_run_file_000",
+        "1": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\tm59"
     },
     "jobno": "C:\\e",
     "pretty_name": "create_model_run_file_000",
     "process_name": "create_model_run_file_000",
     "script_outputs": {
         "0": {
-            "description": "Creates model run file test",
+            "description": "Folder for data output",
             "fdir": ".",
             "fnm": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\create_model_run_file_000"
+        },
+        "1": {
+            "description": "Folder for analysis output",
+            "fdir": ".",
+            "fnm": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\tm59"
         }
     }
 }
