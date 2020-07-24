@@ -7,7 +7,7 @@ Creates Model Run File
     Returns:
         ** Filepath: Where data has been written to
         
-    References:
+    Note:
         -   N/A
 
 """
