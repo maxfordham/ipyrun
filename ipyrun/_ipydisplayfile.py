@@ -22,6 +22,7 @@ from ipyaggrid import Grid
 import ipywidgets as widgets
 from markdown import markdown
 import plotly.io as pio
+import copy
 
 from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.pandas_operations import del_matching
@@ -29,6 +30,7 @@ from mf_modules.jupyter_formatting import md_fromfile
 from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.file_operations import open_file
 from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
+from mf_modules.datamine_functions import recursive_glob
 
 
 # +
@@ -154,6 +156,7 @@ class DisplayFile():
             '.yml':self.yaml_prev,
             '.png':self.img_prev,
             '.jpg':self.img_prev,
+            '.jpeg':self.img_prev,
             #'.obj':self.obj_prev,
             #'.txt':self.txt_prev,
             '.md':self.md_prev,
@@ -182,6 +185,7 @@ class DisplayFile():
             '.yml':self.yaml_prev,
             '.png':self.img_prev,
             '.jpg':self.img_prev,
+            '.jpeg':self.img_prev,
             #'.obj':self.obj_prev,
             #'.txt':self.txt_prev,
             '.md':self.md_prev,
@@ -284,10 +288,19 @@ class DisplayFile():
 class DisplayFiles():
     def __init__(self, fpths):
         self.out = widgets.Output();
-        if type(fpths) != list:
-            self.fpths = [fpths]
+        fpths_temp = copy.deepcopy(fpths)
+        
+        if type(fpths_temp) != list:
+            fpths_temp = [fpths_temp]
         else:
-            self.fpths = fpths
+            fpths_temp = fpths_temp
+            
+        self.fpths = copy.deepcopy(fpths_temp)
+        for fpth in fpths_temp:
+            if '.' not in fpth:
+                self.fpths.remove(fpth)
+                self.fpths += recursive_glob(rootdir=fpth)
+
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
@@ -355,7 +368,7 @@ if __name__ =='__main__':
     fdir = os.path.dirname(os.path.realpath('__file__'))
     fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
 
-    from mf_modules.datamine_functions import recursive_glob
+    
     fpths = recursive_glob(rootdir=fdir)
     
     # single file
@@ -373,6 +386,24 @@ if __name__ =='__main__':
     display(d1)
     display(Markdown('---'))  
     display(Markdown('')) 
+    
+    fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
+    d2= DisplayFiles(fdir_eg)
+    display(Markdown('### Example3'))
+    display(Markdown('''display eg directory'''))
+    display(d2)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

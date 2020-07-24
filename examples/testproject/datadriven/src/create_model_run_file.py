@@ -5,7 +5,8 @@ Creates Model Run File
         ** Model Run: Set of Inputs for this Model
 
     Returns:
-        ** Filepath: Where data has been written to
+        ** Data Directory:Folder where graphs have been stored
+        ** TM59 Directory: Folder where TM59 outputs have been stored
         
     Note:
         -   N/A
@@ -127,11 +128,14 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
     return dict_dfs
 
 class TM59Plotter:
-    def __init__(self, input_fpth, data_fpth, output_fpth):
+    def __init__(self, tm59_raw_fpth, tm59_pretty_fpth, data_fpth, out_data_dir, out_analysis_dir):
         self.tag_names = ['block_number','level_number', 'flat_code', 'room_code', 'space_name']
         self.comparison_data = ["External temperature", "Dry Bulb Temperature"]
-        self.input_fpth = input_fpth
-        self.output_fpth = output_fpth
+        self.tm59_raw_fpth = tm59_raw_fpth
+        self.tm59_pretty_fpth = tm59_pretty_fpth
+        self.out_data_dir = out_data_dir
+        self.out_analysis_dir = out_analysis_dir
+        self.process_name = os.path.splitext(os.path.basename(out_data_dir))[0]
         self.data_fpth = data_fpth
         self.dfs={}
     
@@ -150,7 +154,7 @@ class TM59Plotter:
         else:
             return np.nansum(x)
     
-    def make_analysis_figs(self,air_speed):
+    def make_tm59_figs(self,air_speed):
         
         colours = {'pass':'#b6f0b1',
                    'PASS':'#a1d99c',
@@ -193,8 +197,11 @@ class TM59Plotter:
         table.update_layout(
             title_text=titleText,
             title_font_size=17)
-        table.write_json(self.output_fpth)
-        table.write_image(os.path.splitext(self.output_fpth)[0] + '.jpeg')
+
+        filename = os.path.join(self.out_analysis_dir, self.process_name + '_TM59results')
+        copyfile(self.tm59_pretty_fpth, filename + '.xlsx')
+        table.write_json(filename + '.plotly')
+        table.write_image(filename + '.jpeg')
 
     def make_data_figs(self):
         year = 2010
@@ -211,7 +218,7 @@ class TM59Plotter:
                 fig_layout = {
                     "title":"Maximum {0}".format(sheet),
                     "xaxis_title":"Date",
-                    "yaxis_title":"Value",
+                    "yaxis_title":"Temperature (C)",
                     "paper_bgcolor":"white",
                     "template":'plotly_white',
                     "showlegend":True,
@@ -231,20 +238,19 @@ class TM59Plotter:
                                         line=dict(color = "lightskyblue")))
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_exttemp[self.comparison_data[1]], name=self.comparison_data[0],
                                         line=dict(color = "crimson")))
-                        color += 1
 
                         fig = go.Figure(data=data)
                         fig.update_layout(fig_layout)
                         fig.update_layout(title="Maximum {0} - {1}".format(sheet, roomName))
                         room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName)
-                        fig.write_image(os.path.join(self.output_fpth, "{0}_{1}.jpeg".format(sheet_fname, room_fname)))
-                        fig.write_json(os.path.join(self.output_fpth, "{0}_{1}.plotly".format(sheet_fname, room_fname)))
+                        fig.write_image(os.path.join(self.out_data_dir, "{0}_{1}.jpeg".format(sheet_fname, room_fname)))
+                        fig.write_json(os.path.join(self.out_data_dir, "{0}_{1}.plotly".format(sheet_fname, room_fname)))
 
             
 
     def read_data_make_summary(self):
 
-        IES_TM59_output_fpth=self.input_fpth
+        IES_TM59_output_fpth=self.tm59_raw_fpth
         sheet_name_results = 'TM59 results'
         sheet_name_project_info = 'Project info'
         dfs = {}
@@ -318,8 +324,10 @@ class TM59Plotter:
 
 def main(inputs, outputs):
     input_dir = os.path.dirname(inputs["Model File Path"])
-    input_fpth = ""
+    tm59_raw_fpth = ""
     data_fpth = ""
+
+    # Find model excel files
     for file in os.listdir(input_dir):
         if file.endswith(".xlsx"):
             tag = file.split("__")[0]
@@ -327,38 +335,41 @@ def main(inputs, outputs):
             if tag == "data":
                 data_fpth = path
             elif tag == "TM59-raw":
-                input_fpth = path
-            
+                tm59_raw_fpth = path
+            elif tag == "TM59":
+                tm59_pretty_fpth = path
 
-    plotter = TM59Plotter(input_fpth=input_fpth, data_fpth=data_fpth, output_fpth=outputs['0'])
+    # Create Plotter
+    plotter = TM59Plotter(tm59_raw_fpth=tm59_raw_fpth, tm59_pretty_fpth=tm59_pretty_fpth, data_fpth=data_fpth, out_data_dir=outputs['0'], out_analysis_dir=outputs['1'])
     plotter.read_data_make_summary()
-    #plotter.make_analysis_figs(inputs["Air Speed"])
+    
+    # Create TM59 Outputs
+    plotter.make_tm59_figs(inputs["Air Speed"])
+
+    # Create Data Graphs
     plotter.make_data_figs()
     return
 
 script_outputs = {
     '0': {
         'fdir':'.', # relative to the location of the App / Notebook file
-        'fnm': r'./modelrunoutputs/',
-        'description': "Creates model run file."
+        'fnm': r'.',
+        'description': "Folder for data output"
+    },
+    '1': {
+        'fdir':'.', # relative to the location of the App / Notebook file
+        'fnm': r'.',
+        'description': "Folder for tm59 output"
     }
 }
 
 if __name__ == '__main__':
 
     fpth_config = sys.argv[1]
-    fpth_inputs = sys.argv[2]
-    print('fpth_script: {0}'.format(sys.argv[0]))
-    print('fpth_config: {0}'.format(fpth_config))
-    print('fpth_inputs: {0}'.format(fpth_inputs))
-    print('---')
-    
+    fpth_inputs = sys.argv[2]  
 
     # get config and input data
-    # config
-
     config = read_json(fpth_config)
-    print(config['process_name'])
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
 
@@ -367,7 +378,6 @@ if __name__ == '__main__':
             os.mkdir(output)
     inputs = read_json(fpth_inputs)
 
-    # this is the only bit that will change between scripts
     calc_inputs = {}
 
     def get_inputs(values, inputs):

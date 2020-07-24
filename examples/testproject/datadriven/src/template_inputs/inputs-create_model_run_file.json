@@ -69,7 +69,7 @@
                 "min": null,
                 "name": "Model File Path",
                 "options": null,
-                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\notebooks\\overheating\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit"
+                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit"
             },
             {
                 "label": "Date of Model Creation",

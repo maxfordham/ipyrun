@@ -659,6 +659,7 @@ class EditJson(EditListOfDicts, FileConfigController):
     """
     #def __init__(self, fpth, fdir='.', local_fol='_mfengdev'):
     def __init__(self, config):
+
         self.out = widgets.Output()
         self._errors()
         self.config = config
@@ -840,7 +841,7 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
 
 # -
 if __name__ =='__main__':
-    
+
     # FORM ONLY EXAMPLE
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test.json')
