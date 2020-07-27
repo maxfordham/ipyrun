@@ -594,9 +594,12 @@ class RunApp(RunForm, RunConfig):
             #    d.preview_fpth()
                 
             fpths = [v for k,v in self.fpths_outputs.items()]
+            no_display = ['jpg', 'png']
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
+                display([os.path.splitext(fpth)[1] for fpth in fpths])
+                display(fpths)
                 display(DisplayFiles(fpths))
                 
     def _show_log(self, sender):
@@ -774,13 +777,16 @@ class RunAppsMruns():
             os.makedirs(self.fdir_input)
         for filename in os.listdir(self.fdir_input):
             if filename.endswith(".json"):
-                self.batch.append(self._create_process(process_name=os.path.splitext(filename)[0], di=di)) 
+                process_name = os.path.splitext(filename)[0]
+                process = self._create_process(process_name=process_name, di=di)
+                if process_name == 'TEMPLATE':
+                    self.batch.insert(0, process)
+                else:
+                    self.batch.append(process) 
 
-        filename = os.path.basename(fpth_script)
-        process_name = '{0}_{1}'.format(os.path.splitext(filename)[0],'_template')
-        
+        filename = os.path.basename(di_config['fpth_script'])
         if not self.batch:
-            self.batch.append(self._create_process(process_name=process_name, di=di))
+            self.batch.append(self._create_process(process_name='TEMPLATE', di=di))
         
         self.inputconfigs = self.batch
        
@@ -867,7 +873,7 @@ class RunAppsMruns():
         return [process['config']['process_name'] for process in self.processes]
     
     def _get_apps_layout(self):
-        return [widgets.VBox([l.layout, l.out]) for l in self.li]
+        return [widgets.VBox([l.layout, l.out]) for l in self.li[1:]]
         
     def _add_run(self, sender):
         # Create Dropdown & Run Button
@@ -895,7 +901,7 @@ class RunAppsMruns():
     def _del_run(self, sender):
         # Create Dropdown & Run Button
         self.del_run_dd = widgets.Dropdown(
-                options=self._get_process_names(),
+                options=self._get_process_names()[1:],
                 description='Run to Delete:',
                 disabled=False)
         self.del_run_btn = widgets.Button(description='delete chosen run',
@@ -920,7 +926,7 @@ class RunAppsMruns():
                 os.remove(l.config['fpth_inputs'])
                 self.li.remove(l)
             
-        self.del_run_dd.options=self._get_process_names() # Update Dropdown
+        self.del_run_dd.options=self._get_process_names()[1:] # Update Dropdown
         self.apps_layout.children = self._get_apps_layout()
     
     def _run_add_run(self,sender):
@@ -928,29 +934,23 @@ class RunAppsMruns():
         # Pull selected process from dropdown
         dd_val = self.add_run_dd.value
         dd_split = str(self.add_run_dd.value).split('_')
-        new_process_name = self.add_run_txt.value
-        if not new_process_name:
+        process_name_base = self.add_run_txt.value
+        if not process_name_base:
             with self.out:
                 display(Markdown('Empty Name'))
             return
             
-        '''# Get basename of selected process
-        if(dd_split[-1].isdigit()):
-            dd_process_name_base = "_".join(dd_split[:-1])
-        else:
-            dd_process_name_base = dd_val
-            
-        # Create new process name, by
-        # appending the next number to the basename
+        basenumbers = [process.split('_')[0] for process in self._get_process_names()]
+        print(basenumbers)
         current_num = 0
         num_exists = True
         new_process_name = ""
         while (num_exists):
-            new_process_name = '{0}_{1}'.format(dd_process_name_base,str(current_num).zfill(3))
-            if new_process_name in self._get_process_names():
+            if str(current_num).zfill(3) in basenumbers:
                 current_num = current_num + 1   
             else:
-                num_exists = False'''
+                new_process_name = '{0}_{1}'.format(str(current_num).zfill(3),process_name_base)
+                num_exists = False
     
         
         # Copy the selected process to the new process
@@ -990,7 +990,7 @@ class RunAppsMruns():
         
         with self.out:
             clear_output()
-            display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl)))
+            display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl-1)))
             for l in self.li:
                 if l.check.value:
                     display(Markdown('running: {0}'.format(l.config['process_name'])))
@@ -1009,20 +1009,20 @@ class RunAppsMruns():
 class RunAppComparison(RunApp):
         
     def _edit_inputs(self, sender):
-        comp_vals = []
+        comp_vals = {}
         
         if "fdir_compareinputs" in self.config:
             comp_vals_dir = self.config["fdir_compareinputs"]
             for dir in os.listdir(comp_vals_dir):
                 full_dir = os.path.join(comp_vals_dir, dir)
                 if os.path.isdir(full_dir):
-                    comp_vals.append(full_dir)
+                    comp_vals[dir] = full_dir
             json_data = read_json(self.config["fpth_inputs"])
             for element in json_data:
                 if element["name"] == "Comparison":
                     element["options"] = comp_vals
                     for value in element["value"]:
-                        if value not in comp_vals:
+                        if value not in comp_vals.values():
                             element["value"].remove(value)
             write_json(json_data, fpth=self.config["fpth_inputs"])
 
@@ -1287,5 +1287,7 @@ if __name__ == '__main__':
     display(Markdown('Compare Runs'))
     display(compare_runs)
     display(Markdown('---'))
+
+
 
 

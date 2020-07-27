@@ -75,6 +75,7 @@ class EditDictData():
             grid_auto_columns='True',
             width='80%',
             align_items='stretch',  
+            margin='0px 0px 0px 0px'
         )
     
     @property
@@ -85,8 +86,9 @@ class EditDictData():
             justify_content='flex-end',
             #border='solid 1px green',
             grid_auto_columns='True',
-            width='90%',
+            width='900%',
             align_items='stretch',  
+            margin='0px 0px 0px 0px'
         )
     
     @property
@@ -95,10 +97,11 @@ class EditDictData():
             display='flex',
             flex_flow='row',
             justify_content='flex-start',
+            align_content='flex-start',
             border='dashed 0.2px green',
             grid_auto_columns='True',
             width='100%',
-            align_items='stretch',  
+            align_items='flex-start',  
         )
     
     @property
@@ -264,7 +267,7 @@ class EditDict(EditDictData):
             self.guide.observe(self._guide, 'value')
             layout = widgets.HBox([self.widget_row ,self.guide],layout=self.MF_FORM_ITEM_LAYOUT2)
         else:
-            layout = widgets.HBox([self.widget_row ],layout=self.MF_FORM_ITEM_LAYOUT2)
+            layout = widgets.HBox([self.widget_row],layout=self.MF_FORM_ITEM_LAYOUT2)
         return layout
     
     def _init_controls(self):   
@@ -938,3 +941,7 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
+
+

@@ -301,6 +301,11 @@ class DisplayFiles():
                 self.fpths.remove(fpth)
                 self.fpths += recursive_glob(rootdir=fpth)
 
+        y = ['.xlsx']
+        for fpth in self.fpths:
+            if os.path.splitext(fpth)[1].lower() not in y:
+                self.fpths.remove(fpth)
+                
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
@@ -326,6 +331,7 @@ class DisplayFiles():
         self.outputsfpth.observe(self._show_hide, 'value')
     
     def display_previews(self):
+        print(self.outputsfpth.value)
         for file in self.outputsfpth.value:
             display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
             s = str(self.map_previews[file]._map[self.map_previews[file].ext])

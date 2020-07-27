@@ -5,6 +5,7 @@
         "min": null,
         "name": "Comparison",
         "options": [],
-        "value": []
+        "value": [],
+        "widget": "SelectMultiple"
     }
 ]
