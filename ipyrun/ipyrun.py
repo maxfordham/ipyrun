@@ -1056,13 +1056,11 @@ if __name__ == '__main__':
         }
     }    
 
+    
     rjson = RunApp(config)  
     display(Markdown('### Example1'))
     display(Markdown('''default RunApp.'''))
     display(rjson)
-
-    display(Markdown('---'))  
-    display(Markdown(''))  
 
     # Example2 --------------------------
     class RunAppEditCsv(RunApp):

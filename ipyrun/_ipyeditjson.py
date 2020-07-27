@@ -674,6 +674,7 @@ class EditJson(EditListOfDicts, FileConfigController):
         self._init_file_controller()
         self.__build_widgets()
         
+        
     def __build_widgets(self):
         self.form()
         self._init_observe()
@@ -697,11 +698,14 @@ class EditJson(EditListOfDicts, FileConfigController):
         for l in self.li:
             self.widgets.append(EditDict(l))
             
-        self.applayout.children = []
-        self.applayout.children = [w.layout for w in self.widgets]
+        #self.applayout.children = ()
+        self.applayout.children = self._get_apps_layout()
         #for w in self.widgets:
         #    self.applayout.children.append(w.layout)
-            
+        
+    def _get_apps_layout(self):
+        return [widgets.VBox([w.layout]) for w in self.widgets]
+    
     def _save_changes(self, sender):
         """save changes to working inputs file"""
         fpth = self.fpth_inputs
@@ -753,15 +757,15 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.layout = box
         for l in self.widgets:
             with self.out:
-                clear_output()
+                #clear_output()
                 display(l.out)
-            
+    
     def display(self):
         self.update_display()
         display(self.layout)
         #out = [l.layout for l in self.widgets]
-        #self.applayout = widgets.VBox(out)
-        display(self.applayout)
+        self.apps_layout = widgets.VBox(self._get_apps_layout())
+        display(self.apps_layout)
         #for l in self.widgets:
         #    display(l.out)
         display(self.out)
@@ -848,6 +852,7 @@ if __name__ =='__main__':
     # FORM ONLY EXAMPLE
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(NBFDIR,r'appdata\inputs\test.json')
+    fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
     li = read_json(fpth)
     g = EditListOfDicts(li)
     display(Markdown('### Example0'))
@@ -892,6 +897,11 @@ if __name__ =='__main__':
     # EDIT NESTED JSON FILE with custom config and file management
     nestedconfig={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
+        'fdir':'.',
+        }
+       
+    nestedconfig={
+        'fpth_script':r'C:\engDev\git_mf\ipyrun\examples\scripts\expansion_vessel_sizing.py',
         'fdir':'.',
         }
     editnestedjson = EditJson(nestedconfig)
@@ -941,7 +951,3 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
-
-
