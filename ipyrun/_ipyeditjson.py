@@ -184,7 +184,8 @@ class EditDictData():
                 'DatePicker':self._date_picker,
                 '_recursive_guess':self._recursive_guess,
                 'ipysheet':self._ipysheet,
-                'ipyagrid':self._ipyagrid
+                'ipyagrid':self._ipyagrid,
+                'FileChooser':self._file_chooser
             }
             
             self.widget_lkup_di = dict(self.standard_widgets, **self.mfcustom_widgets)
@@ -271,16 +272,20 @@ class EditDict(EditDictData):
         return layout
     
     def _init_controls(self):   
-        self.widget_only.observe(self._update_change, 'value') 
+        if(self.widget_name == "FileChooser"):
+            self.widget_only.children[0].register_callback(self._update_change)
+        else:
+            self.widget_only.observe(self._update_change, 'value') 
 
     def _update_change(self, change):
         value = None
         if(self.widget_name == "DatePicker"):
             value = self.widget_only.value.strftime('%Y-%m-%d')
+        elif(self.widget_name == "FileChooser"):
+            value = self.widget_only.children[0].selected
         else:
             value = self.widget_only.value
         self.di['value'] = value
-
 
     def _guide(self, sender):
         with self.out:
@@ -464,20 +469,34 @@ class EditDict(EditDictData):
     def _date_picker(self):
         value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
         self.widget_only = widgets.DatePicker(value=value)
+
+    def _file_chooser(self):
+        
+        if 'value' in self.kwargs:
+            path = os.path.realpath(self.kwargs['value'])
+            fc_temp = FileChooser(filename=path, select_default=True)
+        else:
+            fc_temp = FileChooser()
+        fc_temp.use_dir_icons = True
+        self.widget_only = widgets.VBox([fc_temp])
+        self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='7px 7px 7px 7px', margin='5px 0px 5px 0px')
     # --------------------------------------------------------------------------
     
     def display(self):
         display(self.layout)
         display(self.out)
+        print('display')
+        print(self.di)
          
     def _ipython_display_(self):
         self.display()    
+
+
 # -
 
 di = {'name':'name','value':pd.DataFrame.from_dict({'a':['b','c'],'b':['c','d']}).to_json(),'widget':'ipyagrid'}
 #class(EditDict)
 EditDict(di)
-
 
 
 # +
@@ -899,11 +918,6 @@ if __name__ =='__main__':
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\gbxml.py'),
         'fdir':'.',
         }
-       
-    nestedconfig={
-        'fpth_script':r'C:\engDev\git_mf\ipyrun\examples\scripts\expansion_vessel_sizing.py',
-        'fdir':'.',
-        }
     editnestedjson = EditJson(nestedconfig)
     # display
     display(Markdown('### Example3'))
@@ -943,7 +957,7 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     
-    # Example5
+    # Example6
     editmfjson = EditMfJson(r'appdata\inputs')
     # display
     display(Markdown('### Example6'))
@@ -951,3 +965,22 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+    
+    # Example7
+    nestedconfig={
+        'fpth_script':r'C:\engDev\git_mf\ipyrun\examples\scripts\file_chooser_test.py',
+        'fdir':'.',
+        }
+    editnestedjson = EditJson(nestedconfig)
+    # display
+    display(Markdown('### Example7'))
+    display(Markdown('''File Chooser Test'''))
+    display(editnestedjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+
+
+
+
+
+

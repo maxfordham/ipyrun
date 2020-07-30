@@ -69,7 +69,8 @@
                 "min": null,
                 "name": "Model File Path",
                 "options": null,
-                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit"
+                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
+                "widget": "FileChooser"
             },
             {
                 "label": "Date of Model Creation",
@@ -94,7 +95,8 @@
                 "min": null,
                 "name": "DWG Reference",
                 "options": null,
-                "value": ""
+                "value": null,
+                "widget": "FileChooser"
             },
             {
                 "label": "Reference Document Title, for London Plan",

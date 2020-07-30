@@ -9,7 +9,7 @@
             "001_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
             "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
         },
-        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\000_test",
         "widget": "Dropdown"
     },
     {
@@ -22,7 +22,7 @@
             "001_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
             "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
         },
-        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test",
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
         "widget": "Dropdown"
     },
     {
@@ -36,7 +36,6 @@
             "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
         },
         "value": [
-            "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
             "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
         ],
         "widget": "SelectMultiple"

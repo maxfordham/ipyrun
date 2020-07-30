@@ -27,58 +27,69 @@ from mf_modules.file_operations import make_dir
 import datetime as dt
 
 def main(inputs, outputs):
-    graphs_count = {}
-    graphs_tocompare = []
 
-    for l in inputs["Comparison"]:
-        for file in os.listdir(l):
+    # Create Dataset
+    exttemp_colour = "Crimson"
+    benchmark_colour = "DodgerBlue"
+    asdesigned_colour = "MediumSeaGreen"
+    dataset_raw = []
+    dataset_raw.append((inputs["Benchmark"],"Benchmark", benchmark_colour))
+    dataset_raw.append((inputs["As Designed"],"As Designed", asdesigned_colour))
+    colors = ["Peru",
+            "LightGray",
+            "Turquoise",
+            "darksalmon",
+            "goldenrod"]
+    color_index = 0
+    for i in inputs["Comparison"]:
+        dataset_raw.append((i,"",colors[color_index]))
+        color_index += 1
+        if color_index > len(colors):
+            color_index = 0
+
+    # Get comparison files, 
+    # These are common the files common to all models
+    files_count = {}
+    files_tocompare = []
+    for data_raw in dataset_raw:
+        for file in os.listdir(data_raw[0]):
             if file.endswith(".plotly"):
-                if file in graphs_count:
-                    graphs_count[file] += 1
+                if file in files_count:
+                    files_count[file] += 1
                 else:
-                    graphs_count[file] = 1
+                    files_count[file] = 1
 
-    for graph in graphs_count:
-        if graphs_count[graph] == len(inputs["Comparison"]):
-            graphs_tocompare.append(graph)
+    for file in files_count:
+        if files_count[file] == len(dataset_raw):
+            files_tocompare.append(file)
 
-    
-    for filename in graphs_tocompare:
-        data_raw = []
-        for l in inputs["Comparison"]:
-            data_raw.append((l,pio.read_json(os.path.join(l, filename))))
-            
-        layout = data_raw[0][1]['layout']
-        data_interim = [(x[0], x[1]['data']) for x in data_raw]
-        
-        clear_output()
-        legend_names = []
+
+    # Create Comparison Graph, for each file
+    for filename in files_tocompare:
         data_out = []
-        
-        colors = ["lightskyblue",
-                "mediumseagreen",
-                "goldenrod",
-                "deeppink",
-                "LightGray",
-                "mediumspringgreen",
-                "darksalmon"]
-        color_index = 0
-        for dataset in data_interim:
-            for scatter in dataset[1]:
+        legend_names = []
+        for data_raw in dataset_raw:
+            graph = pio.read_json(os.path.join(data_raw[0], filename))['data']
+            for scatter in graph:
                 if scatter['name'] not in legend_names:
                     plot = scatter
+                    plot['line']['width'] = 1.5
                     if scatter['name'] != "External temperature":
-                        plot['name'] = scatter['name'].split(' - ')[0] + ' - ' + os.path.basename(dataset[0])
-                        plot['line']['color'] = colors[color_index]
-                        color_index += 1
-                        if(color_index >= (len(colors)-1)):
-                            color_index = 0
+                        if data_raw[1]:
+                            name = "{0} - {1} ({2})".format(scatter['name'], data_raw[1], os.path.basename(data_raw[0]))
+                        else:
+                            name = "{0} - {1}".format(scatter['name'], os.path.basename(data_raw[0]))
+                        plot['name'] = name
+                        plot['line']['color'] = data_raw[2]
+                        
                         data_out.append(plot)
                     else:
+                        plot['line']['color'] = exttemp_colour
                         data_out.insert(0, plot)
 
                     legend_names.append(plot['name'])
 
+        layout = pio.read_json(os.path.join(dataset_raw[0][0], files_tocompare[0]))['layout']
         fig = go.Figure(
             data=tuple(data_out),
             layout=layout

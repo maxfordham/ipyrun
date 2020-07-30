@@ -18,7 +18,10 @@
             "fpths": [
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-compare_model_run_file.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200727_0958-RW-inputs-compare_model_run_file.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200727_1001-RW-inputs-compare_model_run_file.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200727_1001-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1056-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1104-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1105-RW-inputs-compare_model_run_file.json"
             ]
         },
         "template": {
