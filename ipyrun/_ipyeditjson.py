@@ -485,8 +485,6 @@ class EditDict(EditDictData):
     def display(self):
         display(self.layout)
         display(self.out)
-        print('display')
-        print(self.di)
          
     def _ipython_display_(self):
         self.display()    
@@ -732,7 +730,6 @@ class EditJson(EditListOfDicts, FileConfigController):
         dateTimeObj = datetime.now()
         self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
         self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
-        print(self.li)
         self.data_out = self.li 
         # add code here to save changes to file
         write_json(self.data_out,

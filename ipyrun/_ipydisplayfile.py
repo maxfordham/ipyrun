@@ -286,7 +286,7 @@ class DisplayFile():
 # -
 
 class DisplayFiles():
-    def __init__(self, fpths):
+    def __init__(self, fpths, fpths_ignore=[]):
         self.out = widgets.Output();
         fpths_temp = copy.deepcopy(fpths)
         
@@ -300,12 +300,13 @@ class DisplayFiles():
             if '.' not in fpth:
                 self.fpths.remove(fpth)
                 self.fpths += recursive_glob(rootdir=fpth)
-
-        y = ['.xlsx']
-        for fpth in self.fpths:
-            if os.path.splitext(fpth)[1].lower() not in y:
-                self.fpths.remove(fpth)
                 
+        fpths_temp = copy.deepcopy(self.fpths)
+        
+        for fpth in fpths_temp: 
+            ext = os.path.splitext(fpth)[1].lower()
+            if (ext in fpths_ignore) or (ext not in DisplayFile()._map.keys()):
+                self.fpths.remove(fpth)
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
@@ -331,7 +332,7 @@ class DisplayFiles():
         self.outputsfpth.observe(self._show_hide, 'value')
     
     def display_previews(self):
-        print(self.outputsfpth.value)
+        #print(self.outputsfpth.value)
         for file in self.outputsfpth.value:
             display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
             s = str(self.map_previews[file]._map[self.map_previews[file].ext])
@@ -394,16 +395,10 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
-    d2= DisplayFiles(fdir_eg)
+    d2= DisplayFiles(r'C:\engDev\git_mf\ipyrun\examples\testproject\datadriven\data\processed\tm59')
     display(Markdown('### Example3'))
     display(Markdown('''display eg directory'''))
     display(d2)
-
-
-
-
-
-
 
 
 

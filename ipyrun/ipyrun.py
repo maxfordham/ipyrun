@@ -594,13 +594,15 @@ class RunApp(RunForm, RunConfig):
             #    d.preview_fpth()
                 
             fpths = [v for k,v in self.fpths_outputs.items()]
-            no_display = ['jpg', 'png']
+            if 'display_ignore' in self.config:
+                display_ignore = self.config['display_ignore']
+            else:
+                display_ignore = []
+                
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
-                display([os.path.splitext(fpth)[1] for fpth in fpths])
-                display(fpths)
-                display(DisplayFiles(fpths))
+                display(DisplayFiles(fpths, fpths_ignore=display_ignore))
                 
     def _show_log(self, sender):
         with self.out:
@@ -797,7 +799,6 @@ class RunAppsMruns():
         
         for process in self.processes:
             self.li.append(process['app'](process['config']))   
-            #print(process['config'])
         self.out = widgets.Output()
 
     def _create_process(self, process_name, di):
@@ -941,7 +942,6 @@ class RunAppsMruns():
             return
             
         basenumbers = [process.split('_')[0] for process in self._get_process_names()]
-        print(basenumbers)
         current_num = 0
         num_exists = True
         new_process_name = ""
@@ -1004,7 +1004,7 @@ class RunAppsMruns():
         display(self.apps_layout)
         
     def _ipython_display_(self):
-        self.display() 
+        self.display()
 
 class RunAppComparison(RunApp):
         
@@ -1237,13 +1237,14 @@ if __name__ == '__main__':
     fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
     fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
     fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-
+    display_ignore = ['.jpg','.jpeg','.png','.xlsx']
     # Create Model Run Outputs
     fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
 
     create_config = {
         'fpth_script':os.path.realpath(fpth_create_script),
         'fdir':os.path.join(fdir_scripts),
+        'display_ignore':display_ignore,
         "script_outputs": {
             '0': {
                 'fdir':'.', # relative to the location of the App / Notebook file
@@ -1269,6 +1270,7 @@ if __name__ == '__main__':
     compare_config = {
         'fpth_script':os.path.realpath(fpth_comp_script),
         'fdir':fdir_scripts,
+        'display_ignore':display_ignore,
         'script_outputs': {
             '0': {
                     'fdir':os.path.realpath(fdir_comp_out),
@@ -1289,5 +1291,7 @@ if __name__ == '__main__':
     display(Markdown('Compare Runs'))
     display(compare_runs)
     display(Markdown('---'))
+
+
 
 

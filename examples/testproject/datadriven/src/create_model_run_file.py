@@ -206,7 +206,8 @@ class TM59Plotter:
     def make_data_figs(self):
         year = 2010
         dfs = pd.read_excel(self.data_fpth,None)
-
+        exttemp_colour = "Crimson"
+        benchmark_colour = "DodgerBlue"
         def toDate(num):
             date = dt.datetime.fromordinal((int) (num/24)+1)
             return date.replace(hour=num%24, year=2010)
@@ -235,9 +236,9 @@ class TM59Plotter:
                         df_exttemp = dfs[self.comparison_data[0]][start_day:end_day]
                         data = []
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_maxweek[roomName], name=sheet,
-                                        line=dict(color = "lightskyblue")))
+                                        line=dict(color = benchmark_colour)))
                         data.append(go.Scatter(x=df_maxweek['date'], y=df_exttemp[self.comparison_data[1]], name=self.comparison_data[0],
-                                        line=dict(color = "crimson")))
+                                        line=dict(color = exttemp_colour)))
 
                         fig = go.Figure(data=data)
                         fig.update_layout(fig_layout)

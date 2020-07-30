@@ -41,12 +41,12 @@ from mf_modules.pydtype_operations import read_json, write_json
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
+from ipyrun import *
 try:
     from ipyrun._runconfig import RunConfig
     from ipyrun._ipyeditcsv import EditCsv
     from ipyrun._ipyeditjson import EditJson
     from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
-    from ipyrun import *
 except:
     from _runconfig import RunConfig
     from _ipyeditcsv import EditCsv
@@ -70,13 +70,15 @@ if __name__ == '__main__':
     fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
     fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
     fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-
+    display_ignore = ['.jpg','.jpeg','.png','.xlsx']
+    
     # Create Model Run Outputs
     fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
 
     create_config = {
         'fpth_script':os.path.realpath(fpth_create_script),
         'fdir':os.path.join(fdir_scripts),
+        'display_ignore':display_ignore,
         "script_outputs": {
             '0': {
                 'fdir':'.', # relative to the location of the App / Notebook file
@@ -102,6 +104,7 @@ if __name__ == '__main__':
     compare_config = {
         'fpth_script':os.path.realpath(fpth_comp_script),
         'fdir':fdir_scripts,
+        'display_ignore':display_ignore,
         'script_outputs': {
             '0': {
                     'fdir':os.path.realpath(fdir_comp_out),
@@ -111,6 +114,7 @@ if __name__ == '__main__':
         },
         'fdir_compareinputs': fdir_interim_data
     }    
+
 
     runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_interim_data, fdir_analysis=fdir_tm59)  
     compare_runs = RunAppComparison(compare_config)  
@@ -125,6 +129,4 @@ if __name__ == '__main__':
     display(Markdown('##### Step 2: Compare Runs'))
     display(Markdown('''Choose multiple runs, which can be compared'''))
     display(compare_runs)
-
-
 
