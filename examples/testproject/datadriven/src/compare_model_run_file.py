@@ -48,49 +48,49 @@ def main(inputs, outputs):
         for l in inputs["Comparison"]:
             data_raw.append((l,pio.read_json(os.path.join(l, filename))))
             
-            layout = data_raw[0][1]['layout']
-            data_interim = [(x[0], x[1]['data']) for x in data_raw]
-            
-            clear_output()
-            legend_names = []
-            data_out = []
-            
-            colors = ["lightskyblue",
-                    "mediumseagreen",
-                    "goldenrod",
-                    "deeppink",
-                    "LightGray",
-                    "mediumspringgreen",
-                    "darksalmon"]
-            color_index = 0
-            for dataset in data_interim:
-                for scatter in dataset[1]:
-                    if scatter['name'] not in legend_names:
-                        plot = scatter
-                        if scatter['name'] != "External temperature":
-                            plot['name'] = scatter['name'].split(' - ')[0] + ' - ' + os.path.basename(dataset[0])
-                            plot['line']['color'] = colors[color_index]
-                            color_index += 1
-                            if(color_index >= (len(colors)-1)):
-                                color_index = 0
-                            data_out.append(plot)
-                        else:
-                            data_out.insert(0, plot)
+        layout = data_raw[0][1]['layout']
+        data_interim = [(x[0], x[1]['data']) for x in data_raw]
+        
+        clear_output()
+        legend_names = []
+        data_out = []
+        
+        colors = ["lightskyblue",
+                "mediumseagreen",
+                "goldenrod",
+                "deeppink",
+                "LightGray",
+                "mediumspringgreen",
+                "darksalmon"]
+        color_index = 0
+        for dataset in data_interim:
+            for scatter in dataset[1]:
+                if scatter['name'] not in legend_names:
+                    plot = scatter
+                    if scatter['name'] != "External temperature":
+                        plot['name'] = scatter['name'].split(' - ')[0] + ' - ' + os.path.basename(dataset[0])
+                        plot['line']['color'] = colors[color_index]
+                        color_index += 1
+                        if(color_index >= (len(colors)-1)):
+                            color_index = 0
+                        data_out.append(plot)
+                    else:
+                        data_out.insert(0, plot)
 
-                        legend_names.append(plot['name'])
+                    legend_names.append(plot['name'])
 
-            fig = go.Figure(
-                data=tuple(data_out),
-                layout=layout
-            )
-            fig.update_layout(legend=dict(
-                yanchor="bottom",
-                y=-0.5,
-                xanchor="left",
-                x=0
-            ))
-            fig.write_image(os.path.join(outputs['0'], os.path.splitext(filename)[0] + '.png'))
-            fig.write_json(os.path.join(outputs['0'], filename))
+        fig = go.Figure(
+            data=tuple(data_out),
+            layout=layout
+        )
+        fig.update_layout(legend=dict(
+            yanchor="bottom",
+            y=-0.5,
+            xanchor="left",
+            x=0
+        ))
+        fig.write_image(os.path.join(outputs['0'], os.path.splitext(filename)[0] + '_test2.png'))
+        fig.write_json(os.path.join(outputs['0'], filename))
     return
 
 script_outputs = {

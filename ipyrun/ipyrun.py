@@ -1019,7 +1019,11 @@ class RunAppComparison(RunApp):
                     comp_vals[dir] = full_dir
             json_data = read_json(self.config["fpth_inputs"])
             for element in json_data:
-                if element["name"] == "Comparison":
+                if element["name"] == "Benchmark" or element["name"] == "As Designed":
+                    element["options"] = comp_vals
+                    if element["value"] not in comp_vals.values():
+                        element["value"] = None               
+                elif element["name"] == "Comparison":
                     element["options"] = comp_vals
                     for value in element["value"]:
                         if value not in comp_vals.values():
