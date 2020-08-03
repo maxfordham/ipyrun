@@ -111,7 +111,6 @@ class RunAppsMrunsOld():
         tmp['fpth_inputs'] = fpth_input
         tmp['fdir_inputs'] = self.fdir_input
         tmp.update({'process_name':process_name})
-        
         return {'app':RunApp,'config':tmp}
 
     def _update_configs(self):
@@ -197,7 +196,7 @@ class RunAppsMrunsOld():
             display(self.add_run_btn)
     
     def _run_add_run(self,sender):
-        
+
         # Pull selected process from dropdown
         dd_val = self.add_run_dd.value
         dd_split = str(self.add_run_dd.value).split('_')
@@ -602,7 +601,7 @@ class RunApp(RunForm, RunConfig):
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
-                display(DisplayFiles(fpths, fpths_ignore=display_ignore))
+                display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=self.config['pretty_name']))
                 
     def _show_log(self, sender):
         with self.out:
@@ -757,7 +756,7 @@ class RunApps_SS():
 class RunAppsMruns():
     # Archived version of RunAppsMruns,
     # with inline compare files function
-    def __init__(self, di, fdir_input, fdir_data, fdir_analysis):
+    def __init__(self, di, fdir_input, fdir_data, fdir_analysis, fdir_raw_data):
         """
         Args:
             di (object): list of RunApp input configs. 
@@ -774,6 +773,7 @@ class RunAppsMruns():
         self.fdir_input = os.path.join(di_config['fdir_inputs'], r'modelruninputs')
         self.fdir_data = fdir_data
         self.fdir_analysis = fdir_analysis
+        self.fdir_raw_data = fdir_raw_data
         
         if not os.path.exists(self.fdir_input):
             os.makedirs(self.fdir_input)
@@ -804,11 +804,13 @@ class RunAppsMruns():
     def _create_process(self, process_name, di):
         tmp = copy.deepcopy(di)
         fpth_input = os.path.join(self.fdir_input, process_name + '.json')
-        tmp['script_outputs']['0']['fnm'] = os.path.join(self.fdir_data, process_name)
+        tmp['script_outputs']['0']['fnm'] = os.path.realpath(self.fdir_data)
         tmp['script_outputs']['1']['fnm'] = os.path.realpath(self.fdir_analysis)
+        tmp['script_outputs']['2']['fnm'] = os.path.realpath(self.fdir_raw_data)
         tmp['fpth_inputs'] = fpth_input
         tmp['fdir_inputs'] = self.fdir_input
         tmp.update({'process_name':process_name})
+        tmp.update({'pretty_name':process_name})
         
         return {'app':RunApp,'config':tmp}
 
@@ -1229,8 +1231,7 @@ if __name__ == '__main__':
     r
 
 
-
-    # Example6 --------------------------
+        # Example6 --------------------------
     # Set of RunApps and comparison tools, for ModelRun
 
     # Parameters
@@ -1238,6 +1239,7 @@ if __name__ == '__main__':
     fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
     fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
     display_ignore = ['.jpg','.jpeg','.png','.xlsx']
+    
     # Create Model Run Outputs
     fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
 
@@ -1255,6 +1257,11 @@ if __name__ == '__main__':
                 'fdir':'.', # relative to the location of the App / Notebook file
                 'fnm': r'.',
                 'description': "Folder for analysis output"
+            },
+            '2': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for raw data"
             }
         }
     } 
@@ -1262,8 +1269,11 @@ if __name__ == '__main__':
     # Compare Model Run Outputs
     fdir_interim_data = os.path.join(fdir_data,r'interim')
     fdir_processed_data = os.path.join(fdir_data,r'processed')
-
-    fdir_tm59 = os.path.join(fdir_processed_data, r'tm59')
+    fdir_raw_data = os.path.join(fdir_data,r'raw')
+    
+    fdir_graphs = os.path.join(fdir_interim_data,r'graphs')
+    fdir_tm59 = os.path.join(fdir_interim_data, r'TM59')
+    
     fpth_comp_script = os.path.join(fdir_scripts, r'compare_model_run_file.py')
     fdir_comp_out = os.path.join(fdir_processed_data, r'datacomparison')
 
@@ -1281,17 +1291,18 @@ if __name__ == '__main__':
         'fdir_compareinputs': fdir_interim_data
     }    
 
-    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_interim_data, fdir_analysis=fdir_tm59)  
+
+    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_graphs, fdir_analysis=fdir_tm59, fdir_raw_data=fdir_raw_data)  
     compare_runs = RunAppComparison(compare_config)  
 
     # Display Model Runs
-    display(Markdown('### Example6'))
-    display(Markdown('''Batch Run of RunApps, for ModelRun'''))
-    display(runapps, display_id=True)
-    display(Markdown('Compare Runs'))
-    display(compare_runs)
+    display(Markdown('# Overheating Analysis - Toolbox'))
     display(Markdown('---'))
-
-
-
+    display(Markdown('## Setup Inputs and Run Models'))
+    display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
+    display(runapps, display_id=True)
+    display(Markdown('---'))
+    display(Markdown('## Compare Runs'))
+    display(Markdown('''Choose multiple runs, which can be compared'''))
+    display(compare_runs)
 

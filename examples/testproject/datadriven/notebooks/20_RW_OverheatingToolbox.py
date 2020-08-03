@@ -39,9 +39,7 @@ from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.pydtype_operations import read_json, write_json 
 
-import sys
-sys.path.insert(0,'%mf_root%ipyrun\ipyrun')
-from ipyrun import RunAppMruns
+from ipyrun.ipyrun import *
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
@@ -100,8 +98,10 @@ if __name__ == '__main__':
     # Compare Model Run Outputs
     fdir_interim_data = os.path.join(fdir_data,r'interim')
     fdir_processed_data = os.path.join(fdir_data,r'processed')
-
-    fdir_tm59 = os.path.join(fdir_processed_data, r'tm59')
+    
+    fdir_graphs = os.path.join(fdir_interim_data,r'graphs')
+    fdir_tm59 = os.path.join(fdir_interim_data, r'TM59')
+    
     fpth_comp_script = os.path.join(fdir_scripts, r'compare_model_run_file.py')
     fdir_comp_out = os.path.join(fdir_processed_data, r'datacomparison')
 
@@ -120,19 +120,17 @@ if __name__ == '__main__':
     }    
 
 
-    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_interim_data, fdir_analysis=fdir_tm59)  
+    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_graphs, fdir_analysis=fdir_tm59)  
     compare_runs = RunAppComparison(compare_config)  
 
     # Display Model Runs
-    display(Markdown('### Overheating Analysis - Toolbox'))
+    display(Markdown('# Overheating Analysis - Toolbox'))
     display(Markdown('---'))
-    display(Markdown('##### Step 1: Setup Inputs and Run Models'))
+    display(Markdown('## Setup Inputs and Run Models'))
     display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
     display(runapps, display_id=True)
     display(Markdown('---'))
-    display(Markdown('##### Step 2: Compare Runs'))
+    display(Markdown('## Compare Runs'))
     display(Markdown('''Choose multiple runs, which can be compared'''))
     display(compare_runs)
-
-
 
