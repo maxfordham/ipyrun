@@ -16,14 +16,5 @@
         "options": [],
         "value": null,
         "widget": "Dropdown"
-    },
-    {
-        "label": "Choose other modles to compare",
-        "max": null,
-        "min": null,
-        "name": "Comparison",
-        "options": [],
-        "value": [],
-        "widget": "SelectMultiple"
     }
 ]

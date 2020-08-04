@@ -1,12 +1,18 @@
 {
+    "display_ignore": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".xlsx"
+    ],
     "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src",
-    "fdir_compareinputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim",
+    "fdir_compareinputs": "../data\\interim\\TM59\\graphs",
     "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config",
     "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive",
     "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log",
     "fdir_outputs": [
-        "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison"
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\TM59"
     ],
     "fnm_config": "config-compare_model_run_file.json",
     "fnm_log": "log-compare_model_run_file.csv",
@@ -21,7 +27,49 @@
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200727_1001-RW-inputs-compare_model_run_file.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1056-RW-inputs-compare_model_run_file.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1104-RW-inputs-compare_model_run_file.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1105-RW-inputs-compare_model_run_file.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200728_1105-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0938-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0939-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0940-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0942-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0944-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0945-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0947-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0950-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0951-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0952-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_0958-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1136-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1137-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1138-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1139-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1140-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1143-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1145-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1148-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1149-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1150-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1151-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1152-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1153-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1154-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200730_1155-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1026-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1027-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1136-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1140-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1141-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1142-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1151-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1152-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1153-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1156-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1157-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1159-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1416-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1417-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1645-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1648-RW-inputs-compare_model_run_file.json"
             ]
         },
         "template": {
@@ -34,15 +82,15 @@
     "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-compare_model_run_file.csv",
     "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\compare_model_run_file.py",
     "fpths_outputs": {
-        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison"
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\TM59"
     },
     "jobno": "C:\\e",
     "pretty_name": "compare_model_run_file",
     "process_name": "compare_model_run_file",
     "script_outputs": {
         "0": {
-            "description": "a pdf report from word",
-            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\datacomparison",
+            "description": "Folder for comparison graphs",
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\TM59",
             "fnm": ""
         }
     }

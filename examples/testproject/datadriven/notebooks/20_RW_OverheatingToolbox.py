@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -64,23 +65,21 @@ def get_mfuser_initials():
 
 if __name__ == '__main__':
 
-
-    # Example6 --------------------------
-    # Set of RunApps and comparison tools, for ModelRun
-
     # Parameters
-    fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
-    fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
-    fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-    display_ignore = ['.jpg','.jpeg','.png','.xlsx']
-    
+    parameters = {}
+    parameters['fdir_modelruninput'] = r'../../05 Model Files'
+    parameters['fdir_data'] = r'../data'
+    parameters['fdir_scripts'] = r'../src'
+    parameters['fdir_reports'] = r'../reports'
+    parameters['display_ignore'] = ['.jpg','.jpeg','.png','.xlsx']
+
     # Create Model Run Outputs
-    fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
+    parameters['fpth_create_script'] = os.path.join(parameters['fdir_scripts'],r'create_model_run_file.py')
 
     create_config = {
-        'fpth_script':os.path.realpath(fpth_create_script),
-        'fdir':os.path.join(fdir_scripts),
-        'display_ignore':display_ignore,
+        'fpth_script':os.path.realpath(parameters['fpth_create_script']),
+        'fdir':os.path.realpath(parameters['fdir_scripts']),
+        'display_ignore':parameters['display_ignore'],
         "script_outputs": {
             '0': {
                 'fdir':'.', # relative to the location of the App / Notebook file
@@ -91,37 +90,63 @@ if __name__ == '__main__':
                 'fdir':'.', # relative to the location of the App / Notebook file
                 'fnm': r'.',
                 'description': "Folder for analysis output"
+            },
+            '2': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for raw data"
             }
         }
     } 
 
     # Compare Model Run Outputs
-    fdir_interim_data = os.path.join(fdir_data,r'interim')
-    fdir_processed_data = os.path.join(fdir_data,r'processed')
+    parameters['fdir_interim_data'] = os.path.join(parameters['fdir_data'],r'interim')
+    parameters['fdir_processed_data'] = os.path.join(parameters['fdir_data'],r'processed')
+    parameters['fdir_raw_data'] = os.path.join(parameters['fdir_data'],r'raw')
+
     
-    fdir_graphs = os.path.join(fdir_interim_data,r'graphs')
-    fdir_tm59 = os.path.join(fdir_interim_data, r'TM59')
+    parameters['fdir_tm59_interim'] = os.path.join(parameters['fdir_interim_data'], r'TM59')
+    parameters['fdir_graphs_interim'] = os.path.join(parameters['fdir_tm59_interim'], r'graphs')
     
-    fpth_comp_script = os.path.join(fdir_scripts, r'compare_model_run_file.py')
-    fdir_comp_out = os.path.join(fdir_processed_data, r'datacomparison')
+    parameters['fpth_comp_script'] = os.path.join(parameters['fdir_scripts'], r'compare_model_run_file.py')
+    parameters['fdir_comp_out'] = os.path.join(parameters['fdir_processed_data'], r'TM59')
+
+    parameters['fpth_report_script'] = os.path.join(parameters['fdir_scripts'], r'report_model_run_file.py')
 
     compare_config = {
-        'fpth_script':os.path.realpath(fpth_comp_script),
-        'fdir':fdir_scripts,
-        'display_ignore':display_ignore,
+        'fpth_script':os.path.realpath(parameters['fpth_comp_script']),
+        'fdir':parameters['fdir_scripts'],
+        'display_ignore':parameters['display_ignore'],
         'script_outputs': {
             '0': {
-                    'fdir':os.path.realpath(fdir_comp_out),
+                    'fdir':os.path.realpath(parameters['fdir_comp_out']),
                     'fnm': '',
-                    'description': "a pdf report from word"
+                    'description': "Folder for comparison graphs"
             }
         },
-        'fdir_compareinputs': fdir_interim_data
-    }    
+        'fdir_compareinputs': parameters['fdir_graphs_interim']
+    }
 
-
-    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_graphs, fdir_analysis=fdir_tm59)  
+    runapps = RunAppsMruns(di=create_config, fdir_input=parameters['fdir_modelruninput'], fdir_data=parameters['fdir_graphs_interim'], fdir_analysis=parameters['fdir_tm59_interim'], fdir_raw_data=parameters['fdir_raw_data'])  
     compare_runs = RunAppComparison(compare_config)  
+    parameters['fdir_inputs'] = os.path.relpath(runapps.fdir_input, NBFDIR)
+    
+    reporting_config = {
+        'fpth_script':os.path.realpath(parameters['fpth_report_script']),
+        'fdir':parameters['fdir_scripts'],
+        'script_outputs': {
+            '0': {
+                    'fdir':parameters['fdir_reports'],
+                    'fnm': '',
+                    'description': "A markdown report"
+            }
+        },
+        'fpth_parameters': parameters,
+        'compare_run_inputs': compare_config['fpth_inputs']
+    }
+
+    report_run = RunApp(reporting_config)  
+    
 
     # Display Model Runs
     display(Markdown('# Overheating Analysis - Toolbox'))
@@ -133,4 +158,8 @@ if __name__ == '__main__':
     display(Markdown('## Compare Runs'))
     display(Markdown('''Choose multiple runs, which can be compared'''))
     display(compare_runs)
+    display(Markdown('---'))
+    display(Markdown('## Report Runs'))
+    display(Markdown('''Create a report'''))
+    display(report_run)
 

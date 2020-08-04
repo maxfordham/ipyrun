@@ -57,8 +57,8 @@ def get_mfuser_initials():
     return user[0]+user[2]
 
 
-
 # -
+
 
 class RunAppsMrunsOld():
     # Archived version of RunAppsMruns,
@@ -593,15 +593,21 @@ class RunApp(RunForm, RunConfig):
             #    d.preview_fpth()
                 
             fpths = [v for k,v in self.fpths_outputs.items()]
+            
             if 'display_ignore' in self.config:
                 display_ignore = self.config['display_ignore']
             else:
                 display_ignore = []
+            
+            if 'display_prefix' in self.config:
+                display_prefix = self.config['display_prefix']
+            else:
+                display_prefix = ''
                 
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
-                display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=self.config['pretty_name']))
+                display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
                 
     def _show_log(self, sender):
         with self.out:
@@ -808,7 +814,7 @@ class RunAppsMruns():
         tmp['script_outputs']['1']['fnm'] = os.path.realpath(self.fdir_analysis)
         tmp['script_outputs']['2']['fnm'] = os.path.realpath(self.fdir_raw_data)
         tmp['fpth_inputs'] = fpth_input
-        tmp['fdir_inputs'] = self.fdir_input
+        tmp['display_prefix'] = process_name
         tmp.update({'process_name':process_name})
         tmp.update({'pretty_name':process_name})
         
@@ -1015,21 +1021,23 @@ class RunAppComparison(RunApp):
         
         if "fdir_compareinputs" in self.config:
             comp_vals_dir = self.config["fdir_compareinputs"]
-            for dir in os.listdir(comp_vals_dir):
-                full_dir = os.path.join(comp_vals_dir, dir)
-                if os.path.isdir(full_dir):
-                    comp_vals[dir] = full_dir
+            
+            comp_vals = [file.split('__')[0] for file in os.listdir(comp_vals_dir)]
+            comp_vals = list(set(comp_vals))
+            
             json_data = read_json(self.config["fpth_inputs"])
+            
             for element in json_data:
                 if element["name"] == "Benchmark" or element["name"] == "As Designed":
                     element["options"] = comp_vals
-                    if element["value"] not in comp_vals.values():
+                    if element["value"] not in comp_vals:
                         element["value"] = None               
-                elif element["name"] == "Comparison":
+                '''elif element["name"] == "Comparison":
                     element["options"] = comp_vals
                     for value in element["value"]:
-                        if value not in comp_vals.values():
-                            element["value"].remove(value)
+                        if value not in comp_vals:
+                            element["value"].remove(value)'''
+                
             write_json(json_data, fpth=self.config["fpth_inputs"])
 
         with self.out:
@@ -1229,80 +1237,3 @@ if __name__ == '__main__':
         }  
     r = RunApp(config)
     r
-
-
-        # Example6 --------------------------
-    # Set of RunApps and comparison tools, for ModelRun
-
-    # Parameters
-    fdir_modelruninput = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\05 Model Files') 
-    fdir_data = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\data')
-    fdir_scripts = os.path.join(os.environ['mf_root'],r'ipyrun\examples\testproject\datadriven\src')
-    display_ignore = ['.jpg','.jpeg','.png','.xlsx']
-    
-    # Create Model Run Outputs
-    fpth_create_script = os.path.join(fdir_scripts,r'create_model_run_file.py')
-
-    create_config = {
-        'fpth_script':os.path.realpath(fpth_create_script),
-        'fdir':os.path.join(fdir_scripts),
-        'display_ignore':display_ignore,
-        "script_outputs": {
-            '0': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for data output"
-            },
-            '1': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for analysis output"
-            },
-            '2': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for raw data"
-            }
-        }
-    } 
-
-    # Compare Model Run Outputs
-    fdir_interim_data = os.path.join(fdir_data,r'interim')
-    fdir_processed_data = os.path.join(fdir_data,r'processed')
-    fdir_raw_data = os.path.join(fdir_data,r'raw')
-    
-    fdir_graphs = os.path.join(fdir_interim_data,r'graphs')
-    fdir_tm59 = os.path.join(fdir_interim_data, r'TM59')
-    
-    fpth_comp_script = os.path.join(fdir_scripts, r'compare_model_run_file.py')
-    fdir_comp_out = os.path.join(fdir_processed_data, r'datacomparison')
-
-    compare_config = {
-        'fpth_script':os.path.realpath(fpth_comp_script),
-        'fdir':fdir_scripts,
-        'display_ignore':display_ignore,
-        'script_outputs': {
-            '0': {
-                    'fdir':os.path.realpath(fdir_comp_out),
-                    'fnm': '',
-                    'description': "a pdf report from word"
-            }
-        },
-        'fdir_compareinputs': fdir_interim_data
-    }    
-
-
-    runapps = RunAppsMruns(di=create_config, fdir_input=fdir_modelruninput, fdir_data=fdir_graphs, fdir_analysis=fdir_tm59, fdir_raw_data=fdir_raw_data)  
-    compare_runs = RunAppComparison(compare_config)  
-
-    # Display Model Runs
-    display(Markdown('# Overheating Analysis - Toolbox'))
-    display(Markdown('---'))
-    display(Markdown('## Setup Inputs and Run Models'))
-    display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
-    display(runapps, display_id=True)
-    display(Markdown('---'))
-    display(Markdown('## Compare Runs'))
-    display(Markdown('''Choose multiple runs, which can be compared'''))
-    display(compare_runs)
-

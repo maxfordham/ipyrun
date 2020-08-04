@@ -1,15 +1,16 @@
 """
-Creates Model Run File
-
+A script that takes details from an overheating model, 
+and creates overheating tables and indoor temperature graphs of the model.
+        
     Args:
-        ** Model Run: Set of Inputs for this Model
+        ** model_run_inputs: Set of Inputs/Assumptions for this Model
 
     Returns:
-        ** Data Directory:Folder where graphs have been stored
-        ** TM59 Directory: Folder where TM59 outputs have been stored
+        **  data_directory: Folder where graphs are stored
+        **  analysis_directory: Folder where overheating analysis table are stored
         
-    Note:
-        -   N/A
+    Image:
+        %mf_root%\\ipyrun\\examples\\testproject\\datadriven\\src\\create-model-run-doc.png
 
 """
 # -*- coding: utf-8 -*-
@@ -194,10 +195,10 @@ class TM59Plotter:
         )
         
         table = go.Figure(data=data, layout=layout)
-        titleText = "TM59 Analysis, with air speed {0} m/s".format(air_speed)
+        '''titleText = "TM59 Analysis, with air speed {0} m/s".format(air_speed)
         table.update_layout(
             title_text=titleText,
-            title_font_size=17)
+            title_font_size=17)'''
 
         filename = os.path.join(self.out_raw_dir, self.process_name + '__rawTM59results')
         copyfile(self.tm59_raw_fpth, filename + '.xlsx')
@@ -383,12 +384,9 @@ if __name__ == '__main__':
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
 
-    with open("test.txt", "w") as text_file:
-        print("{0}".format(config['process_name']), file=text_file)
-
     for output in list(outputs.values()):
         if not os.path.exists(output):
-            os.mkdir(output)
+            os.makedirs(output)
     inputs = read_json(fpth_inputs)
 
     calc_inputs = {}
@@ -402,7 +400,7 @@ if __name__ == '__main__':
         return inputs
 
     calc_inputs = get_inputs(inputs, calc_inputs)
-
+    df = pd.DataFrame(data=list(map(list, calc_inputs.items())))
     main(inputs=calc_inputs,outputs=outputs, process_name=config['process_name'])
     print('done')
 

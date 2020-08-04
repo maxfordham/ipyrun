@@ -1,15 +1,15 @@
 """
-Compare Model Run File
-
+A script that takes creates a set of graphs
+comparing the indoor temperatures between a 
+'Benchmark' option and an 'As Designed' option
+        
     Args:
-        ** Comparison: Set of model runs to compare
+        ** benchmark: Name of the 'Benchmark' option
+        ** as_designed: Name of the 'As Designed' option
 
     Returns:
-        ** Output Directory: Where comparison graphs are written to 
+        **  overheating_report: The final report, outputted as a PDF or Word document
         
-    References:
-        -   N/A
-
 """
 # -*- coding: utf-8 -*-
 
@@ -26,7 +26,7 @@ from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
 import datetime as dt
 
-def main(inputs, outputs):
+def main(inputs, outputs, input_dir):
 
     # Create Dataset
     exttemp_colour = "Crimson"
@@ -35,7 +35,7 @@ def main(inputs, outputs):
     dataset_raw = []
     dataset_raw.append((inputs["Benchmark"],"Benchmark", benchmark_colour))
     dataset_raw.append((inputs["As Designed"],"As Designed", asdesigned_colour))
-    colors = ["Peru",
+    '''colors = ["Peru",
             "LightGray",
             "Turquoise",
             "darksalmon",
@@ -45,31 +45,38 @@ def main(inputs, outputs):
         dataset_raw.append((i,"",colors[color_index]))
         color_index += 1
         if color_index > len(colors):
-            color_index = 0
+            color_index = 0'''
 
     # Get comparison files, 
     # These are common the files common to all models
-    files_count = {}
+
+    basenames = []
+
+    for file in os.listdir(input_dir):
+        if file.endswith(".plotly"):
+            basenames.append(''.join(file.split('__')[1:]))
+
+    basenames = list(set(basenames))
     files_tocompare = []
-    for data_raw in dataset_raw:
-        for file in os.listdir(data_raw[0]):
-            if file.endswith(".plotly"):
-                if file in files_count:
-                    files_count[file] += 1
-                else:
-                    files_count[file] = 1
 
-    for file in files_count:
-        if files_count[file] == len(dataset_raw):
-            files_tocompare.append(file)
-
+    for basename in basenames:
+        to_compare = True
+        
+        for data_raw in dataset_raw:
+            fpth = os.path.join(input_dir,"{0}__{1}".format(data_raw[0],basename))
+            if not os.path.exists(fpth):
+                to_compare = False
+                
+        if to_compare:
+            files_tocompare.append(basename)
 
     # Create Comparison Graph, for each file
     for filename in files_tocompare:
         data_out = []
         legend_names = []
         for data_raw in dataset_raw:
-            graph = pio.read_json(os.path.join(data_raw[0], filename))['data']
+            fpth = os.path.join(input_dir,"{0}__{1}".format(data_raw[0],filename))
+            graph = pio.read_json(fpth)['data']
             for scatter in graph:
                 if scatter['name'] not in legend_names:
                     plot = scatter
@@ -89,7 +96,8 @@ def main(inputs, outputs):
 
                     legend_names.append(plot['name'])
 
-        layout = pio.read_json(os.path.join(dataset_raw[0][0], files_tocompare[0]))['layout']
+        fpth = os.path.join(input_dir,"{0}__{1}".format(dataset_raw[0][0],filename))
+        layout = pio.read_json(fpth)['layout']
         fig = go.Figure(
             data=tuple(data_out),
             layout=layout
@@ -100,7 +108,7 @@ def main(inputs, outputs):
             xanchor="left",
             x=0
         ))
-        fig.write_image(os.path.join(outputs['0'], os.path.splitext(filename)[0] + '_test2.png'))
+        fig.write_image(os.path.join(outputs['0'], os.path.splitext(filename)[0] + '.png'))
         fig.write_json(os.path.join(outputs['0'], filename))
     return
 
@@ -138,6 +146,7 @@ if __name__ == '__main__':
 
     calc_inputs = get_inputs(inputs, calc_inputs)
 
-    main(calc_inputs,outputs)
+
+    main(calc_inputs,outputs, config['fdir_compareinputs'])
     print('done')
 
