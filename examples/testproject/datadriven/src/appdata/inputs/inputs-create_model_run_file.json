@@ -1,30 +1,5 @@
 [
     {
-        "label": "",
-        "max": null,
-        "min": null,
-        "name": "Model Run Name",
-        "options": [1,2],
-        "value": "Value",
-        "widget": "DerivedText"
-    },
-    {
-        "label": "Number, using to prefix the file name",
-        "max": null,
-        "min": null,
-        "name": "File Prefix",
-        "options": null,
-        "value": 0
-    },
-    {
-        "label": "Tag for the Model, used within file naming",
-        "max": null,
-        "min": null,
-        "name": "File Tag",
-        "options": null,
-        "value": "YY-OverheatingAnalysis"
-    },
-    {
         "label": "General Description of the Model",
         "max": null,
         "min": null,
@@ -35,42 +10,8 @@
     },
     {
         "label": "",
-        "max": null,
-        "min": null,
-        "name": "Report Model Run?",
-        "options": null,
-        "value": true,
-        "widget": "Checkbox"
-    },
-    {
-        "label": "",
-        "max": null,
-        "min": null,
-        "name": "As Designed?",
-        "options": null,
-        "value": true,
-        "widget": "Checkbox"
-    },
-    {
-        "label": "",
-        "max": null,
-        "min": null,
-        "name": "Filtered Runs to Graph?",
-        "value": false,
-        "widget": "Checkbox"
-    },
-    {
-        "label": "",
-        "name": "Refs & Linked Files",
+        "name": "Refs",
         "value": [
-            {
-                "label": "File path of the IES model (.mit)",
-                "max": null,
-                "min": null,
-                "name": "Model File Path",
-                "options": null,
-                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit"
-            },
             {
                 "label": "Date of Model Creation",
                 "max": null,
@@ -89,14 +30,6 @@
                 "value": "TM59 overheating analysis"
             },
             {
-                "label": "File path of the DWG file",
-                "max": null,
-                "min": null,
-                "name": "DWG Reference",
-                "options": null,
-                "value": ""
-            },
-            {
                 "label": "Reference Document Title, for London Plan",
                 "max": null,
                 "min": null,
@@ -108,10 +41,34 @@
     },
     {
         "label": "",
+        "name": "Linked Files",
+        "value": [
+            {
+                "label": "File path of the IES model (.mit)",
+                "max": null,
+                "min": null,
+                "name": "Model File Path",
+                "options": null,
+                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
+                "widget": "FileChooser"
+            },
+            {
+                "label": "File path of the DWG file",
+                "max": null,
+                "min": null,
+                "name": "DWG Reference",
+                "options": null,
+                "value": null,
+                "widget": "FileChooser"
+            }
+        ]
+    },
+    {
+        "label": "",
         "name": "Fabrics",
         "value": [
             {
-                "label": "Expressed as a Percentage",
+                "label": "(%)",
                 "max": 100,
                 "min": 0,
                 "name": "Average Glazing Ratio",
@@ -119,7 +76,7 @@
                 "value": 55.1
             },
             {
-                "label": "Units: W/m^2.K",
+                "label": "(W/m^2.K)",
                 "max": null,
                 "min": null,
                 "name": "U-Value: Walls",
@@ -127,7 +84,7 @@
                 "value": 0.1
             },
             {
-                "label": "Units: W/m^2.K",
+                "label": "(W/m^2.K)",
                 "max": null,
                 "min": null,
                 "name": "U-Value: Floor",
@@ -135,7 +92,7 @@
                 "value": 0.1
             },
             {
-                "label": "Units: W/m^2.K",
+                "label": "(W/m^2.K)",
                 "max": null,
                 "min": null,
                 "name": "U-Value: Roof",
@@ -143,12 +100,20 @@
                 "value": 0.1
             },
             {
-                "label": "Units: W/m^2.K",
+                "label": "(W/m^2.K)",
                 "max": null,
                 "min": null,
                 "name": "U-Value: Opaque Doors",
                 "options": null,
                 "value": 0.1
+            },
+            {
+                "label": "(W/m^2.K)",
+                "max": null,
+                "min": null,
+                "name": "U-Value: Windows",
+                "options": null,
+                "value": 1.0
             },
             {
                 "label": "",
@@ -159,7 +124,7 @@
                 "value": 0.4
             },
             {
-                "label": "Ratio of Transparent Window Area to Total Window Size",
+                "label": "",
                 "max": 1,
                 "min": 0,
                 "name": "Window Frame Factor",
@@ -167,15 +132,7 @@
                 "value": 0.9
             },
             {
-                "label": "Units: W/m^2.K",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Windows",
-                "options": null,
-                "value": 1.0
-            },
-            {
-                "label": "Ratio of Openable Door Area to Total Door Size",
+                "label": "",
                 "max": null,
                 "min": null,
                 "name": "Door Frame Factor",

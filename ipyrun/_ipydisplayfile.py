@@ -286,7 +286,7 @@ class DisplayFile():
 # -
 
 class DisplayFiles():
-    def __init__(self, fpths, fpths_ignore=[]):
+    def __init__(self, fpths, fpths_ignore=[], fpth_prefix=''):
         self.out = widgets.Output();
         fpths_temp = copy.deepcopy(fpths)
         
@@ -307,6 +307,11 @@ class DisplayFiles():
             ext = os.path.splitext(fpth)[1].lower()
             if (ext in fpths_ignore) or (ext not in DisplayFile()._map.keys()):
                 self.fpths.remove(fpth)
+            elif fpth_prefix:
+                if not os.path.basename(fpth).startswith(fpth_prefix):
+                    self.fpths.remove(fpth)
+                    
+        self.fpths = list(set(self.fpths)).sort()
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
@@ -371,10 +376,8 @@ if __name__ =='__main__':
     #class_list
     # -
     
-    
     fdir = os.path.dirname(os.path.realpath('__file__'))
     fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
-
     
     fpths = recursive_glob(rootdir=fdir)
     
@@ -395,10 +398,16 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
-    d2= DisplayFiles(r'C:\engDev\git_mf\ipyrun\examples\testproject\datadriven\data\processed\tm59')
+    d2= DisplayFiles(fdir_eg)
     display(Markdown('### Example3'))
     display(Markdown('''display eg directory'''))
     display(d2)
+
+    fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
+    d3 = DisplayFiles(fdir_eg, fpths_ignore=['.png'], fpth_prefix='eg')
+    display(Markdown('### Example4'))
+    display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
+    display(d3)
 
 
 

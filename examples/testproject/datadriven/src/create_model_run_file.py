@@ -1,15 +1,16 @@
 """
-Creates Model Run File
-
+A script that takes details from an overheating model, 
+and creates overheating tables and indoor temperature graphs of the model.
+        
     Args:
-        ** Model Run: Set of Inputs for this Model
+        ** model_run_inputs: Set of Inputs/Assumptions for this Model
 
     Returns:
-        ** Data Directory:Folder where graphs have been stored
-        ** TM59 Directory: Folder where TM59 outputs have been stored
+        **  data_directory: Folder where graphs are stored
+        **  analysis_directory: Folder where overheating analysis table are stored
         
-    Note:
-        -   N/A
+    Image:
+        %mf_root%\\ipyrun\\examples\\testproject\\datadriven\\src\\create-model-run-doc.png
 
 """
 # -*- coding: utf-8 -*-
@@ -128,14 +129,15 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
     return dict_dfs
 
 class TM59Plotter:
-    def __init__(self, tm59_raw_fpth, tm59_pretty_fpth, data_fpth, out_data_dir, out_analysis_dir):
+    def __init__(self, tm59_raw_fpth, tm59_pretty_fpth, data_fpth, outputs, process_name):
         self.tag_names = ['block_number','level_number', 'flat_code', 'room_code', 'space_name']
         self.comparison_data = ["External temperature", "Dry Bulb Temperature"]
         self.tm59_raw_fpth = tm59_raw_fpth
         self.tm59_pretty_fpth = tm59_pretty_fpth
-        self.out_data_dir = out_data_dir
-        self.out_analysis_dir = out_analysis_dir
-        self.process_name = os.path.splitext(os.path.basename(out_data_dir))[0]
+        self.out_data_dir = outputs['0']
+        self.out_analysis_dir = outputs['1']
+        self.out_raw_dir = outputs['2']
+        self.process_name = process_name
         self.data_fpth = data_fpth
         self.dfs={}
     
@@ -193,12 +195,15 @@ class TM59Plotter:
         )
         
         table = go.Figure(data=data, layout=layout)
-        titleText = "Air Speed: {0} m/s".format(air_speed)
+        '''titleText = "TM59 Analysis, with air speed {0} m/s".format(air_speed)
         table.update_layout(
             title_text=titleText,
-            title_font_size=17)
+            title_font_size=17)'''
 
-        filename = os.path.join(self.out_analysis_dir, self.process_name + '_TM59results')
+        filename = os.path.join(self.out_raw_dir, self.process_name + '__rawTM59results')
+        copyfile(self.tm59_raw_fpth, filename + '.xlsx')
+
+        filename = os.path.join(self.out_analysis_dir, self.process_name + '__TM59results')
         copyfile(self.tm59_pretty_fpth, filename + '.xlsx')
         table.write_json(filename + '.plotly')
         table.write_image(filename + '.jpeg')
@@ -244,8 +249,8 @@ class TM59Plotter:
                         fig.update_layout(fig_layout)
                         fig.update_layout(title="Maximum {0} - {1}".format(sheet, roomName))
                         room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName)
-                        fig.write_image(os.path.join(self.out_data_dir, "{0}_{1}.jpeg".format(sheet_fname, room_fname)))
-                        fig.write_json(os.path.join(self.out_data_dir, "{0}_{1}.plotly".format(sheet_fname, room_fname)))
+                        fig.write_image(os.path.join(self.out_data_dir, "{2}__{0}_{1}.jpeg".format(sheet_fname, room_fname, self.process_name)))
+                        fig.write_json(os.path.join(self.out_data_dir, "{2}__{0}_{1}.plotly".format(sheet_fname, room_fname, self.process_name)))
 
             
 
@@ -323,7 +328,7 @@ class TM59Plotter:
 
         return dfs
 
-def main(inputs, outputs):
+def main(inputs, outputs, process_name):
     input_dir = os.path.dirname(inputs["Model File Path"])
     tm59_raw_fpth = ""
     data_fpth = ""
@@ -341,7 +346,7 @@ def main(inputs, outputs):
                 tm59_pretty_fpth = path
 
     # Create Plotter
-    plotter = TM59Plotter(tm59_raw_fpth=tm59_raw_fpth, tm59_pretty_fpth=tm59_pretty_fpth, data_fpth=data_fpth, out_data_dir=outputs['0'], out_analysis_dir=outputs['1'])
+    plotter = TM59Plotter(tm59_raw_fpth=tm59_raw_fpth, tm59_pretty_fpth=tm59_pretty_fpth, data_fpth=data_fpth, outputs=outputs, process_name=process_name)
     plotter.read_data_make_summary()
     
     # Create TM59 Outputs
@@ -361,6 +366,11 @@ script_outputs = {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for tm59 output"
+    },
+    '2': {
+        'fdir':'.', # relative to the location of the App / Notebook file
+        'fnm': r'.',
+        'description': "Folder for raw data"
     }
 }
 
@@ -376,7 +386,7 @@ if __name__ == '__main__':
 
     for output in list(outputs.values()):
         if not os.path.exists(output):
-            os.mkdir(output)
+            os.makedirs(output)
     inputs = read_json(fpth_inputs)
 
     calc_inputs = {}
@@ -390,7 +400,7 @@ if __name__ == '__main__':
         return inputs
 
     calc_inputs = get_inputs(inputs, calc_inputs)
-
-    main(calc_inputs,outputs)
+    df = pd.DataFrame(data=list(map(list, calc_inputs.items())))
+    main(inputs=calc_inputs,outputs=outputs, process_name=config['process_name'])
     print('done')
 

@@ -647,7 +647,8 @@ class SimpleEditJson(EditListOfDicts):
     def _save_changes(self, sender):
         self.data_out = self.li
         #try:
-            
+        print('FPTH JSON OUT')
+        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
@@ -705,8 +706,6 @@ class EditJson(EditListOfDicts, FileConfigController):
         
         self.li = read_json(self.fpth_inputs)
         self._update_from_file()
-        self.update_display()
-        self.display()
 
         
     def _update_from_file(self):
@@ -716,12 +715,15 @@ class EditJson(EditListOfDicts, FileConfigController):
             self.widgets.append(EditDict(l))
             
         #self.applayout.children = ()
-        self.applayout.children = self._get_apps_layout()
+        #self.applayout.children = self._get_apps_layout()
         #for w in self.widgets:
         #    self.applayout.children.append(w.layout)
         
     def _get_apps_layout(self):
-        return [widgets.VBox([w.layout]) for w in self.widgets]
+        app_layout = []
+        for w in self.widgets:
+            app_layout.append(widgets.VBox([w.layout, w.out]))
+        return app_layout
     
     def _save_changes(self, sender):
         """save changes to working inputs file"""
@@ -732,15 +734,15 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
         self.data_out = self.li 
         # add code here to save changes to file
+        print('FPTH JSON OUT')
+        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
                    fpth=fpth,
                    print_fpth=False,
                    openFile=False)
-        
-        self.update_display()
-        self.display()
+        #self.apps_layout = widgets.VBox(self._get_apps_layout())
         
     def _load_inputs(self,sender):
         """launches the inputs from file dialog"""
@@ -750,8 +752,7 @@ class EditJson(EditListOfDicts, FileConfigController):
         else:
             self.temp_message.value = markdown('')
             self.inputform.children = []
-        self.update_display()
-        self.display()
+        #self.apps_layout = widgets.VBox(self._get_apps_layout())
 
     def _load(self,sender):
 
@@ -760,24 +761,15 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.li = read_json(fpth)
         self._update_from_file()
         self.temp_message.value = markdown('input form load data from: {0}'.format(fpth))
-        self.update_display()
-        self.display()
-        
-    def update_display(self):
-        #self._lidi_display()
+        #self.apps_layout = widgets.VBox(self._get_apps_layout())
+    
+    def display(self):
         box = widgets.VBox([
             self.button_bar,
             self.temp_message,
             self.inputform,
         ])
         self.layout = box
-        for l in self.widgets:
-            with self.out:
-                #clear_output()
-                display(l.out)
-    
-    def display(self):
-        self.update_display()
         display(self.layout)
         #out = [l.layout for l in self.widgets]
         self.apps_layout = widgets.VBox(self._get_apps_layout())
@@ -806,7 +798,9 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
         self.temp_message.value = markdown('{0} saved at: {1}'.format(self.fpth_out, self.save_timestampStr))
         
         # add code here to save changes to file
-        self.data_out = self.li            
+        self.data_out = self.li     
+        print('FPTH JSON OUT')
+        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
