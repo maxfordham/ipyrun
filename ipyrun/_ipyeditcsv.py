@@ -90,6 +90,58 @@ class SimpleEditCsv():
         self.display() 
 
 
+class ShowHideEditCsv():
+    """NOTE IN USE"""
+    def __init__(self, fpth_in, fpth_out=None, title=None):
+        self.fpth_in = fpth_in
+        if fpth_out==None:
+            self.fpth_out = fpth_in
+        else:
+            self.fpth_out = fpth_out
+        if title==None:
+            self.title = 'edit: {0}'.format(self.fpth_out)
+        else:
+            self.title = title
+        self.sheet = self._sheet_from_fpth(self.fpth_in)
+        self.form()
+        self._init_controls()
+        self.out = widgets.Output()
+        
+    def form(self):
+        self.save_changes = widgets.Button(description='save changes',button_style='success')
+        self.button_bar = widgets.HBox([self.save_changes])
+        self.layout = self.sheet
+        self.box = widgets.VBox([self.button_bar,self.layout])
+        self.acc = widgets.Accordion(children=[self.box])
+        self.acc.set_title(0,self.title)
+        self.acc.selected_index = None
+        
+    def _init_controls(self):
+        self.save_changes.on_click(self._save_changes)
+        
+    def _sheet_from_fpth(self, fpth):
+        df=del_matching(pd.read_csv(fpth),'Unnamed')
+        sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
+        return sheet
+    
+    def _save_changes(self, sender):
+        self.data_out = to_dataframe(self.sheet)
+        self.data_out.to_csv(self.fpth_out)
+        display(Markdown('changes saved to: {0}'.format(self.fpth_out)))
+        with self.out:
+            clear_output()
+            dateTimeObj = datetime.now()
+            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+            display(Markdown('{0} changes saved to: {1}'.format(timestampStr,self.fpth_out)))
+        self.display()
+
+    def display(self):
+        display(self.acc)
+        
+    def _ipython_display_(self):
+        self.display() 
+
+
 class EditCsv(FileConfigController):
 
     def __init__(self,config):
@@ -162,20 +214,3 @@ class EditCsv(FileConfigController):
         self.display_sheet()
         self.update_display()
         self.display()
-
-if __name__ == "__main__":
-    # SIMPLE EDIT CSV
-    #fpth = os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv')
-    #editcsv = SimpleEditCsv(fpth)
-    #display(editcsv)
-    
-    
-    # EDIT CSV with custom config and file management
-    config={
-    'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-    'fdir':'.',
-    }
-    editcsv = EditCsv(config)
-    display(editcsv)
-
-
