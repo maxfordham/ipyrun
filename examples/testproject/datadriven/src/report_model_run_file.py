@@ -45,16 +45,16 @@ def main(inputs, outputs, fpth_parameters):
         def get_inputs(values, inputs, name):
             for l in values:
                 if type(l['value']) is list:
-                    if l['name'] != 'Linked Files':
-                        inputs = get_inputs(l['value'], inputs, l['name'])
+                    inputs = get_inputs(l['value'], inputs, l['name'])
                 else:
-                    inputs[l['name']] = [l['value'], l['label'], name]
+                    if name != 'Linked Files':
+                        inputs[l['name']] = [l['value'], l['label'], name]
             return inputs
 
         calc_inputs = get_inputs(inputs, calc_inputs, 'Misc')
         df = pd.DataFrame(data=calc_inputs)
         df = df.T
-        df.columns = ['Parameter Values', '', 'Category']
+        df.columns = ['Parameter Values', 'Notes', 'Category']
         return df
 
     for name in basenames:
@@ -76,14 +76,14 @@ def main(inputs, outputs, fpth_parameters):
         '##### Site Location',
         '{0}'.format(inputs['Site Location']),
         '##### Site Image',
-        '![alt]({0})'.format(r'../references/img/site_img.png'),
+        '![]({0})'.format(r'../references/img/site_img.png'),
         '##### IES Modelling Image',
-        '![alt]({0})'.format(r'../references/img/ies_img.png'),
+        '![]({0})'.format(r'../references/img/ies_img.png'),
 
     ]
         
     report += analysisdesc
-    report.append('---')
+    report.append('\\newpage')
 
     report.append('## TM59 Results')
     report.append('This section outlines the results from CIBSE TM59 analysis.')
@@ -93,9 +93,9 @@ def main(inputs, outputs, fpth_parameters):
     for name in basenames:
         report.append('### {0}'.format(name))
         fpth = os.path.join(fpth_parameters['fdir_tm59_interim'],'{0}__TM59results.jpeg'.format(basenames[name]))
-        report.append('![alt]({0})'.format(fpth))
+        report.append('![]({0})'.format(fpth))
 
-    report.append('---')
+    report.append('\\newpage')
     report.append('## Individual Model Details')
     report.append('This section outlines the assumptions and design inputs used within the overheating modelling, for both the *Benchmark* and *As Designed* models')
     for name in basenames:
@@ -119,23 +119,24 @@ def main(inputs, outputs, fpth_parameters):
         
         report += modeldesc
 
-    report.append('---')
+    report.append('\\newpage')
     report.append('## Indoor Temperature Graphs')
     report.append('This section compares the indoor temperatures for both the *Benchmark* and *As Designed* models, for a typical summer week.')
     report.append('A number of example rooms were used, to show an overview of the indoor temperatures across the building.')
-    for filename in os.listdir(fpth_parameters['fdir_comp_out']):
-        if filename.endswith('.png'):
-            fullname = os.path.join(fpth_parameters['fdir_comp_out'], filename)
-            report.append('![alt]({0})'.format(fullname))
+    for filename in inputs['Comparison Graphs']:
+        report.append('![]({0})'.format(filename))
 
-    report.append('---')
+    report.append('\\newpage')
     report.append('## Appendix A: Full Model Details')
     report.append('This section outlines all model inputs, for both the *Benchmark* and *As Designed* models')
 
-    for name in basenames:
-        report.append('### {0}'.format(name))
-        df = dfs[name]
-        report.append(df.to_markdown())
+    appendix_dfs = [df.rename(columns = {'Parameter Values': '{0} Value'.format(name)}) for name, df in dfs.items()]
+    appendix_df = pd.concat(appendix_dfs, axis=1, join='inner', ignore_index=False, sort=False)
+    appendix_df = appendix_df.loc[:,~appendix_df.columns.duplicated()]
+    cols = [col for col in appendix_df if col not in ['Notes', 'Category']] + ['Notes', 'Category']
+    appendix_df = appendix_df[cols]
+
+    report.append(appendix_df.to_markdown())
 
     if not os.path.exists(os.path.dirname(outputs['0'])):
         os.makedirs(os.path.dirname(outputs['0']))
@@ -174,6 +175,7 @@ if __name__ == '__main__':
 
     compare_run_inputs = read_json(config['compare_run_inputs'])
     [calc_inputs.update({l['name']:l['value']}) for l in compare_run_inputs]
+
     
     main(calc_inputs, outputs, config['fpth_parameters'])
     print('done')

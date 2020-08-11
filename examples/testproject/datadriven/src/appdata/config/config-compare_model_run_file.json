@@ -6,7 +6,7 @@
         ".xlsx"
     ],
     "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src",
-    "fdir_compareinputs": "../data\\interim\\TM59\\graphs",
+    "fdir_compareinputs": "C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/data\\interim\\TM59\\graphs",
     "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config",
     "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
     "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive",
@@ -69,7 +69,9 @@
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1416-RW-inputs-compare_model_run_file.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1417-RW-inputs-compare_model_run_file.json",
                 "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1645-RW-inputs-compare_model_run_file.json",
-                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1648-RW-inputs-compare_model_run_file.json"
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200803_1648-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200804_1248-RW-inputs-compare_model_run_file.json",
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive\\20200804_1705-RW-inputs-compare_model_run_file.json"
             ]
         },
         "template": {

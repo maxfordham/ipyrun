@@ -311,8 +311,8 @@ class DisplayFiles():
                 if not os.path.basename(fpth).startswith(fpth_prefix):
                     self.fpths.remove(fpth)
                     
-        self.fpths = list(set(self.fpths)).sort()
-        self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
+        self.fpths = sorted(list(set(self.fpths)))
+        self.fnms = [os.path.basename(fpth) for fpth in self.fpths]
         self._init_previews()
         self._init_form()
         self._init_controls()
@@ -408,13 +408,4 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
-
-
-
-
-
-
-
-
-
 

@@ -6,7 +6,9 @@
         "name": "Benchmark",
         "options": [
             "000_test",
-            "001_test"
+            "004_test",
+            "001_test",
+            "002_test-MV"
         ],
         "value": "000_test",
         "widget": "Dropdown"
@@ -18,7 +20,9 @@
         "name": "As Designed",
         "options": [
             "000_test",
-            "001_test"
+            "004_test",
+            "001_test",
+            "002_test-MV"
         ],
         "value": "001_test",
         "widget": "Dropdown"
