@@ -607,6 +607,10 @@ class RunApp(RunForm, RunConfig):
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
+                for f in fpths:
+                    if not os.path.isfile(f):
+                        print(f)
+                        fpths.remove(f)
                 display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
                 
     def _show_log(self, sender):
