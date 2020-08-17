@@ -174,6 +174,7 @@ class EditDictData():
                 'FloatText':widgets.FloatText,
                 'FloatSlider':widgets.FloatSlider,
                 'Dropdown':widgets.Dropdown,
+                'Combobox':widgets.Combobox,
                 'SelectMultiple':widgets.SelectMultiple,
                 'Checkbox':widgets.Checkbox,
                 'Text':widgets.Text,
@@ -250,12 +251,17 @@ class EditDict(EditDictData):
     
     def _build_widget(self):
         
-        if str(type(self.widget_lkup[self.widget_name]))=="<class 'method'>":
-            # then it is a developer defined custom widget that requires a class method to define
-            self.widget_lkup[self.widget_name]()
+        if self.widget_name in list(self.widget_lkup.keys()):
+            if str(type(self.widget_lkup[self.widget_name]))=="<class 'method'>":
+                # then it is a developer defined custom widget that requires a class method to define
+                self.widget_lkup[self.widget_name]()
+
+            else:
+                # it is a vanilla widget 
+                self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
         else:
-            # it is a vanilla widget 
-            self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
+            # it is a user defined widget
+            self.widget_only = self.widget_name(**self.kwargs)
 
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
         self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
@@ -488,13 +494,6 @@ class EditDict(EditDictData):
          
     def _ipython_display_(self):
         self.display()    
-
-
-# -
-
-di = {'name':'name','value':pd.DataFrame.from_dict({'a':['b','c'],'b':['c','d']}).to_json(),'widget':'ipyagrid'}
-#class(EditDict)
-EditDict(di)
 
 
 # +
