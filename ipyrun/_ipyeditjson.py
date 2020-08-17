@@ -86,7 +86,7 @@ class EditDictData():
             justify_content='flex-end',
             #border='solid 1px green',
             grid_auto_columns='True',
-            width='900%',
+            width='90%',
             align_items='stretch',  
             margin='0px 0px 0px 0px'
         )
@@ -646,8 +646,6 @@ class SimpleEditJson(EditListOfDicts):
     def _save_changes(self, sender):
         self.data_out = self.li
         #try:
-        print('FPTH JSON OUT')
-        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
@@ -733,8 +731,6 @@ class EditJson(EditListOfDicts, FileConfigController):
         self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
         self.data_out = self.li 
         # add code here to save changes to file
-        print('FPTH JSON OUT')
-        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
@@ -798,8 +794,6 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
         
         # add code here to save changes to file
         self.data_out = self.li     
-        print('FPTH JSON OUT')
-        print(fpth)
         write_json(self.data_out,
                    sort_keys=True,
                    indent=4,
@@ -968,9 +962,5 @@ if __name__ =='__main__':
     display(editnestedjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
-
-
 
 
