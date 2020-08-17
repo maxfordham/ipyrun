@@ -311,7 +311,8 @@ class DisplayFiles():
                 if not os.path.basename(fpth).startswith(fpth_prefix):
                     self.fpths.remove(fpth)
                     
-        self.fpths = list(set(self.fpths)).sort()
+        self.fpths = list(set(self.fpths))
+        self.fpths.sort()
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
