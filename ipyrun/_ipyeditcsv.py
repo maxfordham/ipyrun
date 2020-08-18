@@ -91,7 +91,7 @@ class SimpleEditCsv():
 
 
 class ShowHideEditCsv():
-    """NOTE IN USE"""
+    """a simple csv editor that allows the user to add and remove rows from the table"""
     def __init__(self, fpth_in, fpth_out=None, title=None):
         self.fpth_in = fpth_in
         if fpth_out==None:
@@ -109,7 +109,9 @@ class ShowHideEditCsv():
         
     def form(self):
         self.save_changes = widgets.Button(description='save changes',button_style='success')
-        self.button_bar = widgets.HBox([self.save_changes])
+        self.add_row = widgets.Button(description='add row',button_style='info')
+        self.remove_row = widgets.Button(description='remove row',button_style='danger')
+        self.button_bar = widgets.HBox([self.save_changes,self.add_row,self.remove_row])
         self.layout = self.sheet
         self.box = widgets.VBox([self.button_bar,self.layout])
         self.acc = widgets.Accordion(children=[self.box])
@@ -118,6 +120,8 @@ class ShowHideEditCsv():
         
     def _init_controls(self):
         self.save_changes.on_click(self._save_changes)
+        self.add_row.on_click(self._add_row)
+        self.remove_row.on_click(self._remove_row)
         
     def _sheet_from_fpth(self, fpth):
         df=del_matching(pd.read_csv(fpth),'Unnamed')
@@ -134,7 +138,24 @@ class ShowHideEditCsv():
             timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
             display(Markdown('{0} changes saved to: {1}'.format(timestampStr,self.fpth_out)))
         self.display()
-
+    
+    def _add_row(self, sender):
+        df = to_dataframe(self.sheet)
+        df = df.append(pd.DataFrame({c:[''] for c in list(df)}), ignore_index=True)
+        self.sheet = from_dataframe(df)
+        self.layout = self.sheet
+        self.box.children = [widgets.VBox([self.button_bar,self.layout])]
+        self.display()
+        
+    def _remove_row(self, sender):
+        df = to_dataframe(self.sheet)
+        ind = df.index.tolist()[:-1] # get a list of indexes drpping the last one
+        df = df.loc[ind]
+        self.sheet = from_dataframe(df)
+        self.layout = self.sheet
+        self.box.children = [widgets.VBox([self.button_bar,self.layout])]
+        self.display()
+        
     def display(self):
         display(self.acc)
         
@@ -142,6 +163,7 @@ class ShowHideEditCsv():
         self.display() 
 
 
+# + jupyter={"source_hidden": true}
 class EditCsv(FileConfigController):
 
     def __init__(self,config):
@@ -214,3 +236,21 @@ class EditCsv(FileConfigController):
         self.display_sheet()
         self.update_display()
         self.display()
+
+
+# -
+
+if __name__ =='__main__':
+
+    # FORM ONLY EXAMPLE
+    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\examples\testcsv\Ss_65_40_00_00-Ventilation_IndustryStandards.csv'))
+    
+    #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
+    a = ShowHideEditCsv(fpth)
+    display(Markdown('### Example0'))
+    display(Markdown('''ShowHideEditCsv'''))
+    display(a)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+    
