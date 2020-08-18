@@ -57,9 +57,10 @@ def get_mfuser_initials():
     return user[0]+user[2]
 
 
-# -
-
-
+# +
+###################
+# ARCHIVED
+###################
 class RunAppsMrunsOld():
     # Archived version of RunAppsMruns,
     # with inline compare files function
@@ -361,7 +362,43 @@ class RunAppsMrunsOld():
         display(self.apps_layout)
         
     def _ipython_display_(self):
-        self.display() 
+        self.display()
+        
+###################
+# ARCHIVED
+###################
+class RunAppComparison(RunApp):
+    # In order to pick which models to compare, 
+    # the reporting function needs a custom function 
+    # to add the model names to a dropdown 
+    def _edit_inputs(self, sender):
+        comp_vals = {}
+        
+        if "fdir_compareinputs" in self.config:
+            
+            # Create list of models
+            comp_vals_dir = self.config["fdir_compareinputs"]
+            comp_vals = [file.split('__')[0] for file in os.listdir(comp_vals_dir)]
+            comp_vals = list(set(comp_vals)) # Get unique values
+            
+            # Edit JSON, adding list of models
+            json_data = read_json(self.config["fpth_inputs"])
+            for element in json_data:
+                if element["name"] == "Benchmark" or element["name"] == "As Designed":
+                    element["options"] = comp_vals
+                    if element["value"] not in comp_vals:
+                        element["value"] = None               
+                '''elif element["name"] == "Comparison":
+                    element["options"] = comp_vals
+                    for value in element["value"]:
+                        if value not in comp_vals:
+                            element["value"].remove(value)'''
+                
+            write_json(json_data, fpth=self.config["fpth_inputs"])
+
+        with self.out:
+            clear_output()
+            display(EditJson(self.config))
 
 
 # +
@@ -878,7 +915,11 @@ class RunAppsMruns():
                                 tooltip='show table that compares inputs',
                                 button_style='warning',
                                 style={'font_weight':'bold'})
-        self.form = widgets.HBox([self.reset, self.help, self.run_batch, self.comp_inputs, self.add_run, self.del_run],
+        self.comp_outputs = widgets.Button(description='compare outputs',
+                                tooltip='show table that compares outputs',
+                                button_style='warning',
+                                style={'font_weight':'bold'})
+        self.form = widgets.HBox([self.reset, self.help, self.run_batch, self.comp_inputs, self.comp_outputs, self.add_run, self.del_run],
                         layout=widgets.Layout(width='100%',align_items='stretch'))   
     
     def _init_controls(self):
@@ -888,6 +929,7 @@ class RunAppsMruns():
         self.add_run.on_click(self._add_run)
         self.del_run.on_click(self._del_run)
         self.comp_inputs.on_click(self._comp_inputs)
+        self.comp_outputs.on_click(self._comp_outputs)
         
     def _help(self, sender):
         with self.out:
@@ -994,6 +1036,119 @@ class RunAppsMruns():
             clear_output()
             display(df_out)
             
+    def _comp_outputs(self, sender):
+        
+        # Create Dropdown & Run Button
+        self.comp_out_runs = widgets.SelectMultiple(
+                options=self._get_process_names()[1:],
+                description='Runs:',
+                disabled=False)
+        self.comp_out_dd = widgets.Dropdown(
+                options=[],
+                description='Outputs:',
+                disabled=False)
+        self.comp_out_btn = widgets.Button(description='Compare Outputs',
+                    tooltip='Compare Outputs',
+                    button_style='primary',
+                    style={'font_weight':'bold'})
+        
+        self.comp_out_btn.on_click(self._run_comp_outputs) # Onlick method
+        self.comp_out_runs.observe(self.update_comp_out)
+        
+        with self.out:
+            clear_output()
+            display(self.comp_out_runs)
+            display(self.comp_out_dd)
+            display(self.comp_out_btn)
+    
+    def update_comp_out(self, change):
+        if change['type'] != 'change' or change['name'] != 'value':
+            return
+
+        colors = ["DodgerBlue",
+                  "MediumSeaGreen",
+                  "Peru",
+                  "LightGray",
+                  "Turquoise",
+                  "darksalmon",
+                  "goldenrod"]
+        self.exttemp_colour = "Crimson"
+        color_index = 0
+        self.dataset_raw = []
+        for i in self.comp_out_runs.value:
+            self.dataset_raw.append((i,i,colors[color_index]))
+            color_index += 1
+            if color_index > len(colors):
+                color_index = 0
+    
+        basenames = []
+
+        for file in os.listdir(self.fdir_data):
+            if file.endswith(".plotly"):
+                basenames.append(''.join(file.split('__')[1:]))
+
+        basenames = list(set(basenames))
+        files_tocompare = []
+
+        for basename in basenames:
+            to_compare = True
+
+            for name in change['new']:
+                fpth = os.path.join(self.fdir_data,"{0}__{1}".format(name,basename))
+                if not os.path.exists(fpth):
+                    to_compare = False
+
+            if to_compare:
+                files_tocompare.append(basename)
+                
+        self.comp_out_dd.options = files_tocompare
+
+    def _run_comp_outputs(self, sender):
+        # Create Comparison Graph, for each file
+        filename = self.comp_out_dd.value
+        data_out = []
+        legend_names = []
+        for data_raw in self.dataset_raw:
+            fpth = os.path.join(self.fdir_data,"{0}__{1}".format(data_raw[0],filename))
+            graph = pio.read_json(fpth)['data']
+            for scatter in graph:
+                if scatter['name'] not in legend_names:
+                    plot = scatter
+                    plot['line']['width'] = 1.5
+                    if scatter['name'] != "External temperature":
+                        if data_raw[1]:
+                            name = "{0} - {1} ({2})".format(scatter['name'], data_raw[1], os.path.basename(data_raw[0]))
+                        else:
+                            name = "{0} - {1}".format(scatter['name'], os.path.basename(data_raw[0]))
+                        plot['name'] = name
+                        plot['line']['color'] = data_raw[2]
+
+                        data_out.append(plot)
+                    else:
+                        plot['line']['color'] = self.exttemp_colour
+                        data_out.insert(0, plot)
+
+                    legend_names.append(plot['name'])
+
+        fpth = os.path.join(self.fdir_data,"{0}__{1}".format(self.dataset_raw[0][0],filename))
+        layout = pio.read_json(fpth)['layout']
+        fig = go.Figure(
+            data=tuple(data_out),
+            layout=layout
+        )
+        fig.update_layout(legend=dict(
+            yanchor="bottom",
+            y=-0.5,
+            xanchor="left",
+            x=0
+        ))
+        with self.out:
+            clear_output()
+            display(self.comp_out_runs)
+            display(self.comp_out_dd)
+            display(self.comp_out_btn)
+            display(fig)
+            
     def _run_del_run(self, sender):
         dd_val = self.del_run_dd.value
         for process in self.processes:
@@ -1084,172 +1239,63 @@ class RunAppReport(RunApp):
     # In order to pick which graphs to show, 
     # the reporting function needs a custom function 
     # to add the graph names to a dropdown 
-    def _edit_inputs(self, sender):
-
-        # The parameter compare_run_graphs contains the 
-        # folder where graphs are stored
-        if "compare_run_graphs" in self.config:
-            graphs_dir = self.config["compare_run_graphs"]
-            
-            # Create list of graphs
-            graphs_to_add = {}
-            for file in os.listdir(graphs_dir):
-                if file.endswith('.png') or file.endswith('jpeg') or file.endswith('jpg'):
-                    graphs_dir_rel = os.path.relpath(graphs_dir)
-                    graphs_to_add[file] = os.path.join(graphs_dir_rel, file)
-                    
-            # Edit JSON, adding list of graphs
-            json_data = read_json(self.config["fpth_inputs"])
-            for element in json_data:
-                if element["name"] == "Comparison Graphs":
-                    element["options"] = graphs_to_add
-                    values = element["value"]
-                    for value in values:
-                        if value not in graphs_to_add.values():
-                            element["value"].remove(value)         
-            write_json(json_data, fpth=self.config["fpth_inputs"])
-            
-        with self.out:
-            clear_output()
-            display(EditJson(self.config))
+    
+    def _report_chooser_onchange(self, change):
+        if change['type'] != 'change' or change['name'] != 'value':
+            return
         
+        for widget in self.editjson.widgets:
+            if "tag" in widget.di:
+                if widget.di["tag"] in change["owner"].options.values():
+                    value = (widget.di["tag"] != change["new"])
+                    widget.di["disabled"] = value
+                    widget.widget_only.disabled = value
+                    widget.widget_only.value = False
 
-class RunAppComparison(RunApp):
-    # In order to pick which models to compare, 
-    # the reporting function needs a custom function 
-    # to add the model names to a dropdown 
+            
     def _edit_inputs(self, sender):
+        
         comp_vals = {}
         
-        if "fdir_compareinputs" in self.config:
+        if "fdir_compinputs" in self.config:
             
             # Create list of models
-            comp_vals_dir = self.config["fdir_compareinputs"]
-            comp_vals = [file.split('__')[0] for file in os.listdir(comp_vals_dir)]
-            comp_vals = list(set(comp_vals)) # Get unique values
+            comp_vals = sorted(list(set(self.config["fdir_compinputs"]._get_process_names()[1:])))
             
             # Edit JSON, adding list of models
             json_data = read_json(self.config["fpth_inputs"])
-            for element in json_data:
-                if element["name"] == "Benchmark" or element["name"] == "As Designed":
-                    element["options"] = comp_vals
-                    if element["value"] not in comp_vals:
-                        element["value"] = None               
-                '''elif element["name"] == "Comparison":
-                    element["options"] = comp_vals
-                    for value in element["value"]:
-                        if value not in comp_vals:
-                            element["value"].remove(value)'''
+            for nested_el in json_data:
+                if isinstance(nested_el["value"], list):
+                    for element in nested_el["value"]:
+                        if "tag" in element:
+                            if element["tag"] == "single-process":
+                                element["options"] = comp_vals
+                                if element["value"] not in comp_vals:
+                                    element["value"] = None   
+                            elif element["tag"] == "mult-process":
+                                for value in element["value"]:
+                                    if value not in comp_vals:
+                                        element["value"].remove(value)   
+                                element["options"] = comp_vals
                 
             write_json(json_data, fpth=self.config["fpth_inputs"])
+            
+        self.editjson = EditJson(self.config)
 
+        for widget in self.editjson.widgets:
+            if "tag" in widget.di:
+                if widget.di["tag"] == "report-type":
+                    widget.widget_only.observe(self._report_chooser_onchange)
+                    
         with self.out:
             clear_output()
-            display(EditJson(self.config))
+            display(self.editjson)
+        
 
 
 # -
 
-if __name__ == '__main__':
-
-    
-    # Create set of parameters
-    parameters = {}
-    analysis = r'TM59'
-    parameters['fdir_modelruninput'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/05 Model Files'
-    parameters['fdir_data'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/data'
-    parameters['fdir_scripts'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/src'
-    parameters['fdir_reports'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/reports'
-    parameters['display_ignore'] = ['.jpg','.jpeg','.png','.xlsx']
-    parameters['fdir_interim_data'] = os.path.join(parameters['fdir_data'],r'interim')
-    parameters['fdir_processed_data'] = os.path.join(parameters['fdir_data'],r'processed')
-    parameters['fdir_raw_data'] = os.path.join(parameters['fdir_data'],r'raw', analysis)
-    parameters['fdir_analysis_interim'] = os.path.join(parameters['fdir_interim_data'], analysis)
-    parameters['fdir_graphs_interim'] = os.path.join(parameters['fdir_analysis_interim'], r'graphs')
-    parameters['fdir_analysis_processed'] = os.path.join(parameters['fdir_processed_data'], analysis)
-    parameters['fpth_comp_script'] = os.path.join(parameters['fdir_scripts'], r'compare_model_run_file.py')
-    parameters['fpth_report_script'] = os.path.join(parameters['fdir_scripts'], r'report_model_run_file.py')
-    parameters['fpth_setup_script'] = os.path.join(parameters['fdir_scripts'],r'setup_model_run_file.py')
-
-    setup_config = {
-        'fpth_script':os.path.realpath(parameters['fpth_setup_script']),
-        'fdir':os.path.realpath(parameters['fdir_scripts']),
-        'display_ignore':parameters['display_ignore'],
-        "script_outputs": {
-            '0': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for data output"
-            },
-            '1': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for analysis output"
-            },
-            '2': {
-                'fdir':'.', # relative to the location of the App / Notebook file
-                'fnm': r'.',
-                'description': "Folder for raw data"
-            }
-        }
-    } 
-    runapps = RunAppsMruns(
-                di=setup_config, 
-                fdir_input=parameters['fdir_modelruninput'], 
-                fdir_data=parameters['fdir_graphs_interim'], 
-                fdir_analysis=parameters['fdir_analysis_interim'], 
-                fdir_raw_data=parameters['fdir_raw_data'])  
-    
-    compare_config = {
-        'fpth_script':os.path.realpath(parameters['fpth_comp_script']),
-        'fdir':parameters['fdir_scripts'],
-        'display_ignore':parameters['display_ignore'],
-        'script_outputs': {
-            '0': {
-                    'fdir':os.path.realpath(parameters['fdir_analysis_processed']),
-                    'fnm': '',
-                    'description': "Folder for comparison graphs"
-            }
-        },
-        'fdir_compareinputs': parameters['fdir_graphs_interim']
-    }
-    compare_runs = RunAppComparison(compare_config)  
-    
-
-    #parameters['fdir_inputs'] = os.path.relpath(runapps.fdir_input, NBFDIR)
-    parameters['fdir_inputs'] = runapps.fdir_input
-    reporting_config = {
-        'fpth_script':os.path.realpath(parameters['fpth_report_script']),
-        'fdir':parameters['fdir_scripts'],
-        'script_outputs': {
-            '0': {
-                    'fdir':parameters['fdir_reports'],
-                    'fnm': '',
-                    'description': "A markdown report"
-            }
-        },
-        'fpth_parameters': parameters,
-        'compare_run_inputs': compare_config['fpth_inputs'],
-        'compare_run_graphs': compare_config['script_outputs']['0']['fdir']
-    }
-    report_run = RunAppReport(reporting_config)  
-    
-
-    # Display Model Runs
-    display(Markdown('# Overheating Analysis - Toolbox'))
-    display(Markdown('---'))
-    display(Markdown('## Setup Inputs and Run Models'))
-    display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
-    display(runapps, display_id=True)
-    display(Markdown('---'))
-    display(Markdown('## Compare Runs'))
-    display(Markdown('''Choose multiple runs, which can be compared'''))
-    display(compare_runs)
-    display(Markdown('---'))
-    display(Markdown('## Report Runs'))
-    display(Markdown('''Create a report'''))
-    display(report_run)
-    
+if __name__ == '__main__':    
     
     
     # dumb form
@@ -1440,4 +1486,84 @@ if __name__ == '__main__':
         }  
     r = RunApp(config)
     r
+    
+    # Create set of parameters
+    parameters = {}
+    analysis = r'TM59'
+    parameters['fdir_modelruninput'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/05 Model Files'
+    parameters['fdir_data'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/data'
+    parameters['fdir_scripts'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/src'
+    parameters['fdir_reports'] = r'C:/engDev/git_mf/ipyrun/examples/testproject/datadriven/reports'
+    parameters['display_ignore'] = ['.jpg','.jpeg','.png','.xlsx']
+    parameters['fdir_interim_data'] = os.path.join(parameters['fdir_data'],r'interim')
+    parameters['fdir_processed_data'] = os.path.join(parameters['fdir_data'],r'processed')
+    parameters['fdir_raw_data'] = os.path.join(parameters['fdir_data'],r'raw', analysis)
+    parameters['fdir_analysis_interim'] = os.path.join(parameters['fdir_interim_data'], analysis)
+    parameters['fdir_graphs_interim'] = os.path.join(parameters['fdir_analysis_interim'], r'graphs')
+    parameters['fdir_analysis_processed'] = os.path.join(parameters['fdir_processed_data'], analysis)
+    parameters['fpth_comp_script'] = os.path.join(parameters['fdir_scripts'], r'compare_model_run_file.py')
+    parameters['fpth_report_script'] = os.path.join(parameters['fdir_scripts'], r'report_model_run_file.py')
+    parameters['fpth_setup_script'] = os.path.join(parameters['fdir_scripts'],r'setup_model_run_file.py')
+
+    setup_config = {
+        'fpth_script':os.path.realpath(parameters['fpth_setup_script']),
+        'fdir':os.path.realpath(parameters['fdir_scripts']),
+        'display_ignore':parameters['display_ignore'],
+        "script_outputs": {
+            '0': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for data output"
+            },
+            '1': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for analysis output"
+            },
+            '2': {
+                'fdir':'.', # relative to the location of the App / Notebook file
+                'fnm': r'.',
+                'description': "Folder for raw data"
+            }
+        }
+    } 
+    
+    runapps = RunAppsMruns(
+                di=setup_config, 
+                fdir_input=parameters['fdir_modelruninput'], 
+                fdir_data=parameters['fdir_graphs_interim'], 
+                fdir_analysis=parameters['fdir_analysis_interim'], 
+                fdir_raw_data=parameters['fdir_raw_data'])  
+
+    #parameters['fdir_inputs'] = os.path.relpath(runapps.fdir_input, NBFDIR)
+    parameters['fdir_inputs'] = runapps.fdir_input
+    reporting_config = {
+        'fpth_script':os.path.realpath(parameters['fpth_report_script']),
+        'fdir':parameters['fdir_scripts'],
+        'script_outputs': {
+            '0': {
+                    'fdir':parameters['fdir_reports'],
+                    'fnm': '',
+                    'description': "A markdown report"
+            }
+        },
+        'fpth_parameters': parameters,
+        'fdir_compinputs': runapps,
+        #'compare_run_inputs': compare_config['fpth_inputs'],
+        #'compare_run_graphs': compare_config['script_outputs']['0']['fdir']
+    }
+    report_run = RunAppReport(reporting_config)  
+    
+
+    # Display Model Runs
+    display(Markdown('# Overheating Analysis - Toolbox'))
+    display(Markdown('---'))
+    display(Markdown('## Setup Inputs and Run Models'))
+    display(Markdown('''Setup runs, and their inputs. Then, multiple runs can be analysed.'''))
+    display(runapps, display_id=True)
+    display(Markdown('---'))
+    display(Markdown('## Report Runs'))
+    display(Markdown('''Create a report'''))
+    display(report_run)
+
 

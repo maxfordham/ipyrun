@@ -48,10 +48,10 @@ def main(inputs, outputs, input_dir):
             color_index = 0'''
 
     # Get comparison files, 
-    # These are common the files common to all models
+    # These are files common to all models
 
     basenames = []
-
+    
     for file in os.listdir(input_dir):
         if file.endswith(".plotly"):
             basenames.append(''.join(file.split('__')[1:]))
@@ -69,6 +69,9 @@ def main(inputs, outputs, input_dir):
                 
         if to_compare:
             files_tocompare.append(basename)
+
+    with open("test.txt", "w") as text_file:
+        print("{0}".format(dataset_raw), file=text_file)
 
     # Create Comparison Graph, for each file
     for filename in files_tocompare:
