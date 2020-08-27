@@ -224,6 +224,7 @@ class EditDict(EditDictData):
     def __init__(self, di):
         self.out = widgets.Output()
         self.di = di
+        self.nested_g = None
         self.form()
  
     def form(self):

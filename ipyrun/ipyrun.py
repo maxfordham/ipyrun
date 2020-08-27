@@ -57,7 +57,7 @@ def get_mfuser_initials():
     return user[0]+user[2]
 
 
-# +
+# + jupyter={"source_hidden": true, "outputs_hidden": true}
 ###################
 # ARCHIVED
 ###################
@@ -1112,6 +1112,7 @@ class RunAppsMruns():
         filename = self.comp_out_dd.value
         data_out = []
         legend_names = []
+        print(self.dataset_raw)
         for data_raw in self.dataset_raw:
             fpth = os.path.join(self.fdir_data,"{0}__{1}".format(data_raw[0],filename))
             graph = pio.read_json(fpth)['data']
@@ -1244,6 +1245,47 @@ class RunAppReport(RunApp):
     # the reporting function needs a custom function 
     # to add the graph names to a dropdown 
     
+    def _update_comp(self, comp_runs):
+
+
+        '''colors = ["DodgerBlue",
+                  "MediumSeaGreen",
+                  "Peru",
+                  "LightGray",
+                  "Turquoise",
+                  "darksalmon",
+                  "goldenrod"]
+        self.exttemp_colour = "Crimson"
+        color_index = 0
+        self.dataset_raw = []
+        for i in comp_runs:
+            self.dataset_raw.append((i,i,colors[color_index]))
+            color_index += 1
+            if color_index > len(colors):
+                color_index = 0'''
+    
+        basenames = []
+
+        for file in os.listdir(self.config["compare_run_graphs"]):
+            if file.endswith(".plotly"):
+                basenames.append(''.join(file.split('__')[1:]))
+
+        basenames = list(set(basenames))
+        files_tocompare = []
+
+        for basename in basenames:
+            to_compare = True
+
+            for name in comp_runs:
+                fpth = os.path.join(self.config["compare_run_graphs"],"{0}__{1}".format(name,basename))
+                if not os.path.exists(fpth):
+                    to_compare = False
+
+            if to_compare:
+                files_tocompare.append(basename)
+                
+        return files_tocompare
+        
     def _report_chooser_onchange(self, change):
         if change['type'] != 'change' or change['name'] != 'value':
             return
@@ -1256,6 +1298,27 @@ class RunAppReport(RunApp):
                     widget.widget_only.disabled = value
                     widget.widget_only.value = False
 
+    def _update_comp_onchange(self, change):
+        if change['type'] != 'change' or change['name'] != 'value':
+            return
+        tmp = []
+        for nested_w in self.editjson.widgets:
+            if nested_w.nested_g and not nested_w.widget_only.disabled:
+                for widget in nested_w.nested_g.widgets:
+                    widget.widget_only.observe(self._update_comp_onchange)
+                    tmp.append(widget.widget_only.value)
+                    
+        comp_graphs = self._update_comp(tmp)
+        for widget in self.editjson.widgets:
+            if "tag" in widget.di:
+                if widget.di["tag"] == "comparison-graphs":
+                    for value in widget.di["value"]:
+                        if value not in comp_graphs:
+                            widget.di["value"].remove(value)
+                            widget.widget_only.value.remove(value)
+                    widget.di["options"] = comp_graphs
+                    widget.widget_only.options = comp_graphs
+        return
             
     def _edit_inputs(self, sender):
         
@@ -1288,6 +1351,7 @@ class RunAppReport(RunApp):
 
         for widget in self.editjson.widgets:
             if "tag" in widget.di:
+                widget.widget_only.observe(self._update_comp_onchange)
                 if widget.di["tag"] == "report-type":
                     widget.widget_only.observe(self._report_chooser_onchange)
                     
@@ -1554,7 +1618,7 @@ if __name__ == '__main__':
         'fpth_parameters': parameters,
         'fdir_compinputs': runapps,
         #'compare_run_inputs': compare_config['fpth_inputs'],
-        #'compare_run_graphs': compare_config['script_outputs']['0']['fdir']
+        'compare_run_graphs': parameters['fdir_graphs_interim']
     }
     report_run = RunAppReport(reporting_config)  
     
@@ -1569,5 +1633,4 @@ if __name__ == '__main__':
     display(Markdown('## Report Runs'))
     display(Markdown('''Create a report'''))
     display(report_run)
-
 
