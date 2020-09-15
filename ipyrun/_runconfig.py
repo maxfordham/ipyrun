@@ -130,7 +130,7 @@ class RunConfig():
         self.config['fdir_config'] = self.fdir_config
         self.config['fnm_config'] = self.fnm_config
         self.config['fpth_config'] = self.fpth_config
-        self.config['fdir_outputs'] = self.fdir_outputs
+        self.config['fdir_outputs'] = self.fdir_outputs        
 
     def _fdir(self):
         """check if fdir given, otherwise put it local to app"""
@@ -338,17 +338,6 @@ if __name__ =='__main__':
     from pprint import pprint
     rc = RunConfig(config)
     pprint(rc.config)
-
-
-# -
-
-
-
-
-
-
-
-
 
 
 

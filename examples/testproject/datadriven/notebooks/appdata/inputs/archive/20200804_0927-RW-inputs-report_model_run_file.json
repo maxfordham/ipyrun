@@ -1,0 +1,36 @@
+[
+    {
+        "label": "Software used for modelling",
+        "max": null,
+        "min": null,
+        "name": "Software",
+        "options": null,
+        "value": "Test1"
+    },
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Site Location",
+        "options": null,
+        "value": "Test2"
+    },
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Image of the Site Plan",
+        "options": null,
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\references\\img\\site_img.png",
+        "widget": "FileChooser"
+    },
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Image of the IES Model",
+        "options": null,
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\references\\img\\ies_img.png",
+        "widget": "FileChooser"
+    }
+]

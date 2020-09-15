@@ -1,0 +1,67 @@
+{
+    "compare_run_graphs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\processed\\TM59",
+    "compare_run_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-compare_model_run_file2.json",
+    "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src",
+    "fdir_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config",
+    "fdir_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
+    "fdir_inputs_archive": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\archive",
+    "fdir_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log",
+    "fdir_outputs": [
+        "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\reports"
+    ],
+    "fnm_config": "config-report_model_run_file2.json",
+    "fnm_log": "log-report_model_run_file2.csv",
+    "fpth_config": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\config\\config-report_model_run_file2.json",
+    "fpth_inputs": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-report_model_run_file2.json",
+    "fpth_inputs_options": {
+        "project": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\inputs\\inputs-report_model_run_file2.json"
+            ]
+        },
+        "template": {
+            "fdir": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs",
+            "fpths": [
+                "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\template_inputs\\inputs-report_model_run_file2.json"
+            ]
+        }
+    },
+    "fpth_log": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\appdata\\log\\log-report_model_run_file2.csv",
+    "fpth_parameters": {
+        "display_ignore": [
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".xlsx"
+        ],
+        "fdir_analysis_interim": "../data\\interim\\TM59",
+        "fdir_analysis_processed": "../data\\processed\\TM59",
+        "fdir_data": "../data",
+        "fdir_graphs_interim": "../data\\interim\\TM59\\graphs",
+        "fdir_inputs": "..\\src\\appdata\\inputs\\modelruninputs",
+        "fdir_interim_data": "../data\\interim",
+        "fdir_modelruninput": "../05 Model Files",
+        "fdir_processed_data": "../data\\processed",
+        "fdir_raw_data": "../data\\raw\\TM59",
+        "fdir_reports": "../reports",
+        "fdir_scripts": "../src",
+        "fpth_comp_script": "../src\\compare_model_run_file2.py",
+        "fpth_report_script": "../src\\report_model_run_file2.py",
+        "fpth_setup_script": "../src\\setup_model_run_file.py"
+    },
+    "fpth_script": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\src\\report_model_run_file2.py",
+    "fpths_outputs": {
+        "0": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\reports"
+    },
+    "jobno": "C:\\e",
+    "pretty_name": "report_model_run_file2",
+    "process_name": "report_model_run_file2",
+    "script_outputs": {
+        "0": {
+            "description": "A markdown report",
+            "fdir": "../reports",
+            "fnm": ""
+        }
+    }
+}

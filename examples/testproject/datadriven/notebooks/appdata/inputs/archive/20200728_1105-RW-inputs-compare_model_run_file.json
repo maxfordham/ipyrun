@@ -1,0 +1,44 @@
+[
+    {
+        "label": "Choose one model as a benchmark option",
+        "max": null,
+        "min": null,
+        "name": "Benchmark",
+        "options": {
+            "000_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\000_test",
+            "001_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+            "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
+        },
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+        "widget": "Dropdown"
+    },
+    {
+        "label": "Choose one model as an 'as designed' option",
+        "max": null,
+        "min": null,
+        "name": "As Designed",
+        "options": {
+            "000_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\000_test",
+            "001_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+            "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
+        },
+        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test",
+        "widget": "Dropdown"
+    },
+    {
+        "label": "Choose other modles to compare",
+        "max": null,
+        "min": null,
+        "name": "Comparison",
+        "options": {
+            "000_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\000_test",
+            "001_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+            "002_test": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
+        },
+        "value": [
+            "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\001_test",
+            "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\datadriven\\data\\interim\\002_test"
+        ],
+        "widget": "SelectMultiple"
+    }
+]

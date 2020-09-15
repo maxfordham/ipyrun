@@ -382,13 +382,13 @@ def main(inputs, outputs, process_name):
     plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, process_name=process_name)
     plotter.read_data()
     
-    '''# Create Analysis Outputs
+    # Create Analysis Outputs
     plotter.make_analysis_figs(inputs["Air Speed"])
 
     # Create Data Graphs
-    plotter.make_data_figs()'''
+    plotter.make_data_figs()
 
-    plotter.make_results_figs(inputs["Air Speed"])
+    #plotter.make_results_figs(inputs["Air Speed"])
     return
 
 script_outputs = {
