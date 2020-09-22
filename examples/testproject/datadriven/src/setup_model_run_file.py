@@ -121,9 +121,11 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
 #############################################
 
 class Plotter:
-    def __init__(self, results_raw_fpth, results_pretty_fpth, data_fpth, outputs, process_name):
+    def __init__(self, results_raw_fpth, results_pretty_fpth, data_fpth, outputs, analysis_name, process_name):
         self.tag_names = ['block_number','level_number', 'flat_code', 'room_code', 'space_name']
-        self.comparison_data = ["External temperature", "Dry Bulb Temperature"]
+        self.comparison_data = ["External Temperature", "Dry Bulb Temperature", "Crimson"]        # Setup Colors
+        self.thermperf_data = [('Operative temperature', 'Operative Temperature', 'DodgerBlue')]
+        self.analysis_name = analysis_name
         self.results_raw_fpth = results_raw_fpth
         self.results_pretty_fpth = results_pretty_fpth
         self.out_data_dir = outputs['0']
@@ -131,15 +133,26 @@ class Plotter:
         self.out_raw_dir = outputs['2']
         self.process_name = process_name
         self.data_fpth = data_fpth
-        self.start_day = 4848
+        self.start_day = 3984
+        self.time_period = 7*24 
         self.dfs={}
 
-    def make_results_figs(self,air_speed):
-        s = []
-        for i in [0.1,0.2]:
-            df = self.dfs[i]
+    def make_tm59_overall_graphs(self):
+        criterion_failing = []
+        pass_percentage = {}
+        pass_percentage_data = []
+        criterion_failing_data = []
 
-            def myFun(row):
+        layout = go.Layout(
+                    xaxis_type='category',
+                    yaxis_tickformat = '%',
+                    xaxis_title="Air Speed (m/s)",
+                    yaxis_title='% of Rooms')
+        
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+
+            def category_filter(row):
                 if row['TM59 (pass/fail)'] == 'PASS':
                     return 'Full Pass'
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail':
@@ -149,19 +162,89 @@ class Plotter:
                 else:
                     return 'Criterion B Fail'
 
-            df[i] = df.apply(lambda row: myFun(row), axis = 1) 
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            pass_percentage[i] = len(df[df["TM59 (pass/fail)"]=='PASS'].index)/len(df.index)
+            criterion_failing.append(df[i].value_counts(normalize=True))
+        
+        pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
+        fig = go.Figure(data=pass_percentage_data, layout=layout)
+        fig.update_layout(title='% of rooms failing each criteria, at different air speeds')
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
+        fig.write_image(filename + '.jpeg')       
+
+        df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
+        for column in df_criterion_failing:
+            criterion_failing_data.append(go.Bar(name=column, x=list(df_criterion_failing.index) ,y=df_criterion_failing[column]))
+        fig = go.Figure(data=criterion_failing_data, layout=layout)
+        fig.update_layout(barmode='stack')
+        fig.update_layout(title='% of rooms which pass analysis, at different air speeds')
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
+        fig.write_image(filename + '.jpeg')  
+
+    def make_tm59_average_graphs(self):
+        layout = go.Layout(
+                    xaxis_type='category',
+                    yaxis_tickformat = '%',
+                    xaxis_title="Air Speed (m/s)",
+                    yaxis_title=self.analysis_name + ' Criteria',
+                    width=800)
+
+
+        bedroom_mean_A = {}
+        bedroom_mean_B = {}
+        nonbedroom_mean_A = {}
+
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+            bedroom_mask = (df['Criterion A (%)'].notnull() & df['Criterion B (%)'].notnull())
+            non_bedroom_mask = (df['Criterion A (%)'].notnull() & df['Criterion B (%)'].isnull())
+
+            bedroom_mean_A[i] = (df[bedroom_mask]['Criterion A (%)'].mean(axis = 0))/100
+            bedroom_mean_B[i] = (df[bedroom_mask]['Criterion B (%)'].mean(axis = 0))/100
+            nonbedroom_mean_A[i] = (df[non_bedroom_mask]['Criterion A (%)'].mean(axis = 0))/100
             
-            s.append(df[i].value_counts(normalize=True)*100)
-            with open("test.txt", "w") as text_file:
-                print("{0}".format(s), file=text_file)
-        df_out = pd.DataFrame(s).fillna(0)
-        df_out.to_html('test.html')
         data = []
-        for column in df_out:
-            data.append(go.Bar(name=column, x=list(df_out.index) ,y=df_out[column]))
-        fig = go.Figure(data=data)
-        fig.update_layout(xaxis_type='category', barmode='stack')
-        fig.write_image('test.jpeg')
+        line=dict(
+            color='ForestGreen',
+            width=2)
+        critb_limit = go.Scatter(name='Criterion B - Upper Limit', 
+                                y=[0.01,0.01], 
+                                x=[list(bedroom_mean_B.keys())[0],
+                                list(bedroom_mean_B.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+
+        line=dict(
+            color='black',
+            width=2)
+        crita_limit = go.Scatter(name='Criterion A - Upper Limit', 
+                                y=[0.03,0.03], 
+                                x=[list(bedroom_mean_B.keys())[0],
+                                list(bedroom_mean_B.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+                                
+        data.append(go.Bar(name='Criterion A (%)', x=list(bedroom_mean_A.keys()), y=list(bedroom_mean_A.values())))
+        data.append(go.Bar(name='Criterion B (%)', x=list(bedroom_mean_B.keys()), y=list(bedroom_mean_B.values())))
+        data.append(critb_limit)
+        data.append(crita_limit)
+
+        fig = go.Figure(data=data, layout=layout)
+        fig.update_layout(title='Average performance of bedroom spaces')
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_bedroom'))
+        fig.write_image(filename + '.jpeg')   
+
+        data = []
+        data.append(go.Bar(name='Criterion A (%)', x=list(nonbedroom_mean_A.keys()), y=list(nonbedroom_mean_A.values())))
+        data.append(crita_limit)
+        fig.update_layout(title='Average performance of non-bedroom spaces')
+        fig = go.Figure(data=data, layout=layout)
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_non_bedroom'))
+        fig.write_image(filename + '.jpeg')   
+
+    def make_results_graphs(self,air_speed):
+        self.make_tm59_overall_graphs()
+        self.make_tm59_average_graphs()
         return
 
     def make_analysis_figs(self,air_speed):
@@ -177,36 +260,33 @@ class Plotter:
 
         # Format Table
         df = self.dfs[air_speed]
+        df = df.fillna(0)
         df = df.round(2)
+        df.drop('room_name', axis=1, inplace=True)
         vals = df.T.values.tolist()
         colour_map = lambda x: colours[x] if x in colours else cell_colour
         cell_colours = list([list(map(colour_map, i)) for i in vals])
         rows = df.shape[0]
 
         data = go.Table(
-                header=dict(values=list(df.columns),
-                            fill_color=header_colour,
-                            line_color=line_colour,
-                            align='left'),
-                cells=dict(values=vals,
-                           fill_color= cell_colours,
-                           line_color=line_colour,
-                           align='left')
-                
+            header=dict(values=list(df.columns),
+                        fill_color=header_colour,
+                        line_color=line_colour,
+                        align='left'),
+            cells=dict(values=vals,
+                        fill_color= cell_colours,
+                        line_color= line_colour,
+                        align='left')
         )
         
         layout = go.Layout(
             autosize=False,
             width=1500,
-            height=rows*25+180, # Height based on number of rows
+            height=rows*15+100, # Height based on number of rows
+            margin={'l': 3, 'r': 3, 't': 10, 'b': 0}
         )
         
         table = go.Figure(data=data, layout=layout)
-
-        '''titleText = "TM59 Analysis, with air speed {0} m/s".format(air_speed)
-        table.update_layout(
-            title_text=titleText,
-            title_font_size=17)'''
 
         # Copy Data Excel to Output Folder
         filename = os.path.join(self.out_raw_dir, self.process_name + '__rawTM59results')
@@ -222,59 +302,70 @@ class Plotter:
         date = dt.datetime.fromordinal((int) (num/24)+1)
         return date.replace(hour=num%24, year=2010)
 
-    def make_data_figs(self):
-        # Setup Colors
-        exttemp_colour = "Crimson"
-        benchmark_colour = "DodgerBlue"
+    def make_thermperf_graph(self, dfs):
+        xaxis = [self.toDate(x) for x in list(range(0, (self.time_period)))]
+        end_day = self.start_day + self.time_period
 
+        # Standard Figure Layout
+        fig_layout = {
+            "xaxis_title":"Date",
+            "yaxis_title":"Temperature (C)",
+            "paper_bgcolor":"white",
+            "template":'plotly_white',
+            "showlegend":True,
+            "xaxis_tickformat": 'Day %-j, %H:00',
+            "xaxis": {
+                "tickmode" : "linear",
+                "tick0" : xaxis[12]
+            },
+            "width": 1000
+        }
+        
+
+        graph_inputs = []
+
+        for x in self.thermperf_data:
+            if x[0] in dfs:
+                tmp = {}
+                tmp['fname'] = re.sub('[^A-Za-z0-9_]+', '', x[1]).lower() 
+                tmp['title'] = x[1]
+                tmp['data'] = dfs[x[0]]
+                tmp['color'] = x[2]
+                graph_inputs.append(tmp)
+
+        for roomName in list(graph_inputs[0]['data'])[1:]:
+            data = []
+
+            for input in graph_inputs:
+                df_maxweek = input['data'].copy()
+                df_maxweek = df_maxweek[self.start_day:end_day]
+                data.append(go.Scatter(x=xaxis, y=df_maxweek[roomName], name=input['title'],
+                                line=dict(width=1.5, color = input['color'])))
+            
+            df_comparison = dfs[self.comparison_data[0]][self.start_day:end_day]
+            data.append(go.Scatter(x=xaxis, y=df_comparison[self.comparison_data[1]], name=self.comparison_data[0],
+                            line=dict(width=2, color = self.comparison_data[2])))
+
+            subtitle = "Maximum Average ({0} to {1})".format(self.toDate(self.start_day).strftime("%d %b"), self.toDate(end_day).strftime("%d %b"))
+            fig = go.Figure(data=data, layout = fig_layout)
+            fig.update_layout(title="{0} - {1}<br>{2}".format('Temperatures', roomName, subtitle))
+            room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName) # Create Valid filename from room name
+            filename = os.path.join(self.out_data_dir, "{2}__{0}__{1}".format('temps', room_fname, self.process_name))
+            fig.write_json(filename + '.plotly')
+            fig.write_image(filename + '.jpeg')   
+
+
+    def make_data_graphs(self):
         dfs = pd.read_excel(self.data_fpth,None)
 
-
         for sheet in dfs:
-            if sheet != self.comparison_data[0]:
-                df = dfs[sheet]
+            if sheet == self.comparison_data[0]:
+                df = dfs[sheet].copy()
+                df = df.drop(columns=['index'])
+                df = df.rolling(self.time_period).mean()
+                self.start_day = df[self.comparison_data[1]].idxmax()
 
-                # Create Valid filename from sheet name
-                sheet_fname = re.sub('[^A-Za-z0-9_]+', '', sheet).lower() 
-
-                # Standard Figure Layout
-                fig_layout = {
-                    "title":"Maximum {0}".format(sheet),
-                    "xaxis_title":"Date",
-                    "yaxis_title":"Temperature (C)",
-                    "paper_bgcolor":"white",
-                    "template":'plotly_white',
-                    "showlegend":True,
-                    "xaxis":dict(tickformat="%d %b")
-                }
-
-                for roomName in list(df)[1:]:
-                    if roomName != "date" and roomName != "index":
-    
-                        end_day = self.start_day + (7*24) # Week Long Analysis
-                        df_maxweek = df
-
-                        # Create Date Column
-                        df_maxweek['date'] = [self.toDate(x) for x in df_maxweek['index']] 
-
-                        # Append data for analysis period
-                        df_maxweek = df_maxweek[self.start_day:end_day]
-                        df_exttemp = dfs[self.comparison_data[0]][self.start_day:end_day]
-                        data = []
-                        data.append(go.Scatter(x=df_maxweek['date'], y=df_maxweek[roomName], name=sheet,
-                                        line=dict(color = benchmark_colour)))
-                        data.append(go.Scatter(x=df_maxweek['date'], y=df_exttemp[self.comparison_data[1]], name=self.comparison_data[0],
-                                        line=dict(color = exttemp_colour)))
-
-                        # Write figure to file
-                        fig = go.Figure(data=data)
-                        fig.update_layout(fig_layout)
-                        fig.update_layout(title="Maximum {0} - {1}".format(sheet, roomName))
-                        room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName) # Create Valid filename from room name
-                        fig.write_image(os.path.join(self.out_data_dir, "{2}__{0}_{1}.jpeg".format(sheet_fname, room_fname, self.process_name)))
-                        fig.write_json(os.path.join(self.out_data_dir, "{2}__{0}_{1}.plotly".format(sheet_fname, room_fname, self.process_name)))
-
-            
+        self.make_thermperf_graph(dfs)
 
     def read_data(self):
 
@@ -287,7 +378,7 @@ class Plotter:
             ## Extract info from excel
             df_ies_output = pd.read_excel(IES_output_fpth, sheet_name_results)
             df_project_info = pd.read_excel(IES_output_fpth, sheet_name_project_info)
-
+            
             ## Split room names given list of tags (e.g by block, level, flat, space code, space name)
             # e.g. A_00_1A_01_DoubleBedroom => BlockNumber_Level_FlatNumber_RoomCode_RoomName
             room_names = df_ies_output['room_name']
@@ -302,8 +393,8 @@ class Plotter:
 
             ## Join Output data frame with Data Frame of split names
             df_ies_output_compiled = df_ies_output.join(df_IES_split_names)
-
             air_speeds = df_ies_output_compiled['air_speed'].unique()
+            self.air_speeds = list(air_speeds)
 
             ## Split data by unique values of given key - air speed
             df = df_ies_output_compiled
@@ -316,7 +407,7 @@ class Plotter:
 
             ## CREATE PIVOT TABLE OF LIST OF DFs AND COLOUR BASED ON VALUES (e.g. PASS, FAIL) 
             values_pivot = 'values'
-            index_pivot = list_of_tag_names
+            index_pivot = list_of_tag_names + ['room_name']
             columns_pivot = ['value_names']
             num_cols = ['Criterion A (%)', 'Criterion B (%)', 'Criterion C (%)', 'Fixed Temp Criteria (%)']
             
@@ -325,8 +416,8 @@ class Plotter:
                                     values=values_pivot,\
                                     index=index_pivot,\
                                     columns=columns_pivot,\
-                                    aggfunc=np.sum)
-
+                                    aggfunc=np.min)
+                
                 df.reset_index(inplace=True)
                 types = {col:('float' if col in num_cols else 'str') for col in df}
                 df = df.astype(types) 
@@ -335,7 +426,7 @@ class Plotter:
                         df = df
                 
                 self.dfs[list(air_speeds)[x]] = df
-
+        
         except:
             import traceback
             with open("log.txt", "w") as log_file:
@@ -379,16 +470,16 @@ def main(inputs, outputs, process_name):
         results_pretty_fpth = tm59_pretty_fpth
 
     # Create Plotter
-    plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, process_name=process_name)
+    plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, analysis_name='TM59', process_name=process_name)
     plotter.read_data()
     
     # Create Analysis Outputs
     plotter.make_analysis_figs(inputs["Air Speed"])
 
     # Create Data Graphs
-    plotter.make_data_figs()
-
-    #plotter.make_results_figs(inputs["Air Speed"])
+    plotter.make_data_graphs()
+    
+    plotter.make_results_graphs(inputs["Air Speed"])
     return
 
 script_outputs = {

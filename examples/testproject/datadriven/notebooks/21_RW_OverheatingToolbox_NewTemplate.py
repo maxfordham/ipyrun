@@ -65,6 +65,7 @@ setup_config = {
     }
 } 
 runapps = RunAppsOverheating(setup_config)
+parameters['fdir_inputs'] = runapps._fdir_inputs
 
 reporting_config = {
     'fpth_script':os.path.realpath(parameters['fpth_report_script']),
@@ -76,10 +77,9 @@ reporting_config = {
         }
     },
     'fpth_parameters': parameters,
-    'fdir_compinputs': runapps,
     'compare_run_graphs': parameters['fdir_graphs_interim']
 }
-report_run = RunAppReport(reporting_config)  
+report_run = RunAppReport(reporting_config, runapps)  
 
 
 # Display Model Runs
@@ -93,6 +93,4 @@ display(Markdown('## Report Runs'))
 display(Markdown('''Create a report'''))
 display(report_run)
 # -
-
-
 

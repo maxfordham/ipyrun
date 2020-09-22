@@ -1,27 +1,5 @@
 [
     {
-        "label": "Software used for modelling",
-        "name": "Software",
-        "value": "IES VE 2018"
-    },
-    {
-        "label": "",
-        "name": "Site Location",
-        "value": "Croydon, London"
-    },
-    {
-        "label": "",
-        "name": "Image of the Site Plan",
-        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
-        "widget": "FileChooser"
-    },
-    {
-        "label": "",
-        "name": "Image of the IES Model",
-        "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
-        "widget": "FileChooser"
-    },
-    {
         "label": "",
         "max": null,
         "min": null,
@@ -43,26 +21,15 @@
         "label": "",
         "name": "Graphs to Show",
         "options": [],
-        "tag": "comparison-graphs",
+        "tags": ["comparison-graphs"],
         "rows": 15,
         "value": [],
         "widget": "SelectMultiple"
     },
     {
         "label": "",
-        "name": "Report Type",
-        "options": {"Benchmarking":"benchmarking",
-                    "Weather File Comparison":"weather-file",
-                    "Compliance": "compliance"},
-        "tag": "report-type",
-        "value": "benchmarking",
-        "widget": "Dropdown"
-    },
-    {
-        "label": "",
         "disabled": false,
-        "name": "Benchmarking",
-        "tag": "benchmarking",
+        "name": "Current Weather Assessment",
         "value": [
             {
                 "label": "",
@@ -71,54 +38,114 @@
                 "name": "Benchmark",
                 "options": [],
                 "value": null,
-                "tag": "single-process",
+                "tags": ["benchmark", "1", "single-process", "process-comparison"],
                 "widget": "Dropdown"
             },
             {
                 "label": "",
                 "max": null,
                 "min": null,
-                "name": "As Designed",
+                "name": "Benchmark - Label",
+                "value": "DSY1 2020, High Emission Scenario, 50%",
+                "tags": ["benchmark", "1", "label"]
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Heatwave Assessment 1",
                 "options": [],
                 "value": null,
-                "tag": "single-process",
+                "tags": ["heatwave", "2", "single-process"],
                 "widget": "Dropdown"
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Heatwave Assessment 1 - Label",
+                "value": "DSY2 2020, High Emission Scenario, 50%",
+                "tags": ["heatwave", "2", "label"]
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Heatwave Assessment 2",
+                "options": [],
+                "value": null,
+                "tags": ["heatwave", "3", "single-process"],
+                "widget": "Dropdown"
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Heatwave Assessment 3 - Label",
+                "value": "DSY3 2020, High Emission Scenario, 50%",
+                "tags": ["heatwave", "3", "label"]
             }
         ]
     },
     {
         "label": "",
-        "disabled": true,
-        "name": "Compliance",
-        "tag": "compliance",
+        "disabled": false,
+        "name": "Future Weather Assessment",
+        "tags": [],
         "value": [
             {
                 "label": "",
                 "max": null,
                 "min": null,
-                "name": "As Designed Model",
+                "name": "Future Assessment 1",
                 "options": [],
-                "tag": "single-process",
                 "value": null,
+                "tags": ["future", "1", "single-process"],
                 "widget": "Dropdown"
-            }
-        ]
-    },
-    {
-        "label": "",
-        "disabled": true,
-        "name": "Weather File Comparison",
-        "tag": "weather-file",
-        "value": [
+            },
             {
                 "label": "",
                 "max": null,
                 "min": null,
-                "name": "Models to Compare",
+                "name": "Future Assessment 1 - Label",
+                "value": "DSY1 2030, High Emission Scenario, 50%",
+                "tags": ["future", "1", "label"]
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Future Assessment 2",
                 "options": [],
-                "value": [],
-                "tag": "mult-process",
-                "widget": "SelectMultiple"
+                "value": null,
+                "tags": ["future", "2", "single-process"],
+                "widget": "Dropdown"
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Future Assessment 2 - Label",
+                "value": "DSY1 2050, High Emission Scenario, 50%",
+                "tags": ["future", "2", "label"]
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Future Assessment 3",
+                "options": [],
+                "value": null,
+                "tags": ["future", "3", "single-process"],
+                "widget": "Dropdown"
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Future Assessment 3 - Label",
+                "value": "DSY1 2080, High Emission Scenario, 50%",
+                "tags": ["future", "3", "label"]
             }
         ]
     }

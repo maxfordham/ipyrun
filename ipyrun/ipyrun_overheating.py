@@ -67,31 +67,45 @@ class RunAppReport(RunApp):
     # In order to pick which graphs to show, 
     # the reporting function needs a custom function 
     # to add the graph names to a dropdown 
-    
+
+    def __init__(self, config, RunApps=None):
+        """
+        class that builds a user interface for:
+        - editing inputs, 
+        - running a script, 
+        - reviewing the files output by the script
+        - maintaining a log of when the script was last run, by who, and what the inputs were
+        - allows users to reload previous input runs. 
+        
+        Args:
+            config (dict): a dict that defines the script path, inputs path, archive inputs path, 
+                log file path, output paths etc. this class inherits the RunConfig class which 
+                has a default configuration for all of these things allowing the user to pass minimal 
+                amounts of information to setup. 
+                
+        Example:
+            ```
+            config={
+                'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+                'fdir':NBFDIR,
+                }    
+
+            r = RunApp(config) 
+            from ipyrun._ipyeditjson import 
+            
+            ui = EditListOfDicts(li)
+            ui
+            ```
+        """
+        self.runapps = RunApps
+        super().__init__(config) 
+        
     def _update_comp(self, comp_runs):
-
-
-        '''colors = ["DodgerBlue",
-                  "MediumSeaGreen",
-                  "Peru",
-                  "LightGray",
-                  "Turquoise",
-                  "darksalmon",
-                  "goldenrod"]
-        self.exttemp_colour = "Crimson"
-        color_index = 0
-        self.dataset_raw = []
-        for i in comp_runs:
-            self.dataset_raw.append((i,i,colors[color_index]))
-            color_index += 1
-            if color_index > len(colors):
-                color_index = 0'''
-    
         basenames = []
 
         for file in os.listdir(self.config["compare_run_graphs"]):
             if file.endswith(".plotly"):
-                basenames.append(''.join(file.split('__')[1:]))
+                basenames.append('__'.join(file.split('__')[1:]))
 
         basenames = list(set(basenames))
         files_tocompare = []
@@ -114,9 +128,9 @@ class RunAppReport(RunApp):
             return
         
         for widget in self.editjson.widgets:
-            if "tag" in widget.di:
-                if widget.di["tag"] in change["owner"].options.values():
-                    value = (widget.di["tag"] != change["new"])
+            if "tags" in widget.di:
+                if widget.di["tags"] in change["owner"].options.values():
+                    value = (change["new"] not in widget.di["tags"])
                     widget.di["disabled"] = value
                     widget.widget_only.disabled = value
                     widget.widget_only.value = False
@@ -129,12 +143,14 @@ class RunAppReport(RunApp):
             if nested_w.nested_g and not nested_w.widget_only.disabled:
                 for widget in nested_w.nested_g.widgets:
                     widget.widget_only.observe(self._update_comp_onchange)
-                    tmp.append(widget.widget_only.value)
+                    if "tags" in widget.di:
+                        if "process-comparison" in widget.di["tags"]:
+                            tmp.append(widget.widget_only.value)
                     
         comp_graphs = self._update_comp(tmp)
         for widget in self.editjson.widgets:
-            if "tag" in widget.di:
-                if widget.di["tag"] == "comparison-graphs":
+            if "tags" in widget.di:
+                if "comparison-graphs" in widget.di["tags"]:
                     for value in widget.di["value"]:
                         if value not in comp_graphs:
                             widget.di["value"].remove(value)
@@ -146,23 +162,22 @@ class RunAppReport(RunApp):
     def _edit_inputs(self, sender):
         
         comp_vals = {}
-        
-        if "fdir_compinputs" in self.config:
-            
-            # Create list of models
-            comp_vals = sorted(list(set(self.config["fdir_compinputs"]._get_process_names()[1:])))
-            
+
+        if self.runapps:
+            compinputs = self.runapps._get_process_names()[1:]
+            comp_vals = [""] + compinputs
+
             # Edit JSON, adding list of models
             json_data = read_json(self.config["fpth_inputs"])
             for nested_el in json_data:
                 if isinstance(nested_el["value"], list):
                     for element in nested_el["value"]:
-                        if "tag" in element:
-                            if element["tag"] == "single-process":
+                        if "tags" in element:
+                            if "single-process" in element["tags"]:
                                 element["options"] = comp_vals
                                 if element["value"] not in comp_vals:
-                                    element["value"] = None   
-                            elif element["tag"] == "mult-process":
+                                    element["value"] = ""  
+                            elif "mult-process" in element["tags"]:
                                 for value in element["value"]:
                                     if value not in comp_vals:
                                         element["value"].remove(value)   
@@ -173,9 +188,9 @@ class RunAppReport(RunApp):
         self.editjson = EditJson(self.config)
 
         for widget in self.editjson.widgets:
-            if "tag" in widget.di:
+            if "tags" in widget.di:
                 widget.widget_only.observe(self._update_comp_onchange)
-                if widget.di["tag"] == "report-type":
+                if "report-type" in widget.di["tags"]:
                     widget.widget_only.observe(self._report_chooser_onchange)
                     
         with self.out:
@@ -327,27 +342,13 @@ class RunAppsOverheating(RunAppsTemplated):
         if change['type'] != 'change' or change['name'] != 'value':
             return
 
-        colors = ["DodgerBlue",
-                  "MediumSeaGreen",
-                  "Peru",
-                  "LightGray",
-                  "Turquoise",
-                  "darksalmon",
-                  "goldenrod"]
-        self.exttemp_colour = "Crimson"
-        color_index = 0
-        self.dataset_raw = []
-        for i in self.comp_out_runs.value:
-            self.dataset_raw.append((i,i,colors[color_index]))
-            color_index += 1
-            if color_index > len(colors):
-                color_index = 0
+        self.dataset_raw = copy.copy(self.comp_out_runs.value)
     
         basenames = []
 
         for file in os.listdir(self.di["script_outputs"]["0"]["fnm"]):
             if file.endswith(".plotly"):
-                basenames.append(''.join(file.split('__')[1:]))
+                basenames.append('__'.join(file.split('__')[1:]))
 
         basenames = list(set(basenames))
         files_tocompare = []
@@ -363,34 +364,32 @@ class RunAppsOverheating(RunAppsTemplated):
                 files_tocompare.append(basename)
         self.comp_out_dd.options = files_tocompare
 
-    def _run_comp_outputs(self, sender):
-        # Create Comparison Graph, for each file
-        filename = self.comp_out_dd.value
+    def comp_temps(self, params, filename, colors):
         data_out = []
         legend_names = []
+        color_index = 0
         for data_raw in self.dataset_raw:
-            fpth = os.path.join(self.di["script_outputs"]["0"]["fnm"],"{0}__{1}".format(data_raw[0],filename))
+            fpth = os.path.join(self.di["script_outputs"]["0"]["fnm"],"{0}__{1}".format(data_raw,filename))
             graph = pio.read_json(fpth)['data']
             for scatter in graph:
                 if scatter['name'] not in legend_names:
                     plot = scatter
                     plot['line']['width'] = 1.5
-                    if scatter['name'] != "External temperature":
-                        if data_raw[1]:
-                            name = "{0} - {1} ({2})".format(scatter['name'], data_raw[1], os.path.basename(data_raw[0]))
-                        else:
-                            name = "{0} - {1}".format(scatter['name'], os.path.basename(data_raw[0]))
+                    if scatter['name'] not in params[1]:
+                        name = "{0} - {1}".format(scatter['name'], os.path.basename(data_raw))
                         plot['name'] = name
-                        plot['line']['color'] = data_raw[2]
-
+                        plot['line']['color'] = colors[color_index]
                         data_out.append(plot)
+                        color_index += 1
+                        if color_index > len(colors):
+                            color_index = 0
                     else:
-                        plot['line']['color'] = self.exttemp_colour
+                        plot['line']['color'] = params[1][scatter['name']]
                         data_out.insert(0, plot)
 
                     legend_names.append(plot['name'])
 
-        fpth = os.path.join(self.di["script_outputs"]["0"]["fnm"],"{0}__{1}".format(self.dataset_raw[0][0],filename))
+        fpth = os.path.join(self.di["script_outputs"]["0"]["fnm"],"{0}__{1}".format(self.dataset_raw[0],filename))
         layout = pio.read_json(fpth)['layout']
         fig = go.Figure(
             data=tuple(data_out),
@@ -402,6 +401,29 @@ class RunAppsOverheating(RunAppsTemplated):
             xanchor="left",
             x=0
         ))
+        return fig
+        
+    def _run_comp_outputs(self, sender):
+        # Create Comparison Graph, for each file
+        filename = self.comp_out_dd.value
+        colors = ["DodgerBlue",
+                  "MediumSeaGreen",
+                  "Peru",
+                  "LightGray",
+                  "Turquoise",
+                  "darksalmon",
+                  "goldenrod"]
+        comp_funcs = {
+            'temps': [self.comp_temps, 
+                      {"External Temperature":"Crimson"}
+                     ]
+        }
+
+        fig = []
+        prefix = self.comp_out_dd.value.split('__')[0]
+        if prefix in comp_funcs:
+            fig = comp_funcs[prefix][0](comp_funcs[prefix], filename, colors)
+            
         with self.out:
             clear_output()
             display(self.comp_out_runs)

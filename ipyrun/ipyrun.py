@@ -510,7 +510,8 @@ class RunAppsTemplated():
         self.app = app
         self.configapp = RunConfigTemplated
         self.di = di
-        self.processes = self._update_processes(self.configapp(di)._fdir_inputs(folder_name=folder_name))
+        self._fdir_inputs = self.configapp(di)._fdir_inputs(folder_name=folder_name)
+        self.processes = self._update_processes(self._fdir_inputs)
         self.li = []
         self._form()
         self._init_controls()
@@ -522,7 +523,6 @@ class RunAppsTemplated():
         process_di = copy.deepcopy(self.di)
         process_di['process_name'] = process_name
         process_di['pretty_name'] = process_name
-        
         process = self.configapp(process_di)
         process.config['fpth_inputs'] = process._fpth_inputs(process_name=process_name,template_process=template_process)
         return {'app':self.app,'config':process.config}
@@ -878,5 +878,3 @@ if __name__ == '__main__':
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-

@@ -103,3 +103,10 @@ ENV/
 
 # IDE settings
 .vscode/
+/examples/testproject/datadriven/notebooks/appdata
+/ipyrun/appdata
+docx-mailmerge
+appdata
+appdata
+*.wbk
+mail-merge

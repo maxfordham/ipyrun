@@ -26,15 +26,48 @@ from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
 from mf_modules.md_helpers import write_md
 import datetime as dt
+try:
+    from ipyword.ipyword import md_to_docx, md_to_pdf
+except:
+    from ipyword import md_to_docx, md_to_pdf
+
+def img_test(fdir, in_name, prefix=None):
+    imgs = []
+    name = None
+    for filename in os.listdir(fdir):
+        if prefix and filename.startswith(prefix):
+            if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg'):
+                fullname = os.path.join(fdir, filename)
+                imgs.append(fullname)
+                name = in_name
+
+    return name, imgs
+
+def get_results(tagname, inputs):
+    processes = []
+    names = []
+    for key, value in inputs.items():
+        if(tagname in value[1] and 'label' not in value[1]):
+            processes.append(value[0])
+            [numtag] = [tag for tag in value[1] if tag.isdigit()] or [""]
+            for key, value in inputs.items():
+                if(numtag in value[1] and tagname in value[1] and 'label' in value[1]):
+                    names.append(value[0])
+                continue
+    return processes, names       
+
+def img_string(img, caption="", size=None):
+    size = size if size else 500
+    return '![{0}]({1}){{width={2}px}}'.format(caption, img, size)
 
 def main(inputs, outputs, fpth_parameters):
 
     # --------------------
     # Preamble
     # --------------------
+
     basenames = {}
-    basenames['Benchmark'] = inputs['Benchmark']
-    basenames['As Designed'] = inputs['As Designed']
+
     dfs = {}
 
     def read_modelrun_inputs(basename):
@@ -57,8 +90,11 @@ def main(inputs, outputs, fpth_parameters):
         df.columns = ['Parameter Values', '', 'Category']
         return df
 
-    for name in basenames:
-        dfs[name] = read_modelrun_inputs(basenames[name])
+    #for name in basenames:
+    #    dfs[name] = read_modelrun_inputs(basenames[name])
+
+    with open("test.txt", "w") as text_file:
+        print("{0}".format(basenames), file=text_file)
 
     # --------------------
     # Report
@@ -66,84 +102,76 @@ def main(inputs, outputs, fpth_parameters):
 
     report = []
 
-    
-    report.append('## Analysis Details')
-    report.append('This section outlines the details of the overheating analysis')
+    report.append('### Baseline Assessment')
+    benchmark_process, names = get_results('benchmark', inputs)
+    if benchmark_process:
+        for index, process in enumerate(benchmark_process):
+            name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
+            if name:
+                report.append(name)
+                report += [img_string(img, "", 800) for img in imgs]
 
-    analysisdesc = [
-        '##### Software',
-        '{0}'.format(inputs['Software']),
-        '##### Site Location',
-        '{0}'.format(inputs['Site Location']),
-        '##### Site Image',
-        '![alt]({0})'.format(r'../references/img/site_img.png'),
-        '##### IES Modelling Image',
-        '![alt]({0})'.format(r'../references/img/ies_img.png'),
+    report.append('<br>')
+    report.append('### Heatwave Assessment')
+    processes, names = get_results('heatwave', inputs)
+    if processes:
+        for index, process in enumerate(processes):
+            name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
+            if name:
+                report.append(name)
+                report += [img_string(img, "", 800) for img in imgs]
 
-    ]
-        
-    report += analysisdesc
-    report.append('---')
+    report.append('<br>')
+    report.append('### Future Assessment')
+    processes, names = get_results('future', inputs)
+    if processes:
+        for index, process in enumerate(processes):
+            name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
+            if name:
+                report.append(name)
+                report += [img_string(img, "", 800) for img in imgs]
 
-    report.append('## TM59 Results')
-    report.append('This section outlines the results from CIBSE TM59 analysis.')
-    report.append('The CIBSE TM59 standard outlines a methodology for the assessment of overheating risk in homes. Two criteria are defined within this standard:\n* Criterion a: For living rooms, kitchens and bedrooms: the number of hours during which DT is greater than or equal to one degree (K) during the period May to September inclusive shall not be more than 3% of occupied hours.\n* Criterion b: For bedrooms only: the operative temperature from 10 pm to 7 am shall not exceed 26C for more than 1% of annual hours (33 hours)')
-    report.append('In order to pass TM59, bedrooms have to pass both criteria while living rooms have to pass just Criterion a.')
+    report.append(r'\newpage')
+    report.append('### Results Breakdown: Proposed Design')
+    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__percent_pass', in_name="")
+    report += [img_string(img, "", 500) for img in imgs]
 
-    for name in basenames:
-        report.append('### {0}'.format(name))
-        fpth = os.path.join(fpth_parameters['fdir_tm59_interim'],'{0}__TM59results.jpeg'.format(basenames[name]))
-        report.append('![alt]({0})'.format(fpth))
+    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__crit_category', in_name="")
+    report += [img_string(img, "", 500) for img in imgs]
 
-    report.append('---')
-    report.append('## Individual Model Details')
-    report.append('This section outlines the assumptions and design inputs used within the overheating modelling, for both the *Benchmark* and *As Designed* models')
-    for name in basenames:
-        
-        report.append('### {0}'.format(name))
-        
-        df = dfs[name]
-        modeldesc = [
-            '##### Description',
-            '{0}'.format(df.loc['Model Desc', 'Parameter Values']),
-            '##### Fabric',
-            'The parameters of the building fabric are detailed in the following table:',
-            df.loc[df['Category'] == 'Fabrics', df.columns != 'Category'].to_markdown(),
-            '##### Ventilation Description',
-            '{0}'.format(df.loc['Vent Desc', 'Parameter Values']),
-            '##### Cooling Description',
-            '{0}'.format(df.loc['Cooling Desc', 'Parameter Values']),
-            '##### Summer (Elevated) Air Speed',
-            '{0} m/s'.format(df.loc['Air Speed', 'Parameter Values']),
-        ]
-        
-        report += modeldesc
+    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_non_bedroom', in_name="")
+    report += [img_string(img, "", 500) for img in imgs]
 
-    report.append('---')
-    report.append('## Indoor Temperature Graphs')
-    report.append('This section compares the indoor temperatures for both the *Benchmark* and *As Designed* models, for a typical summer week.')
-    report.append('A number of example rooms were used, to show an overview of the indoor temperatures across the building.')
-    for filename in os.listdir(fpth_parameters['fdir_comp_out']):
-        if filename.endswith('.png'):
-            fullname = os.path.join(fpth_parameters['fdir_comp_out'], filename)
-            report.append('![alt]({0})'.format(fullname))
+    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_bedroom', in_name="")
+    report += [img_string(img, "", 500) for img in imgs]
 
-    report.append('---')
-    report.append('## Appendix A: Full Model Details')
-    report.append('This section outlines all model inputs, for both the *Benchmark* and *As Designed* models')
+    report.append(r'\newpage')
+    report.append('### Temperature Breakdown: Proposed Design')
 
-    for name in basenames:
-        report.append('### {0}'.format(name))
-        df = dfs[name]
-        report.append(df.to_markdown())
+    imgs = []
+    processes = []
+    for key, value in inputs.items():
+        if('comparison-graphs' in value[1]):
+            for process in value[0]:
+                _, imgs_tmp = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__' + process, in_name="")
+                imgs += imgs_tmp
+            continue
 
-    if not os.path.exists(os.path.dirname(outputs['0'])):
-        os.makedirs(os.path.dirname(outputs['0']))
+    report += [img_string(img, "", 500) for img in imgs]  
+    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__temps', in_name="")
+    temp_img_strings = [img_string(img, "", 300) for img in imgs]
+    df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
+    df.columns = ['Graphs of Example Rooms', '']
 
-    with open(os.path.join(outputs['0'], 'overheating-report.md'), 'w', encoding="utf-8") as f:
+    report.append(df.to_markdown(showindex=False))
+    md_path = os.path.join(outputs['0'], 'overheating_report.md')
+
+    with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
-
+    
+    md_to_docx(fpth_md=md_path)
+    #md_to_pdf(fpth_md=md_path)
     return
 
 script_outputs = {
@@ -169,12 +197,21 @@ if __name__ == '__main__':
 
     inputs = read_json(fpth_inputs)
 
-    calc_inputs = {}
-    [calc_inputs.update({l['name']:l['value']}) for l in inputs]
+    def get_inputs(values, inputs):
+        for l in values:
+            if type(l['value']) is list and type(l['value'][0] if l['value'] else None) is dict:
+                inputs = get_inputs(l['value'], inputs)
+            else:
+                if 'tags' in l:
+                    inputs[l['name']] = [l['value'], l['tags']]
+                else:
+                    inputs[l['name']] = [l['value'], []]
+                
+        return inputs
 
-    compare_run_inputs = read_json(config['compare_run_inputs'])
-    [calc_inputs.update({l['name']:l['value']}) for l in compare_run_inputs]
-    
+    calc_inputs = {}
+    calc_inputs = get_inputs(inputs, calc_inputs)
+
     main(calc_inputs, outputs, config['fpth_parameters'])
     print('done')
 
