@@ -134,16 +134,16 @@ def main(inputs, outputs, fpth_parameters):
     report.append(r'\newpage')
     report.append('### Results Breakdown: Proposed Design')
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__percent_pass', in_name="")
-    report += [img_string(img, "", 500) for img in imgs]
+    report += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__crit_category', in_name="")
-    report += [img_string(img, "", 500) for img in imgs]
+    report += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_non_bedroom', in_name="")
-    report += [img_string(img, "", 500) for img in imgs]
+    report += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_bedroom', in_name="")
-    report += [img_string(img, "", 500) for img in imgs]
+    report += [img_string(img, "", 1200) for img in imgs]
 
     report.append(r'\newpage')
     report.append('### Temperature Breakdown: Proposed Design')

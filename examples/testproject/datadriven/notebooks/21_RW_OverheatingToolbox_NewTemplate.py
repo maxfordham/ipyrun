@@ -9,20 +9,25 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
 
 # +
+# %reload_ext autoreload
+# %autoreload 2
 import os
 NBFDIR = os.path.dirname(os.path.realpath('__file__'))
 import pandas as pd
 from IPython.display import update_display, display, Image, JSON, Markdown, HTML, clear_output
 import subprocess
+import sys
+print(sys.path)
 
 from ipyrun.ipyrun import RunApp
 from ipyrun.ipyrun_overheating import RunAppReport, RunAppsOverheating
+import ipyaggrid
 # +
 # Create set of parameters
 parameters = {}

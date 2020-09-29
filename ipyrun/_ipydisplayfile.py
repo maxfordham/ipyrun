@@ -69,6 +69,7 @@ def default_ipyagrid(df,**kwargs):
     _kwargs = {
         'grid_data':df,
         'grid_options':grid_options,
+        'show_toggle_edit':False,
         'quick_filter':True,
         'theme':'ag-theme-balham',
     }
@@ -409,4 +410,11 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+
+
+
+
+
+
+
 

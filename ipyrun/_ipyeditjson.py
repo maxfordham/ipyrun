@@ -181,7 +181,8 @@ class EditDictData():
                 'Textarea':widgets.Textarea}
 
             self.mfcustom_widgets = {
-                'DerivedText':self._derived_text,
+                'DerivedText':self._text_label,
+                'TextLabel':self._text_label,
                 'DatePicker':self._date_picker,
                 '_recursive_guess':self._recursive_guess,
                 'ipysheet':self._ipysheet,
@@ -446,12 +447,13 @@ class EditDict(EditDictData):
         
     def call_ipyagrid(self, sender):
         tmp = pd.read_json(self.di['value'])
-        
-        self.grid = default_ipyagrid(tmp,show_toggle_edit=True)
+        editable = self.di['editable'] if 'editable' in self.di else True
+        self.grid = default_ipyagrid(tmp,show_toggle_edit=editable)
         #ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
         with self.out:
             if self.widget_only.value:  
-                display(self.save_ipyagrid)
+                if editable:
+                    display(self.save_ipyagrid)
                 display(self.grid)
             else:
                 clear_output()
@@ -469,10 +471,11 @@ class EditDict(EditDictData):
     
     # --------------------------------------------------------------------------
     # other custom widgets -----------------------------------------------------
-    def _derived_text(self):
+
+    def _text_label(self):
         self.widget_only = widgets.HTML(**self.kwargs)
         self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
-    
+        
     def _date_picker(self):
         value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
         self.widget_only = widgets.DatePicker(value=value)
@@ -707,11 +710,11 @@ class EditJson(EditListOfDicts, FileConfigController):
 
         
     def _update_from_file(self):
-        
+        self.li = read_json(self.fpth_inputs)
         self.widgets = []
         for l in self.li:
             self.widgets.append(EditDict(l))
-            
+
         #self.applayout.children = ()
         #self.applayout.children = self._get_apps_layout()
         #for w in self.widgets:
@@ -721,7 +724,7 @@ class EditJson(EditListOfDicts, FileConfigController):
         app_layout = []
         for w in self.widgets:
             app_layout.append(widgets.VBox([w.layout, w.out]))
-        return app_layout
+        return tuple(app_layout)
     
     def _save_changes(self, sender):
         """save changes to working inputs file"""

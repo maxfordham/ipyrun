@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---

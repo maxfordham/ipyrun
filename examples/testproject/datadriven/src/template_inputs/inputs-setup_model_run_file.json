@@ -55,6 +55,7 @@
                 "min": null,
                 "name": "Model File Path",
                 "options": null,
+                "tags": ["model_fpth"],
                 "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
                 "widget": "FileChooser"
             },
@@ -71,7 +72,7 @@
     },
     {
         "label": "",
-        "name": "Fabrics",
+        "name": "General Fabrics",
         "value": [
             {
                 "label": "(%)",
@@ -80,46 +81,6 @@
                 "name": "Average Glazing Ratio",
                 "options": null,
                 "value": 55.1
-            },
-            {
-                "label": "(W/m^2.K)",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Walls",
-                "options": null,
-                "value": 0.1
-            },
-            {
-                "label": "(W/m^2.K)",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Floor",
-                "options": null,
-                "value": 0.1
-            },
-            {
-                "label": "(W/m^2.K)",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Roof",
-                "options": null,
-                "value": 0.1
-            },
-            {
-                "label": "(W/m^2.K)",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Opaque Doors",
-                "options": null,
-                "value": 0.1
-            },
-            {
-                "label": "(W/m^2.K)",
-                "max": null,
-                "min": null,
-                "name": "U-Value: Windows",
-                "options": null,
-                "value": 1.0
             },
             {
                 "label": "",
@@ -162,6 +123,12 @@
                 "value": "Lightweight"
             }
         ]
+    },
+    {
+        "label": "",
+        "name": "Fabrics - Breakdown",
+        "tags": ["fabrics-breakdown"],
+        "value": []
     },
     {
         "label": "",

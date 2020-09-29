@@ -35,6 +35,7 @@ import numpy as np
 from shutil import copyfile
 from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
+from mf_modules import vis
 import datetime as dt
 import re
 
@@ -202,11 +203,12 @@ class Plotter:
             bedroom_mean_A[i] = (df[bedroom_mask]['Criterion A (%)'].mean(axis = 0))/100
             bedroom_mean_B[i] = (df[bedroom_mask]['Criterion B (%)'].mean(axis = 0))/100
             nonbedroom_mean_A[i] = (df[non_bedroom_mask]['Criterion A (%)'].mean(axis = 0))/100
-            
+
         data = []
         line=dict(
-            color='ForestGreen',
-            width=2)
+            color='black',
+            width=2,
+            dash='dash')
         critb_limit = go.Scatter(name='Criterion B - Upper Limit', 
                                 y=[0.01,0.01], 
                                 x=[list(bedroom_mean_B.keys())[0],
@@ -229,18 +231,23 @@ class Plotter:
         data.append(critb_limit)
         data.append(crita_limit)
 
-        fig = go.Figure(data=data, layout=layout)
-        fig.update_layout(title='Average performance of bedroom spaces')
+        settings = {
+            "yaxis_title": self.analysis_name + ' Criteria',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
+        settings['title'] = 'Average performance of bedroom spaces'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_bedroom'))
-        fig.write_image(filename + '.jpeg')   
+        vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
 
         data = []
         data.append(go.Bar(name='Criterion A (%)', x=list(nonbedroom_mean_A.keys()), y=list(nonbedroom_mean_A.values())))
         data.append(crita_limit)
-        fig.update_layout(title='Average performance of non-bedroom spaces')
-        fig = go.Figure(data=data, layout=layout)
+        settings['title'] = 'Average performance of non-bedroom spaces'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_non_bedroom'))
-        fig.write_image(filename + '.jpeg')   
+        vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
 
     def make_results_graphs(self,air_speed):
         self.make_tm59_overall_graphs()
@@ -307,20 +314,16 @@ class Plotter:
         end_day = self.start_day + self.time_period
 
         # Standard Figure Layout
-        fig_layout = {
+        
+        settings = {
             "xaxis_title":"Date",
-            "yaxis_title":"Temperature (C)",
-            "paper_bgcolor":"white",
-            "template":'plotly_white',
-            "showlegend":True,
+            "yaxis_title":"Temperature (F)",
             "xaxis_tickformat": 'Day %-j, %H:00',
             "xaxis": {
                 "tickmode" : "linear",
                 "tick0" : xaxis[12]
-            },
-            "width": 1000
+            }
         }
-        
 
         graph_inputs = []
 
@@ -347,13 +350,11 @@ class Plotter:
                             line=dict(width=2, color = self.comparison_data[2])))
 
             subtitle = "Maximum Average ({0} to {1})".format(self.toDate(self.start_day).strftime("%d %b"), self.toDate(end_day).strftime("%d %b"))
-            fig = go.Figure(data=data, layout = fig_layout)
-            fig.update_layout(title="{0} - {1}<br>{2}".format('Temperatures', roomName, subtitle))
             room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName) # Create Valid filename from room name
+            
+            settings['title'] = "{0} - {1}<br>{2}".format('Temperatures', roomName, subtitle)
             filename = os.path.join(self.out_data_dir, "{2}__{0}__{1}".format('temps', room_fname, self.process_name))
-            fig.write_json(filename + '.plotly')
-            fig.write_image(filename + '.jpeg')   
-
+            vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=True)
 
     def make_data_graphs(self):
         dfs = pd.read_excel(self.data_fpth,None)
@@ -441,7 +442,6 @@ def main(inputs, outputs, process_name):
     tm59_mv_raw_fpth = ""
     tm59_mv_pretty_fpth = ""
     data_fpth = ""
-    
     # Find model excel files
     for file in os.listdir(input_dir):
         if file.endswith(".xlsx"):
@@ -468,7 +468,7 @@ def main(inputs, outputs, process_name):
     else:
         results_raw_fpth = tm59_raw_fpth
         results_pretty_fpth = tm59_pretty_fpth
-
+    
     # Create Plotter
     plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, analysis_name='TM59', process_name=process_name)
     plotter.read_data()

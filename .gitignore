@@ -110,3 +110,5 @@ appdata
 appdata
 *.wbk
 mail-merge
+raw
+interim

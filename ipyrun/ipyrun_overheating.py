@@ -38,6 +38,7 @@ from mf_modules.pandas_operations import del_matching
 from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.pydtype_operations import read_json, write_json 
+from mf_scripts.gbxml import GbxmlParser, GbxmlReport
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
@@ -198,8 +199,90 @@ class RunAppReport(RunApp):
             display(self.editjson)
 
 
+# +
+class EditJsonOverheating(EditJson):
+
+    def __init__(self, config):
+        super().__init__(config) 
+        self.gbxmldf = None
+        self._init_custom_buttons()
+        
+    def _init_custom_buttons(self):
+        self.update_gbxml = widgets.Button(description='update from gbxml',button_style='warning',style={'font_weight':'bold'})
+        self.button_bar.children += (self.update_gbxml,)
+        #self.custom_bar = widgets.HBox([self.update_gbxml])
+        self.update_gbxml.on_click(self._test)
+        
+    def _test(self, sender):
+        gbxml_fpth = None
+        for li in self.flattened_li():
+            if 'tags' in li:
+                if 'model_fpth' in li['tags']:
+                    dirname = os.path.dirname(li['value'])
+                    filename = os.path.basename(os.path.dirname(li['value'])) + '.xml'
+                    gbxml_fpth = os.path.join(dirname,filename)
+        if os.path.exists(gbxml_fpth):
+            self._save_changes(None)
+            self.li = read_json(self.fpth_inputs)
+            for li in self.li:
+                if 'tags' in li:
+                    if 'fabrics-breakdown' in li['tags']:
+                        fsum = GbxmlReport(gbxml_fpth).fabric_summ
+                        li['editable'] = False
+                        li['widget'] = "ipyagrid"
+                        li['value'] = fsum.to_json(orient="columns")
+                        
+                        '''for index, row in fsum.iterrows():
+                            tmplabel = copy.copy(textlabel)
+                            tmplabel['name'] = 'U Value'
+                            tmplabel['label'] = str(index)
+                            tmplabel['value'] = str(row["U-value_WPerSquareMeterK"])
+                            li['value'].append(tmplabel)'''
+            self._save_changes(None)
+            self._update_from_file()
+            self.apps_layout.children = self._get_apps_layout()
+        
+    def flattened_li(self):
+        tmp_li = []
+        def flatten(cur_li):
+            for li in cur_li:
+                tmp_li.append(li)
+                if isinstance(li["value"], list) and li["value"]:
+                    if isinstance(li["value"][0], dict):
+                        flatten(li["value"])
+            return
+                    
+        flatten(self.li)
+        return tmp_li
+
+    def display(self):
+        box = widgets.VBox([
+            self.button_bar,
+            self.temp_message,
+            self.inputform,
+        ])
+        self.layout = box
+        display(self.layout)
+        self.apps_layout = widgets.VBox(self._get_apps_layout())
+        display(self.apps_layout)
+        display(self.out)
+        
+class RunAppOverheating(RunApp):
+    def _edit_inputs(self, sender):
+        with self.out:
+            clear_output()
+            editjson = EditJsonOverheating(self.config)
+            #display(editjson.test())
+            display(editjson)
+
+
+# -
+
 class RunAppsOverheating(RunAppsTemplated):
 
+    def __init__(self, di, app=RunAppOverheating, folder_name=None):
+        super().__init__(di, app, folder_name) 
+            
     def _create_process(self, process_name='TEMPLATE', template_process=None):
         process_di = copy.deepcopy(self.di)
         process_di['process_name'] = process_name
@@ -430,4 +513,25 @@ class RunAppsOverheating(RunAppsTemplated):
             display(self.comp_out_dd)
             display(self.comp_out_btn)
             display(fig)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
