@@ -1,0 +1,17 @@
+# Ss_65_40_80_00-Smoke Extract and Control
+
+## DESIGN PARAMETERS
+
+### Industry Standards
+
+### Project Specific Requirements
+
+## SYSTEM DESCRIPTION
+
+## CONTROL REQUIREMENTS
+
+## REFERENCE SPECIFICATION CLAUSES
+
+## SYSTEM DRAWINGS / SCHEMATICS
+
+\newpage

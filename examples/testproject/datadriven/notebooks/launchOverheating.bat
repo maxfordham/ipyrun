@@ -1,4 +1,4 @@
 pushd %~dp0
-call conda activate mf_main
-voila 21_RW_OverheatingToolbox_NewTemplate.ipynb
+call conda activate mf_base
+voila 20_RW_OverheatingToolbox.ipynb
 cmd \k

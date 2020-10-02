@@ -1,0 +1,103 @@
+[
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Word Output?",
+        "options": null,
+        "value": true,
+        "widget": "Checkbox"
+    },
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "PDF Output?",
+        "options": null,
+        "value": true,
+        "widget": "Checkbox"
+    },
+    {
+        "label": "",
+        "name": "Graphs to Show",
+        "options": [],
+        "tags": ["comparison-graphs"],
+        "rows": 15,
+        "value": [],
+        "widget": "SelectMultiple"
+    },
+    {
+        "label": "",
+        "name": "Report Type",
+        "options": {"Benchmarking":"benchmarking",
+                    "Weather File Comparison":"weather-file",
+                    "Compliance": "compliance"},
+        "tags": ["report-type"],
+        "value": "benchmarking",
+        "widget": "Dropdown"
+    },
+    {
+        "label": "",
+        "disabled": false,
+        "name": "Benchmarking",
+        "tags": ["benchmarking"],
+        "value": [
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Benchmark",
+                "options": [],
+                "value": null,
+                "tags": ["single-process"],
+                "widget": "Dropdown"
+            },
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "As Designed",
+                "options": [],
+                "value": null,
+                "tags": ["single-process"],
+                "widget": "Dropdown"
+            }
+        ]
+    },
+    {
+        "label": "",
+        "disabled": true,
+        "name": "Compliance",
+        "tags": "compliance",
+        "value": [
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "As Designed Model",
+                "options": [],
+                "tags": ["single-process"],
+                "value": null,
+                "widget": "Dropdown"
+            }
+        ]
+    },
+    {
+        "label": "",
+        "disabled": true,
+        "name": "Weather File Comparison",
+        "tags": "weather-file",
+        "value": [
+            {
+                "label": "",
+                "max": null,
+                "min": null,
+                "name": "Models to Compare",
+                "options": [],
+                "value": [],
+                "tags": ["mult-process"],
+                "widget": "SelectMultiple"
+            }
+        ]
+    }
+]

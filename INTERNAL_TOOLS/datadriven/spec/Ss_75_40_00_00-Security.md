@@ -1,0 +1,17 @@
+# Ss_75_40_00_00-Security
+
+## DESIGN PARAMETERS
+
+### Industry Standards
+
+### Project Specific Requirements
+
+## SYSTEM DESCRIPTION
+
+## CONTROL REQUIREMENTS
+
+## REFERENCE SPECIFICATION CLAUSES
+
+## SYSTEM DRAWINGS / SCHEMATICS
+
+\newpage

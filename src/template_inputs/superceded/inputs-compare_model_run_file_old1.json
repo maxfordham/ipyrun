@@ -1,0 +1,11 @@
+[
+    {
+        "label": "",
+        "max": null,
+        "min": null,
+        "name": "Models to Compare",
+        "options": ["000_test", "001_test", "002_test-MV"],
+        "value": null,
+        "widget": "SelectMultiple"
+    }
+]

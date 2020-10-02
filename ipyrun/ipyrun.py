@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main]
+#     display_name: Python 3
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: python3
 # ---
 
 # +
@@ -878,3 +878,4 @@ if __name__ == '__main__':
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
+
