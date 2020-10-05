@@ -243,14 +243,14 @@ class Plotter:
 
         settings['title'] = 'Average performance of bedroom spaces'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_bedroom'))
-        vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
+        full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
 
         data = []
         data.append(go.Bar(name='Criterion A (%)', x=list(nonbedroom_mean_A.keys()), y=list(nonbedroom_mean_A.values())))
         data.append(crita_limit)
         settings['title'] = 'Average performance of non-bedroom spaces'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_non_bedroom'))
-        vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
+        full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
 
     def make_results_graphs(self,air_speed):
         self.make_tm59_overall_graphs()
@@ -357,7 +357,7 @@ class Plotter:
             
             settings['title'] = "{0} - {1}<br>{2}".format('Temperatures', roomName, subtitle)
             filename = os.path.join(self.out_data_dir, "{2}__{0}__{1}".format('temps', room_fname, self.process_name))
-            vis.full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=True)
+            full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=True)
 
     def make_data_graphs(self):
         if not self.data_fpth:
