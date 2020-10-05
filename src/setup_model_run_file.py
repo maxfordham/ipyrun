@@ -38,9 +38,9 @@ import datetime as dt
 import re
 
 try:
-    from ipyrun.graph-operations import full_width_graph
+    from ipyrun.graph_operations import full_width_graph
 except:
-    from graph-operations import full_width_graph
+    from graph_operations import full_width_graph
 
 #############################################
 # HELPER FUNCTIONS
