@@ -34,9 +34,13 @@ import numpy as np
 from shutil import copyfile
 from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
-from mf_modules import vis
 import datetime as dt
 import re
+
+try:
+    from ipyrun.graph-operations import full_width_graph
+except:
+    from graph-operations import full_width_graph
 
 #############################################
 # HELPER FUNCTIONS
