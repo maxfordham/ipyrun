@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: mf_base
 #     language: python
-#     name: python3
+#     name: mf_base
 # ---
 
 # +
@@ -23,6 +23,9 @@ from shutil import copyfile
 import getpass
 import importlib.util
 import copy 
+from halo import HaloNotebook
+import traceback
+import sys
 
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -206,18 +209,7 @@ class RunApp(RunForm, RunConfig):
     def _reset(self, sender):
         with self.out:
             clear_output()
-    
-    '''def _edit_inputs(self, sender):
-        self.config_to_json()
-        self.archive_inputs()
-        self._log()
-        with self.out:
-            clear_output()
-            if os.path.isfile(self.config['fpth_inputs']):
-                subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
-                #print(self.config)
-                display(Markdown(os.path.join(self.config['script_outputs']['0']['fdir'], 'overheating-report.md')))'''
-
+            
     def _edit_inputs(self, sender):
         with self.out:
             clear_output()
@@ -244,8 +236,14 @@ class RunApp(RunForm, RunConfig):
         with self.out:
             clear_output()
             if os.path.isfile(self.config['fpth_inputs']):
-                display(self.config['pretty_name'])
-                display(subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']]))
+                spinner = HaloNotebook(animation='marquee', text='Running', spinner='dots')
+                try:
+                    spinner.start()
+                    subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
+                    spinner.succeed('Finished')
+                except subprocess.CalledProcessError as e:
+                    spinner.fail('Error with Process')
+
                 #display(subprocess.check_output(['conda', 'run', '-n', 'mf_main', 'python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']]))
             else:
                 display(Markdown("## inputs have not been saved"))
@@ -312,10 +310,10 @@ class RunApp(RunForm, RunConfig):
             else:
                 for f in fpths:
                     if not os.path.isfile(f):
-                        print(f)
+                        #print(f)
                         fpths.remove(f)
                 display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
-                
+
     def _show_log(self, sender):
         with self.out:
             clear_output()
@@ -702,9 +700,19 @@ class RunAppsTemplated():
             display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl-1)))
             for l in self.li:
                 if l.check.value:
-                    display(Markdown('running: {0}'.format(l.config['process_name'])))
+                    spinner = HaloNotebook(
+                                animation='marquee', 
+                                text='Running {0}'.format(l.config['process_name']), 
+                                spinner={
+                                    'interval': 100,
+                                    'frames': ['-']
+                                })
+                    spinner.start()
                     l._run_script('sender')
                     l._log() # 'sender'
+                    spinner.succeed('Finished {0}'.format(l.config['process_name']))
+                    #display(Markdown('Running: {0}'.format(l.config['process_name'])))
+
         
     def display(self):
         display(self.form)
@@ -878,4 +886,3 @@ if __name__ == '__main__':
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
-

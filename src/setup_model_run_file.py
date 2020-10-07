@@ -147,12 +147,13 @@ class Plotter:
         pass_percentage_data = []
         criterion_failing_data = []
 
-        layout = go.Layout(
-                    xaxis_type='category',
-                    yaxis_tickformat = '%',
-                    xaxis_title="Air Speed (m/s)",
-                    yaxis_title='% of Rooms')
-        
+        settings = {
+            "yaxis_title": '% of Rooms',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
         for i in self.air_speeds:
             df = self.dfs[i].copy()
 
@@ -171,20 +172,20 @@ class Plotter:
             criterion_failing.append(df[i].value_counts(normalize=True))
         
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
-        fig = go.Figure(data=pass_percentage_data, layout=layout)
-        fig.update_layout(title='% of rooms failing each criteria, at different air speeds')
+
+        settings['title'] = '% of rooms failing each criteria, at different air speeds'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
-        fig.write_image(filename + '.jpeg')       
+        full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False, legend=False)
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
         for column in df_criterion_failing:
             criterion_failing_data.append(go.Bar(name=column, x=list(df_criterion_failing.index) ,y=df_criterion_failing[column]))
-        fig = go.Figure(data=criterion_failing_data, layout=layout)
-        fig.update_layout(barmode='stack')
-        fig.update_layout(title='% of rooms which pass analysis, at different air speeds')
-        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
-        fig.write_image(filename + '.jpeg')  
 
+        settings['barmode'] = 'stack'
+        settings['title'] = '% of rooms which pass analysis, at different air speeds'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
+        full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
+        
     def make_tm59_average_graphs(self):
         layout = go.Layout(
                     xaxis_type='category',
@@ -286,16 +287,21 @@ class Plotter:
             cells=dict(values=vals,
                         fill_color= cell_colours,
                         line_color= line_colour,
-                        align='left')
+                        align='left',
+                        height=30)
         )
-        
-        layout = go.Layout(
-            autosize=False,
-            width=1500,
-            height=rows*15+100, # Height based on number of rows
-            margin={'l': 3, 'r': 3, 't': 10, 'b': 0}
-        )
-        
+
+        layout = {
+            "autosize": False,
+            "width": 1500, 
+            "height":rows*30+100, 
+            "margin":{'l': 3, 'r': 3, 't': 10, 'b': 0},
+            "template": "simple_white",
+            "titlefont": {"size": 24},
+            "font": {"size": 18},
+            "font_family": "Calibri"
+        }    
+
         table = go.Figure(data=data, layout=layout)
 
         # Copy Data Excel to Output Folder

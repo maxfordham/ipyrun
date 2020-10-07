@@ -8,7 +8,7 @@ from matplotlib import rcParams
 import matplotlib.image as mpimg
 import plotly.graph_objects as go
 
-def full_width_graph(data, settings, filename, img, plotly):
+def full_width_graph(data, settings, filename, img, plotly, legend=True):
         
         defaults = {
             "yaxis_title": '',
@@ -20,7 +20,8 @@ def full_width_graph(data, settings, filename, img, plotly):
             "template": "simple_white",
             "titlefont": {"size": 24},
             "font": {"size": 18},
-            "showlegend": True,
+            "showlegend": legend,
+            "font_family": "Calibri"
         }
         
         for key in defaults:

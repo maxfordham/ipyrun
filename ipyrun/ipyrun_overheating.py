@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -152,10 +152,12 @@ class RunAppReport(RunApp):
         for widget in self.editjson.widgets:
             if "tags" in widget.di:
                 if "comparison-graphs" in widget.di["tags"]:
-                    for value in widget.di["value"]:
+                    value_list = list(widget.di["value"])
+                    for value in value_list:
                         if value not in comp_graphs:
-                            widget.di["value"].remove(value)
-                            widget.widget_only.value.remove(value)
+                            value_list.remove(value)
+                    widget.di["value"] = tuple(value_list)
+                    widget.widget_only.value = tuple(value_list)
                     widget.di["options"] = comp_graphs
                     widget.widget_only.options = comp_graphs
         return
@@ -513,25 +515,4 @@ class RunAppsOverheating(RunAppsTemplated):
             display(self.comp_out_dd)
             display(self.comp_out_btn)
             display(fig)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

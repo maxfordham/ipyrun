@@ -1,0 +1,17 @@
+# Ss_70_00_00_00-Electrical
+
+## DESIGN PARAMETERS
+
+### Industry Standards
+
+### Project Specific Requirements
+
+## SYSTEM DESCRIPTION
+
+## CONTROL REQUIREMENTS
+
+## REFERENCE SPECIFICATION CLAUSES
+
+## SYSTEM DRAWINGS / SCHEMATICS
+
+\newpage

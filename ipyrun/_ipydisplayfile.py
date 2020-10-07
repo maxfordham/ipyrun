@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -326,10 +326,9 @@ class DisplayFiles():
 
     def _init_form(self):
         self.outputsfpth = widgets.SelectMultiple(options=self.fnms,
-                                           layout=widgets.Layout(indent=False,
-                                                      width='auto',
-                                                      height='auto',
-                                                      flex_flow='column'))
+                                                  layout=widgets.Layout(indent=True,
+                                                              width='30%',
+                                                              height='auto'))
         self.show_hide = widgets.ToggleButton(description='display/hide files',
                               tooltip='shows and hides display outputs of the files selected in the SelectMultiple dropdown menu',
                               button_style='success')
@@ -340,11 +339,12 @@ class DisplayFiles():
 
     def display_previews(self):
         #print(self.outputsfpth.value)
+        display(Markdown(''))
         for file in self.outputsfpth.value:
-            display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
+            display(Markdown('AAA: #### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
             s = str(self.map_previews[file]._map[self.map_previews[file].ext])
             if 'DisplayFile._open_option' not in s:
-                display(Markdown('`{0}`'.format(self.map_fpths[file])))
+                display(Markdown('`BBB: {0}`'.format(self.map_fpths[file])))
             self.map_previews[file].preview_fpth()
 
     def _show_hide(self, sender):
@@ -410,6 +410,8 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+
+
 
 
 

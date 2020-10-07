@@ -102,52 +102,66 @@ def main(inputs, outputs, fpth_parameters):
 
     report = []
 
-    report.append('### Baseline Assessment')
+    tmp = [] 
     benchmark_process, names = get_results('benchmark', inputs)
     if benchmark_process:
         for index, process in enumerate(benchmark_process):
             name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
             if name:
-                report.append(name)
-                report += [img_string(img, "", 800) for img in imgs]
+                tmp.append(name)
+                tmp += [img_string(img, "", 800) for img in imgs]
+    if tmp:
+        report.append('### Baseline Assessment')
+        report += tmp
+        report.append('<br>')
 
-    report.append('<br>')
-    report.append('### Heatwave Assessment')
+    tmp = [] 
     processes, names = get_results('heatwave', inputs)
     if processes:
         for index, process in enumerate(processes):
             name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
             if name:
-                report.append(name)
-                report += [img_string(img, "", 800) for img in imgs]
+                tmp.append(name)
+                tmp += [img_string(img, "", 800) for img in imgs]
+    if tmp:
+        report.append('### Heatwave Assessment')
+        report += tmp
+        report.append('<br>')
 
-    report.append('<br>')
-    report.append('### Future Assessment')
+    tmp = [] 
     processes, names = get_results('future', inputs)
     if processes:
         for index, process in enumerate(processes):
             name, imgs = img_test(fdir=fpth_parameters['fdir_analysis_interim'], prefix=process, in_name=names[index])
             if name:
-                report.append(name)
-                report += [img_string(img, "", 800) for img in imgs]
+                tmp.append(name)
+                tmp += [img_string(img, "", 800) for img in imgs]
+    if tmp:
+        report.append('### Future Assessment')
+        report += tmp
 
-    report.append(r'\newpage')
-    report.append('### Results Breakdown: Proposed Design')
+    if report:
+        report.append(r'\newpage')
+
+    tmp = [] 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__percent_pass', in_name="")
-    report += [img_string(img, "", 1200) for img in imgs]
+    tmp += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__crit_category', in_name="")
-    report += [img_string(img, "", 1200) for img in imgs]
+    tmp += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_non_bedroom', in_name="")
-    report += [img_string(img, "", 1200) for img in imgs]
+    tmp += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__av_bedroom', in_name="")
-    report += [img_string(img, "", 1200) for img in imgs]
+    tmp += [img_string(img, "", 1200) for img in imgs]
 
-    report.append(r'\newpage')
-    report.append('### Temperature Breakdown: Proposed Design')
+    if tmp:
+        report.append('### Results Breakdown: Proposed Design')
+        report += tmp
+        report.append(r'\newpage')
 
+    tmp = [] 
     imgs = []
     processes = []
     for key, value in inputs.items():
@@ -157,13 +171,20 @@ def main(inputs, outputs, fpth_parameters):
                 imgs += imgs_tmp
             continue
 
-    report += [img_string(img, "", 500) for img in imgs]  
+    tmp += [img_string(img, "", 500) for img in imgs]  
+    if tmp:
+        report.append('### Temperature Breakdown: Proposed Design')
+        report += tmp
+        report.append(r'\newpage')
+        
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__temps', in_name="")
     temp_img_strings = [img_string(img, "", 300) for img in imgs]
-    df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
-    df.columns = ['Graphs of Example Rooms', '']
+    if temp_img_strings:
+        df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
+        df.columns = ['Graphs of Example Rooms', '']
 
-    report.append(df.to_markdown(showindex=False))
+        report.append(df.to_markdown(showindex=False))
+
     md_path = os.path.join(outputs['0'], 'overheating_report.md')
 
     with open(md_path, 'w', encoding="utf-8") as f:

@@ -37,5 +37,5 @@ DSY1 2030, High Emission Scenario, 50%
 ### Temperature Breakdown: Proposed Design
 
 | Graphs of Example Rooms   |    |
-|---------------------------|----|
+||
 
