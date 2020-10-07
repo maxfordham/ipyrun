@@ -788,6 +788,11 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
     def __init__(self, fdir, fnm=None):
         self.out = widgets.Output()
         super().__init__(fdir, fnm=fnm)
+        self.out = widgets.Output()
+        self.li = li
+        self.li_apps = self._update_li()
+        self.form()
+        self._init_observe()
         
     def _save_changes(self, sender):
         """save changes to working inputs file"""
@@ -870,7 +875,7 @@ if __name__ =='__main__':
     
     # Example1
     FDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(FDIR,r'appdata/inputs/test.json')
+    fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
     simpleeditjson = SimpleEditJson(fpth)
     # display
     display(Markdown('### Example1'))
