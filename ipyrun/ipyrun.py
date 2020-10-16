@@ -294,7 +294,7 @@ class RunApp(RunForm, RunConfig):
             #    d.preview_fpth()
                 
             fpths = [v for k,v in self.fpths_outputs.items()]
-            
+
             if 'display_ignore' in self.config:
                 display_ignore = self.config['display_ignore']
             else:
@@ -304,14 +304,18 @@ class RunApp(RunForm, RunConfig):
                 display_prefix = self.config['display_prefix']
             else:
                 display_prefix = ''
-                
+
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
+                with open("fpths_bef.txt", "w") as text_file:
+                    print("{0}".format(fpths), file=text_file)
+
                 for f in fpths:
-                    if not os.path.isfile(f):
-                        #print(f)
+                    if not os.path.isfile(f) and not os.path.isdir(f):
                         fpths.remove(f)
+                with open("fpths_aft.txt", "w") as text_file:
+                    print("{0}".format(fpths), file=text_file)
                 display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
 
     def _show_log(self, sender):

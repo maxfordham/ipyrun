@@ -4,6 +4,7 @@
         "max": null,
         "min": null,
         "name": "Word Output?",
+        "tags": ["word-out"],
         "options": null,
         "value": true,
         "widget": "Checkbox"
@@ -13,6 +14,7 @@
         "max": null,
         "min": null,
         "name": "PDF Output?",
+        "tags": ["pdf-out"],
         "options": null,
         "value": true,
         "widget": "Checkbox"

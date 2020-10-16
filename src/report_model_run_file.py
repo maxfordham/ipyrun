@@ -90,9 +90,6 @@ def main(inputs, outputs, fpth_parameters):
         df.columns = ['Parameter Values', '', 'Category']
         return df
 
-    #for name in basenames:
-    #    dfs[name] = read_modelrun_inputs(basenames[name])
-
     with open("test.txt", "w") as text_file:
         print("{0}".format(basenames), file=text_file)
 
@@ -190,7 +187,14 @@ def main(inputs, outputs, fpth_parameters):
     with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
-    
+
+
+    for key, value in inputs.items():
+        report.append('\nkey\n')
+        report.append(Markdown(key))
+        report.append('\nvalue\n')
+        report.append(Markdown(value))
+
     md_to_docx(fpth_md=md_path)
     #md_to_pdf(fpth_md=md_path)
     return

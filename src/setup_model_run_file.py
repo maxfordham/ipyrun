@@ -175,7 +175,7 @@ class Plotter:
 
         settings['title'] = '% of rooms failing each criteria, at different air speeds'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
-        full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False, legend=False)
+        full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False)
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
         for column in df_criterion_failing:
@@ -470,6 +470,10 @@ def main(inputs, outputs, process_name):
                 tm59_mv_raw_fpth = path
             elif tag == "TM59-MV":
                 tm59_mv_pretty_fpth = path
+    with open("log2.txt", "w") as text_file:
+        print("{0}".format(input_dir), file=text_file)
+    with open("log3.txt", "w") as text_file:
+        print("{0}".format(input_dir), file=text_file)
     results_raw_fpth = ""
     results_pretty_fpth = "" 
 
