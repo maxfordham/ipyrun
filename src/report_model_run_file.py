@@ -141,8 +141,6 @@ def main(inputs, outputs, fpth_parameters):
         report.append(r'\newpage')
 
     tmp = [] 
-    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__percent_pass', in_name="")
-    tmp += [img_string(img, "", 1200) for img in imgs]
 
     _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__crit_category', in_name="")
     tmp += [img_string(img, "", 1200) for img in imgs]
@@ -187,15 +185,12 @@ def main(inputs, outputs, fpth_parameters):
     with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
-
-
+            
     for key, value in inputs.items():
-        report.append('\nkey\n')
-        report.append(Markdown(key))
-        report.append('\nvalue\n')
-        report.append(Markdown(value))
-
-    md_to_docx(fpth_md=md_path)
+        if('word-out' in value[1]):
+            if value[0]:
+                md_to_docx(fpth_md=md_path)
+    
     #md_to_pdf(fpth_md=md_path)
     return
 

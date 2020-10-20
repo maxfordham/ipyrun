@@ -10,8 +10,6 @@ DSY1 2020, High Emission Scenario, 50%
 
 ### Results Breakdown: Proposed Design
 
-![](../data\interim\TM59\graphs\000_test__percent_pass.jpg){width=1200px}
-
 ![](../data\interim\TM59\graphs\000_test__crit_category.jpg){width=1200px}
 
 ![](../data\interim\TM59\graphs\000_test__av_non_bedroom.jpg){width=1200px}

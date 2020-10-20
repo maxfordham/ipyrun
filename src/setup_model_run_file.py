@@ -173,17 +173,17 @@ class Plotter:
         
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
 
-        settings['title'] = '% of rooms failing each criteria, at different air speeds'
-        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
-        full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False)
+        #settings['title'] = '% of rooms failing each criteria, at different air speeds'
+        #filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
+        #full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False)
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
         for column in df_criterion_failing:
             criterion_failing_data.append(go.Bar(name=column, x=list(df_criterion_failing.index) ,y=df_criterion_failing[column]))
 
         settings['barmode'] = 'stack'
-        settings['title'] = '% of rooms which pass analysis, at different air speeds'
-        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
+        settings['title'] = '% of rooms failing each criteria, at different air speeds'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
         full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
         
     def make_tm59_average_graphs(self):
