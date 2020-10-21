@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main]
+#     display_name: Python [conda env:mf_main] *
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -243,6 +243,14 @@ class EditDict(EditDictData):
         # UPDATE THIS - LIST OF WIDGETS NOT TO WATCH
         if self.widget_name not in self.dont_watch:
             self._init_controls()
+            
+    @property
+    def value(self): 
+        return self.widget_row.children[1].children[0].value
+    
+    @value.setter
+    def value(self, value):
+        self.widget_row.children[1].children[0].value = value 
             
     def _kwargfilt(self):
         """
@@ -570,6 +578,16 @@ class EditListOfDicts():
         for l in self.li_apps:
             self.widgets.append(l['app'](l['config']))
         self._layout()
+        
+    @property
+    def li_values(self): 
+        return [w.widget_row.children[1].children[0].value for w in self.widgets]
+    
+    @li_values.setter
+    def li_values(self, li_values):
+        for n in range(0,len(li_values)):
+            self.widgets[n].widget_row.children[1].children[0].value = li_values[n]
+
         
     def _update_label(self, index, l):
         """
@@ -971,5 +989,3 @@ if __name__ =='__main__':
     display(editnestedjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-
