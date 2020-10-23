@@ -341,10 +341,10 @@ class DisplayFiles():
         #print(self.outputsfpth.value)
         display(Markdown(''))
         for file in self.outputsfpth.value:
-            display(Markdown('AAA: #### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
+            display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
             s = str(self.map_previews[file]._map[self.map_previews[file].ext])
             if 'DisplayFile._open_option' not in s:
-                display(Markdown('`BBB: {0}`'.format(self.map_fpths[file])))
+                display(Markdown('`{0}`'.format(self.map_fpths[file])))
             self.map_previews[file].preview_fpth()
 
     def _show_hide(self, sender):
@@ -410,13 +410,6 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
-
-
-
-
-
-
-
 
 
 
