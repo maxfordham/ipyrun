@@ -326,7 +326,7 @@ class Plotter:
         
         settings = {
             "xaxis_title":"Date",
-            "yaxis_title":"Temperature (F)",
+            "yaxis_title":"Temperature (C)",
             "xaxis_tickformat": 'Day %-j, %H:00',
             "xaxis": {
                 "tickmode" : "linear",
