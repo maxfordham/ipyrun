@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -491,8 +491,8 @@ class EditDict(EditDictData):
     def _file_chooser(self):
         
         if 'value' in self.kwargs:
-            path = os.path.realpath(self.kwargs['value'])
-            fc_temp = FileChooser(filename=path, select_default=True)
+            splitpath = os.path.split(os.path.realpath(self.kwargs['value']))
+            fc_temp = FileChooser(filename=splitpath[1], path=splitpath[0], select_default=True)
         else:
             fc_temp = FileChooser()
         fc_temp.use_dir_icons = True

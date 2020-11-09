@@ -483,7 +483,6 @@ class RunConfigTemplated(RunConfig):
 
     def _fpth_inputs(self, process_name=None, template_process=None):
         
-        
         if process_name:
             name = process_name + '.json'
         else:
@@ -495,8 +494,11 @@ class RunConfigTemplated(RunConfig):
             src = self.fpth_template_input
         
         dstn = os.path.join(self.fdir_inputs, name)
-        if not os.path.isfile(dstn):
+        if not os.path.isfile(dstn) or not process_name:
             copyfile(src, dstn)
+            
+        with open(name + ".txt", "w") as text_file:
+            print("src - {0}\ndstn - {1}\nisfile - {2}\nprocess_name - {3}\ntemplate_process - {4}".format(src, dstn, os.path.isfile(dstn), process_name, template_process), file=text_file)
         return dstn
     
 class RunAppsTemplated():

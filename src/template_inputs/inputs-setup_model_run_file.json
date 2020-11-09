@@ -1,5 +1,21 @@
 [
     {
+        "label": "File Path of IES Model (.mit) - MUST be correctly selected, or analysis will fail to run",
+        "max": null,
+        "min": null,
+        "name": "Model File Path",
+        "options": null,
+        "tags": ["model_fpth"],
+        "value": "..//..//",
+        "widget": "FileChooser"
+    },
+    {
+        "label": "",
+        "name": "Mechanically Ventilated?",
+        "value": false,
+        "widget": "Checkbox"
+    },
+    {
         "label": "General Description of the Model",
         "max": null,
         "min": null,
@@ -7,12 +23,6 @@
         "options": null,
         "value": "",
         "widget": "Textarea"
-    },
-    {
-        "label": "",
-        "name": "Mechanically Ventilated?",
-        "value": true,
-        "widget": "Checkbox"
     },
     {
         "label": "",
@@ -49,16 +59,6 @@
         "label": "",
         "name": "Linked Files",
         "value": [
-            {
-                "label": "File path of the IES model (.mit)",
-                "max": null,
-                "min": null,
-                "name": "Model File Path",
-                "options": null,
-                "tags": ["model_fpth"],
-                "value": "C:\\engDev\\git_mf\\ipyrun\\examples\\testproject\\05 Model Files\\001_Holmsdale_blkA_TM59Overheating\\102_Overheating.mit",
-                "widget": "FileChooser"
-            },
             {
                 "label": "File path of the DWG file",
                 "max": null,
@@ -125,7 +125,7 @@
         ]
     },
     {
-        "label": "",
+        "label": "Detailed Fabrics Data, from GBXML. To show this export GBXML from IES model, then click 'Update from GBXML' above.",
         "name": "Fabrics - Breakdown",
         "tags": ["fabrics-breakdown"],
         "value": []
