@@ -90,9 +90,6 @@ def main(inputs, outputs, fpth_parameters):
         df.columns = ['Parameter Values', '', 'Category']
         return df
 
-    with open("test.txt", "w") as text_file:
-        print("{0}".format(basenames), file=text_file)
-
     # --------------------
     # Report
     # --------------------

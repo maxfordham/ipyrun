@@ -446,15 +446,16 @@ class Plotter:
         return dfs
 
 def main(inputs, outputs, process_name):
+
+    input_dir = ''
     input_dir = os.path.dirname(inputs["Model File Path"])
-    input_dir = os.path.join(input_dir, r'mf_current')
+    input_dir = os.path.join(input_dir, r'mf_results')
     tm59_raw_fpth = ""
     tm59_pretty_fpth = ""
     tm59_mv_raw_fpth = ""
     tm59_mv_pretty_fpth = ""
     data_fpth = ""
 
-    s = ''
     # Find model excel files
     for file in os.listdir(input_dir):
         if file.endswith(".xlsx"):
@@ -470,10 +471,6 @@ def main(inputs, outputs, process_name):
                 tm59_mv_raw_fpth = path
             elif tag == "TM59-MV":
                 tm59_mv_pretty_fpth = path
-    with open("log2.txt", "w") as text_file:
-        print("{0}".format(input_dir), file=text_file)
-    with open("log3.txt", "w") as text_file:
-        print("{0}".format(input_dir), file=text_file)
     results_raw_fpth = ""
     results_pretty_fpth = "" 
 

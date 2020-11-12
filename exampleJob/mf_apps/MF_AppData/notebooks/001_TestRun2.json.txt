@@ -1,0 +1,5 @@
+src - C:\engDev\git_mf\ipyrun\src\template_inputs\inputs-setup_model_run_file.json
+dstn - C:\engDev\git_mf\ipyrun\exampleJob\MF_Apps\MF_AppData\notebooks\appdata\inputs\overheating-toolbox\001_TestRun2.json
+isfile - True
+process_name - 001_TestRun2
+template_process - None

@@ -233,7 +233,6 @@ class EditJsonOverheating(EditJson):
                         li['editable'] = False
                         li['widget'] = "ipyagrid"
                         li['value'] = fsum.to_json(orient="columns")
-                        
                         '''for index, row in fsum.iterrows():
                             tmplabel = copy.copy(textlabel)
                             tmplabel['name'] = 'U Value'
@@ -359,11 +358,11 @@ class RunAppsOverheating(RunAppsTemplated):
         def parse_inputs(values, inputs, name):
             # Input parse for JSON file
             for l in values:
-                if type(l['value']) is list:
-                    inputs = parse_inputs(l['value'], inputs, l['name'])
-                else:
-                    if name != 'Linked Files' and name !='Refs':
-                        inputs[l['name']] = [l['value']]
+                if l['name'] != 'Linked Files' and l['name'] !='Refs' and l['name'] !='Model File Path' and l['name'] != 'Fabrics - Breakdown':
+                    if type(l['value']) is list:
+                        inputs = parse_inputs(l['value'], inputs, l['name'])
+                    else:
+                            inputs[l['name']] = [l['value']]
             return inputs
             
         def unique_row(series):
@@ -515,4 +514,7 @@ class RunAppsOverheating(RunAppsTemplated):
             display(self.comp_out_dd)
             display(self.comp_out_btn)
             display(fig)
+
+
+
 
