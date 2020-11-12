@@ -375,7 +375,7 @@ class Plotter:
             if sheet == self.comparison_data[0]:
                 df = dfs[sheet].copy()
                 df = df.drop(columns=['index'])
-                df = df.rolling(self.time_period).mean()
+                #df = df.rolling(self.time_period).mean()
                 self.start_day = df[self.comparison_data[1]].idxmax()
 
         self.make_thermperf_graph(dfs)

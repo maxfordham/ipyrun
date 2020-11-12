@@ -308,14 +308,9 @@ class RunApp(RunForm, RunConfig):
             if len(fpths)==0:
                 display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
             else:
-                with open("fpths_bef.txt", "w") as text_file:
-                    print("{0}".format(fpths), file=text_file)
-
                 for f in fpths:
                     if not os.path.isfile(f) and not os.path.isdir(f):
                         fpths.remove(f)
-                with open("fpths_aft.txt", "w") as text_file:
-                    print("{0}".format(fpths), file=text_file)
                 display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
 
     def _show_log(self, sender):
@@ -497,8 +492,6 @@ class RunConfigTemplated(RunConfig):
         if not os.path.isfile(dstn) or not process_name:
             copyfile(src, dstn)
             
-        with open(name + ".txt", "w") as text_file:
-            print("src - {0}\ndstn - {1}\nisfile - {2}\nprocess_name - {3}\ntemplate_process - {4}".format(src, dstn, os.path.isfile(dstn), process_name, template_process), file=text_file)
         return dstn
     
 class RunAppsTemplated():

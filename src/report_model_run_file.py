@@ -40,7 +40,6 @@ def img_test(fdir, in_name, prefix=None):
                 fullname = os.path.join(fdir, filename)
                 imgs.append(fullname)
                 name = in_name
-
     return name, imgs
 
 def get_results(tagname, inputs):
@@ -153,28 +152,17 @@ def main(inputs, outputs, fpth_parameters):
         report += tmp
         report.append(r'\newpage')
 
-    tmp = [] 
-    imgs = []
-    processes = []
-    for key, value in inputs.items():
-        if('comparison-graphs' in value[1]):
-            for process in value[0]:
-                _, imgs_tmp = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__' + process, in_name="")
-                imgs += imgs_tmp
-            continue
+    imgs = [] 
+    for value in get_results('comparison-graphs',inputs)[0][0]:
+        _, imgs_tmp = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__' + value.split(".")[0], in_name=None)
+        imgs += imgs_tmp
 
-    tmp += [img_string(img, "", 500) for img in imgs]  
-    if tmp:
+    if imgs:
         report.append('### Temperature Breakdown: Proposed Design')
-        report += tmp
-        report.append(r'\newpage')
-        
-    _, imgs = img_test(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0] + '__temps', in_name="")
-    temp_img_strings = [img_string(img, "", 300) for img in imgs]
-    if temp_img_strings:
-        df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
-        df.columns = ['Graphs of Example Rooms', '']
-
+        temp_img_strings = [img_string(img, "", 300) for img in imgs]
+        if temp_img_strings:
+            df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
+            df.columns = ['Graphs of Example Rooms', '']
         report.append(df.to_markdown(showindex=False))
 
     md_path = os.path.join(outputs['0'], 'overheating_report.md')
@@ -183,11 +171,7 @@ def main(inputs, outputs, fpth_parameters):
         for m in report:
             f.write("%s\n\n" % m)
             
-    for key, value in inputs.items():
-        if('word-out' in value[1]):
-            if value[0]:
-                md_to_docx(fpth_md=md_path)
-    
+    md_to_docx(fpth_md=md_path)
     #md_to_pdf(fpth_md=md_path)
     return
 
