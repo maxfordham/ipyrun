@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main]
+#     display_name: Python [conda env:mf_main] *
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -16,7 +16,7 @@
 # +
 import os
 import pandas as pd
-from IPython.display import display, Image, JSON, Markdown, HTML, display_pdf, clear_output
+from IPython.display import display, Image, JSON, Markdown, HTML, IFrame, clear_output
 import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
@@ -191,7 +191,7 @@ class DisplayFile():
             #'.txt':self.txt_prev,
             '.md':self.md_prev,
             '.py':self.py_prev,
-            '.pdf':self._open_option,
+            '.pdf':self.pdf_prev,
             '.docx':self._open_option,
         }
 
@@ -224,6 +224,9 @@ class DisplayFile():
         self.text.value = markdown('opening: `{0}`'.format(self.fpth))
         time.sleep(5)
         self.text.value = markdown('`{0}`'.format(self.fpth))
+        
+    def pdf_prev(self):
+        display(IFrame(self.fpth, width=1000, height=600))
 
     def df_prev(self):
         """
@@ -317,6 +320,7 @@ class DisplayFiles():
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
+        
         self._init_controls()
 
     def _init_previews(self):
@@ -332,6 +336,9 @@ class DisplayFiles():
         self.show_hide = widgets.ToggleButton(description='display/hide files',
                               tooltip='shows and hides display outputs of the files selected in the SelectMultiple dropdown menu',
                               button_style='success')
+        self.ui = widgets.VBox([self.show_hide,
+                      self.outputsfpth,
+                      self.out])
 
     def _init_controls(self):
         self.show_hide.observe(self._show_hide, 'value')
@@ -356,13 +363,19 @@ class DisplayFiles():
                 pass
 
     def display(self):
-        display(self.show_hide)
-        display(self.outputsfpth)
-        display(self.out)
+        display(self.ui)
+        #display(self.outputsfpth)
+        #display(self.out)
 
     def _ipython_display_(self):
         self.display()
 
+
+# +
+#fpths=[os.path.join(os.environ['mf_root'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly')]
+#d = DisplayFiles(fpths)
+#d
+# -
 
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
@@ -410,6 +423,9 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+
+
+
 
 
 
