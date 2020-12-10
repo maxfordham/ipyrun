@@ -187,7 +187,7 @@ class EditDictData():
                 '_recursive_guess':self._recursive_guess,
                 'ipysheet':self._ipysheet,
                 'ipyagrid':self._ipyagrid,
-                'FileChooser':self._file_chooser
+                'FileChooser':self._file_picker
             }
             
             self.widget_lkup_di = dict(self.standard_widgets, **self.mfcustom_widgets)
@@ -283,22 +283,33 @@ class EditDict(EditDictData):
                                               layout=widgets.Layout(width='5%'))
             self.guide.observe(self._guide, 'value')
             layout = widgets.HBox([self.widget_row ,self.guide],layout=self.MF_FORM_ITEM_LAYOUT2)
+        elif self.widget_name == "FileChooser":
+            if 'value' in self.kwargs:
+                splitpath = os.path.split(os.path.realpath(self.kwargs['value']))
+                fc_temp = FileChooser(filename=splitpath[1], path=splitpath[0], select_default=True)
+            else:
+                fc_temp = FileChooser()
+            fc_temp.use_dir_icons = True
+            fc_temp.register_callback(self._update_change)
+            self.guide = fc_temp
+            self.widget_simple = widgets.HBox([self.widget_only,self.guide],layout=self.MF_FORM_ITEM_LAYOUT)
+            self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
+            layout = widgets.HBox([self.widget_row,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT2)
         else:
             layout = widgets.HBox([self.widget_row],layout=self.MF_FORM_ITEM_LAYOUT2)
         return layout
-    
+        
     def _init_controls(self):   
-        if(self.widget_name == "FileChooser"):
-            self.widget_only.children[0].register_callback(self._update_change)
-        else:
-            self.widget_only.observe(self._update_change, 'value') 
+        self.widget_only.observe(self._update_change, 'value') 
+        return
 
     def _update_change(self, change):
         value = None
         if(self.widget_name == "DatePicker"):
             value = self.widget_only.value.strftime('%Y-%m-%d')
         elif(self.widget_name == "FileChooser"):
-            value = self.widget_only.children[0].selected
+            self.widget_only.value = self.guide.selected_filename
+            value = self.guide.selected
         else:
             value = self.widget_only.value
         self.di['value'] = value
@@ -488,16 +499,11 @@ class EditDict(EditDictData):
         value = datetime.strptime(self.kwargs['value'], '%Y-%m-%d')
         self.widget_only = widgets.DatePicker(value=value)
 
-    def _file_chooser(self):
-        
-        if 'value' in self.kwargs:
-            splitpath = os.path.split(os.path.realpath(self.kwargs['value']))
-            fc_temp = FileChooser(filename=splitpath[1], path=splitpath[0], select_default=True)
-        else:
-            fc_temp = FileChooser()
-        fc_temp.use_dir_icons = True
-        self.widget_only = widgets.VBox([fc_temp])
-        self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='7px 7px 7px 7px', margin='5px 0px 5px 0px')
+    def _file_picker(self):
+        value = os.path.split(os.path.realpath(self.kwargs['value']))[1]
+        self.widget_only = widgets.HTML(value)
+        self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
+
     # --------------------------------------------------------------------------
     
     def display(self):

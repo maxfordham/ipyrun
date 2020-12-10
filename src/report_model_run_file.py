@@ -173,21 +173,28 @@ def main(inputs, outputs, fpth_parameters):
     df = pd.concat(dfs, axis=1)
     report.append(df.to_markdown(showindex=True))
     
-    md_path = os.path.join(outputs['0'], 'overheating_report.md')
+    md_path = os.path.join(outputs['1'], 'TM59_Report.md')
+    docx_path = os.path.join(outputs['0'], 'TM59_Report.docx')
+    pdf_path = os.path.join(outputs['0'], 'TM59_Report.pdf')
 
     with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
             
-    md_to_docx(fpth_md=md_path)
-    md_to_pdf(fpth_md=md_path)
+    md_to_docx(fpth_md=md_path, fpth_docx=docx_path)
+    md_to_pdf(fpth_md=md_path, fpth_pdf=pdf_path)
     return
 
 script_outputs = {
     '0': {
-        'fdir':'', # relative to the location of the App / Notebook file
+        'fdir':'', 
         'fnm': r'',
-        'description': "Creates model run file."
+        'description': "Reports Directory"
+    },
+    '1': {
+        'fdir':'', 
+        'fnm': r'',
+        'description': "Markdown Directory"
     }
 }
 

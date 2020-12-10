@@ -1,6 +1,6 @@
 [
     {
-        "label": "File Path of IES Model (.mit) - MUST be correctly selected, or analysis will fail to run",
+        "label": "",
         "max": null,
         "min": null,
         "name": "Model File Path",
