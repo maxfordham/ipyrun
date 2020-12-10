@@ -71,7 +71,7 @@
                 "min": null,
                 "name": "DWG Reference",
                 "options": null,
-                "value": null,
+                "value": "..//..//",
                 "widget": "FileChooser"
             }
         ]
@@ -129,12 +129,6 @@
                 "value": "Lightweight"
             }
         ]
-    },
-    {
-        "label": "Detailed Fabrics Data, from GBXML. To show this export GBXML from IES model, then click 'Update from GBXML' above.",
-        "name": "Fabrics - Breakdown",
-        "tags": ["fabrics-breakdown"],
-        "value": []
     },
     {
         "label": "",
