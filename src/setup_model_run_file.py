@@ -141,6 +141,203 @@ class Plotter:
         self.time_period = 7*24 
         self.dfs={}
 
+    def make_tm52_overall_graphs(self):
+        criterion_failing = []
+        pass_percentage = {}
+        pass_percentage_data = []
+        criterion_failing_data = []
+
+        settings = {
+            "yaxis_title": '% of Rooms',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+
+            def category_filter(row):
+                if row['TM52 (pass/fail)'] == 'PASS':
+                    return 'Full Pass'
+                elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'fail':
+                    return 'Full Fail'
+                elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'fail':
+                    return 'Only Criterion A Passes'  
+                elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'fail':
+                    return 'Only Criterion B Passes'
+                elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'pass':
+                    return 'Only Criterion C Passes'  
+                elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'pass':
+                    return 'Only Criterion A Fails'  
+                elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'pass':
+                    return 'Only Criterion B Fails'
+                elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'fail':
+                    return 'Only Criterion C Fails'  
+
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            pass_percentage[i] = len(df[df["TM52 (pass/fail)"]=='PASS'].index)/len(df.index)
+            criterion_failing.append(df[i].value_counts(normalize=True))
+        
+        pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
+
+        df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
+        for column in df_criterion_failing:
+            criterion_failing_data.append(go.Bar(name=column, x=list(df_criterion_failing.index) ,y=df_criterion_failing[column]))
+
+        settings['barmode'] = 'stack'
+        settings['title'] = '% of rooms failing each criteria, at different air speeds'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
+        full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
+
+    def make_tm52_average_graphs(self):
+        layout = go.Layout(
+                    xaxis_type='category',
+                    yaxis_tickformat = '%',
+                    xaxis_title="Air Speed (m/s)",
+                    yaxis_title=self.analysis_name + ' Criteria',
+                    width=800)
+
+
+        mean_A = {}
+        mean_B = {}
+        mean_C = {}
+
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+            mean_A[i] = (df['Criterion A (%)'].mean(axis = 0))/100
+            mean_B[i] = (df['Criterion B (%)'].mean(axis = 0))/100
+            mean_C[i] = (df['Criterion C (%)'].mean(axis = 0))/100
+
+        data = []
+        line=dict(
+            color='black',
+            width=2,
+            dash='dash')
+        crita_limit = go.Scatter(name='Criterion A - Upper Limit', 
+                                y=[0.03,0.03], 
+                                x=[list(mean_A.keys())[0],
+                                list(mean_A.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+
+        line=dict(
+            color='black',
+            width=2)
+        critb_limit = go.Scatter(name='Criterion B - Upper Limit', 
+                                y=[0.06,0.06], 
+                                x=[list(mean_B.keys())[0],
+                                list(mean_B.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+
+        line=dict(
+            color='black',
+            width=2,
+            dash='dot')
+        critc_limit = go.Scatter(name='Criterion C - Upper Limit', 
+                                y=[0.04,0.04], 
+                                x=[list(mean_C.keys())[0],
+                                list(mean_C.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+                                
+        data.append(go.Bar(name='Criterion A (%)', x=list(mean_A.keys()), y=list(mean_A.values())))
+        data.append(go.Bar(name='Criterion B (%)', x=list(mean_B.keys()), y=list(mean_B.values())))
+        data.append(go.Bar(name='Criterion C (%)', x=list(mean_C.keys()), y=list(mean_C.values())))
+        data.append(crita_limit)
+        data.append(critb_limit)
+        data.append(critc_limit)
+
+        settings = {
+            "yaxis_title": self.analysis_name + ' Criteria',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
+        settings['title'] = 'Average performance of Spaces'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_space'))
+        full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
+
+    def make_tm59_mv_overall_graphs(self):
+        criterion_failing = []
+        pass_percentage = {}
+        pass_percentage_data = []
+        criterion_failing_data = []
+
+        settings = {
+            "yaxis_title": '% of Rooms',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+
+            def category_filter(row):
+                if row['TM59 - MechVent (pass/fail)'] == 'PASS':
+                    return 'Pass'
+                else:
+                    return 'Fail'
+
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            pass_percentage[i] = len(df[df["TM59 - MechVent (pass/fail)"]=='PASS'].index)/len(df.index)
+            criterion_failing.append(df[i].value_counts(normalize=True))
+        
+        pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
+
+        df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
+        for column in df_criterion_failing:
+            criterion_failing_data.append(go.Bar(name=column, x=list(df_criterion_failing.index) ,y=df_criterion_failing[column]))
+
+        settings['barmode'] = 'stack'
+        settings['title'] = '% of rooms failing each criteria, at different air speeds'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
+        full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
+        
+    def make_tm59_mv_average_graphs(self):
+        layout = go.Layout(
+                    xaxis_type='category',
+                    yaxis_tickformat = '%',
+                    xaxis_title="Air Speed (m/s)",
+                    yaxis_title=self.analysis_name + ' Criteria',
+                    width=800)
+
+
+        crit_mean = {}
+
+        for i in self.air_speeds:
+            df = self.dfs[i].copy()
+            crit_mean[i] = (df['Fixed Temp Criteria (%)'].mean(axis = 0))/100
+
+        data = []
+        line=dict(
+            color='black',
+            width=2,
+            dash='dash')
+        crit_limit = go.Scatter(name='Criterion B - Upper Limit', 
+                                y=[0.03,0.03], 
+                                x=[list(crit_mean.keys())[0],
+                                list(crit_mean.keys())[-1]], 
+                                mode='lines',
+                                line=line)
+                                
+        data.append(go.Bar(name='Fixed Temp Criteria (%)', x=list(crit_mean.keys()), y=list(crit_mean.values())))
+        data.append(crit_limit)
+
+        settings = {
+            "yaxis_title": self.analysis_name + ' Criteria',
+            "xaxis_title": 'Air Speed (m/s)', 
+            "yaxis_tickformat":'%', 
+            "xaxis_type":'category',
+        }
+
+        settings['title'] = 'Average performance of Spaces'
+        filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_space'))
+        full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
+
     def make_tm59_overall_graphs(self):
         criterion_failing = []
         pass_percentage = {}
@@ -172,10 +369,6 @@ class Plotter:
             criterion_failing.append(df[i].value_counts(normalize=True))
         
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
-
-        #settings['title'] = '% of rooms failing each criteria, at different air speeds'
-        #filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'percent_pass'))
-        #full_width_graph(data=pass_percentage_data, settings=settings, filename=filename, img=True, plotly=False)
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
         for column in df_criterion_failing:
@@ -253,11 +446,6 @@ class Plotter:
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'av_non_bedroom'))
         full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=False)
 
-    def make_results_graphs(self,air_speed):
-        self.make_tm59_overall_graphs()
-        self.make_tm59_average_graphs()
-        return
-
     def make_analysis_figs(self,air_speed):
         # Setup Colors
         colours = {'pass':'#b6f0b1',
@@ -305,11 +493,11 @@ class Plotter:
         table = go.Figure(data=data, layout=layout)
 
         # Copy Data Excel to Output Folder
-        filename = os.path.join(self.out_raw_dir, self.process_name + '__rawTM59results')
+        filename = os.path.join(self.out_raw_dir, '{0}__raw{1}results'.format(self.process_name,self.analysis_name))
         copyfile(self.results_raw_fpth, filename + '.xlsx')
 
         # Save Table to Output Folder
-        filename = os.path.join(self.out_analysis_dir, self.process_name + '__TM59results')
+        filename = os.path.join(self.out_analysis_dir, '{0}__{1}results'.format(self.process_name,self.analysis_name))
         copyfile(self.results_pretty_fpth, filename + '.xlsx')
         table.write_json(filename + '.plotly')
         table.write_image(filename + '.jpeg')
@@ -445,15 +633,11 @@ class Plotter:
 
         return dfs
 
-def main(inputs, outputs, process_name):
+def main(inputs, outputs, analysis_name, process_name):
 
     input_dir = ''
     input_dir = os.path.dirname(inputs["Model File Path"])
     input_dir = os.path.join(input_dir, r'mf_results')
-    tm59_raw_fpth = ""
-    tm59_pretty_fpth = ""
-    tm59_mv_raw_fpth = ""
-    tm59_mv_pretty_fpth = ""
     data_fpth = ""
 
     # Find model excel files
@@ -467,32 +651,56 @@ def main(inputs, outputs, process_name):
                 tm59_raw_fpth = path
             elif tag == "TM59":
                 tm59_pretty_fpth = path
-            elif tag == "TM59-MV-raw":
+            elif tag == "TM59_MV-raw":
                 tm59_mv_raw_fpth = path
-            elif tag == "TM59-MV":
+            elif tag == "TM59_MV":
                 tm59_mv_pretty_fpth = path
-    results_raw_fpth = ""
-    results_pretty_fpth = "" 
+            elif tag == "TM52-raw":
+                tm52_raw_fpth = path
+            elif tag == "TM52":
+                tm52_pretty_fpth = path
 
-    # Select different results if Mech Vent
-    if inputs['Mechanically Ventilated?']:
-        results_raw_fpth = tm59_mv_raw_fpth
-        results_pretty_fpth = tm59_mv_pretty_fpth
-    else:
-        results_raw_fpth = tm59_raw_fpth
-        results_pretty_fpth = tm59_pretty_fpth
-    
+    if analysis_name == 'TM59' and inputs['Mechanically Ventilated?']:
+        analysis_name = 'TM59_MV'
+
+    try:
+        results_raw_fpth = ""
+        results_pretty_fpth = "" 
+        if analysis_name == 'TM59':
+            results_raw_fpth = tm59_raw_fpth
+            results_pretty_fpth = tm59_pretty_fpth
+        elif analysis_name == 'TM59_MV':
+            results_raw_fpth = tm59_mv_raw_fpth
+            results_pretty_fpth = tm59_mv_pretty_fpth
+        elif analysis_name == 'TM52':
+            results_raw_fpth = tm52_raw_fpth
+            results_pretty_fpth = tm52_pretty_fpth
+        else:
+            raise Exception
+    except:
+        with open("log.txt", "w") as log_file:
+            print("{0}".format(os.listdir(input_dir)), file=log_file)
+        sys.exit('Results could not be found for {0} analysis in {1}'.format(analysis_name, input_dir))
+
     # Create Plotter
-    plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, analysis_name='TM59', process_name=process_name)
-    plotter.read_data()
-    
-    # Create Analysis Outputs
-    plotter.make_analysis_figs(inputs["Air Speed"])
+    with open("test.txt", "w") as text_file:
+        print("{0}".format(analysis_name), file=text_file)
+    plotter = Plotter(results_raw_fpth=results_raw_fpth, results_pretty_fpth=results_pretty_fpth, data_fpth=data_fpth, outputs=outputs, analysis_name=analysis_name, process_name=process_name)
 
-    # Create Data Graphs
+    plotter.read_data()
+    plotter.make_analysis_figs(inputs["Air Speed"])
     plotter.make_data_graphs()
-    
-    plotter.make_results_graphs(inputs["Air Speed"])
+
+    if analysis_name == 'TM59':
+        plotter.make_tm59_overall_graphs()
+        plotter.make_tm59_average_graphs()
+    elif analysis_name == 'TM59_MV':
+        plotter.make_tm59_mv_overall_graphs()
+        plotter.make_tm59_mv_average_graphs()
+    elif analysis_name == 'TM52':
+        plotter.make_tm52_overall_graphs()
+        plotter.make_tm52_average_graphs()
+
     return
 
 script_outputs = {
@@ -520,6 +728,8 @@ if __name__ == '__main__':
 
     # get config and input data
     config = read_json(fpth_config)
+    with open("test.txt", "w") as text_file:
+        print("{0}".format(config), file=text_file)
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
 
@@ -540,6 +750,6 @@ if __name__ == '__main__':
 
     calc_inputs = get_inputs(inputs, calc_inputs)
     df = pd.DataFrame(data=list(map(list, calc_inputs.items())))
-    main(inputs=calc_inputs,outputs=outputs, process_name=config['process_name'])
+    main(inputs=calc_inputs,outputs=outputs, analysis_name=config['analysis_name'], process_name=config['process_name'])
     print('done')
 

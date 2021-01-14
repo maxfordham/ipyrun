@@ -84,7 +84,7 @@ def read_modelrun_inputs(basename, fpth_parameters):
     df.columns = [basename[1]]
     return df
 
-def main(inputs, outputs, fpth_parameters):
+def main(inputs, outputs, fpth_parameters, analysis_name):
 
     # --------------------
     # Report
@@ -138,11 +138,15 @@ def main(inputs, outputs, fpth_parameters):
     imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__crit_category')
     tmp += [img_string(img, "", 1200) for img in imgs]
 
-    imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__av_non_bedroom')
-    tmp += [img_string(img, "", 1200) for img in imgs]
+    if(analysis_name == 'TM59'):
+        imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__av_non_bedroom')
+        tmp += [img_string(img, "", 1200) for img in imgs]
 
-    imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__av_bedroom')
-    tmp += [img_string(img, "", 1200) for img in imgs]
+        imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__av_bedroom')
+        tmp += [img_string(img, "", 1200) for img in imgs]
+    else:
+        imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__av_space')
+        tmp += [img_string(img, "", 1200) for img in imgs]
 
     if tmp:
         report.append('### Results Breakdown: Proposed Design')
@@ -159,8 +163,12 @@ def main(inputs, outputs, fpth_parameters):
         report.append('### Temperature Breakdown: Proposed Design')
         temp_img_strings = [img_string(img, "", 300) for img in imgs]
         if temp_img_strings:
-            df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
-            df.columns = ['Graphs of Example Rooms', '']
+            if len(temp_img_strings) > 1:
+                df = pd.DataFrame([temp_img_strings[::2], temp_img_strings[1::2]]).T
+                df.columns = ['Graphs of Example Rooms', '']
+            else:
+                df = pd.DataFrame([temp_img_strings]).T
+                df.columns = ['Graphs of Example Rooms']
         report.append(df.to_markdown(showindex=False))
         report.append(r'\newpage')
         
@@ -173,16 +181,19 @@ def main(inputs, outputs, fpth_parameters):
     df = pd.concat(dfs, axis=1)
     report.append(df.to_markdown(showindex=True))
     
-    md_path = os.path.join(outputs['1'], 'TM59_Report.md')
-    docx_path = os.path.join(outputs['0'], 'TM59_Report.docx')
-    pdf_path = os.path.join(outputs['0'], 'TM59_Report.pdf')
+    report_name =  '{0}_Report'.format(analysis_name)
+
+    md_path = os.path.join(outputs['1'], '{0}.md'.format(report_name))
+    docx_path = os.path.join(outputs['0'], '{0}.docx'.format(report_name))
+    pdf_path = os.path.join(outputs['0'], '{0}.pdf'.format(report_name))
 
     with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
             
-    md_to_docx(fpth_md=md_path, fpth_docx=docx_path)
+    #md_to_docx(fpth_md=md_path, fpth_docx=docx_path)
     md_to_pdf(fpth_md=md_path, fpth_pdf=pdf_path)
+
     return
 
 script_outputs = {
@@ -227,6 +238,6 @@ if __name__ == '__main__':
 
     calc_inputs = get_inputs(inputs, {})
 
-    main(calc_inputs, outputs, config['fpth_parameters'])
+    main(calc_inputs, outputs, config['fpth_parameters'], config['analysis_name'])
     print('done')
 
