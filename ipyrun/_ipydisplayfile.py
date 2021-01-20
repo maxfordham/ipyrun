@@ -31,6 +31,7 @@ from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.file_operations import open_file
 from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 from mf_modules.datamine_functions import recursive_glob
+from mf_modules.excel_in import mfexcel_in
 
 
 # +
@@ -51,6 +52,7 @@ def default_ipyagrid(df,**kwargs):
             'enableFilter': True,
             'enableColResize': True,
             'enableRangeSelection': True,
+            'enableCellTextSelection':True
         }
         g = Grid(grid_data=df,
                 grid_options=grid_options,
@@ -65,6 +67,7 @@ def default_ipyagrid(df,**kwargs):
         'enableFilter': True,
         'enableColResize': True,
         'enableRangeSelection': True,
+        'enableCellTextSelection':True
     }
     _kwargs = {
         'grid_data':df,
@@ -76,6 +79,17 @@ def default_ipyagrid(df,**kwargs):
     _kwargs.update(kwargs)  # user overides
     g = Grid(**_kwargs)
     return g
+
+def mfexcel_display(fpth):
+    """
+    displays mfexcel (written using xlsx_templater) using ipyaggrid
+    """
+    li = mfexcel_in(fpth)
+    for l in li:
+        l['grid'] = default_ipyagrid(l['df'])
+        display(Markdown('### {0}'.format(l['sheet_name'])))
+        display(Markdown('{0}'.format(l['description'])))
+        display(l['grid'])
 
 def _markdown(value='_Markdown_',
               **kwargs):
@@ -276,13 +290,7 @@ class DisplayFile():
 
         """
         if self.mf_excel:
-            cols = ['sheet_name','description']
-            li = pd.read_excel(self.fpth,sheet_name='readme').set_index('index').T[cols].to_dict(orient='rows')
-            for l in li:
-                l['grid'] = default_ipyagrid(pd.read_excel(self.fpth,sheet_name=l['sheet_name']))
-                display(Markdown('### {0}'.format(l['sheet_name'])))
-                display(Markdown('{0}'.format(l['description'])))
-                display(l['grid'])
+            mfexcel_display(self.fpth)
         else:
             self._open_option()
 
@@ -423,9 +431,4 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
-
-
-
-
-
 
