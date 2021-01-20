@@ -515,6 +515,3 @@ class RunAppsOverheating(RunAppsTemplated):
             display(self.comp_out_btn)
             display(fig)
 
-
-
-

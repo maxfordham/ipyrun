@@ -1,6 +1,6 @@
 [
     {
-        "label": "File Path of IES Model (.mit) - MUST be correctly selected, or analysis will fail to run",
+        "label": "",
         "max": null,
         "min": null,
         "name": "Model File Path",
@@ -14,6 +14,12 @@
         "name": "Mechanically Ventilated?",
         "value": false,
         "widget": "Checkbox"
+    },
+    {
+        "label": "Summer (Elevated) Speed, Units: m/s",
+        "name": "Air Speed",
+        "options": [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+        "value": 0.1
     },
     {
         "label": "General Description of the Model",
@@ -65,7 +71,7 @@
                 "min": null,
                 "name": "DWG Reference",
                 "options": null,
-                "value": null,
+                "value": "..//..//",
                 "widget": "FileChooser"
             }
         ]
@@ -123,12 +129,6 @@
                 "value": "Lightweight"
             }
         ]
-    },
-    {
-        "label": "Detailed Fabrics Data, from GBXML. To show this export GBXML from IES model, then click 'Update from GBXML' above.",
-        "name": "Fabrics - Breakdown",
-        "tags": ["fabrics-breakdown"],
-        "value": []
     },
     {
         "label": "",
@@ -269,12 +269,6 @@
                 "options": null,
                 "value": false,
                 "widget": "Checkbox"
-            },
-            {
-                "label": "Summer (Elevated) Speed, Units: m/s",
-                "name": "Air Speed",
-                "options": [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
-                "value": 0.1
             }
         ]
     }

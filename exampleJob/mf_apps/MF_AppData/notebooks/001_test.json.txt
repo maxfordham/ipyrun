@@ -1,5 +1,0 @@
-src - C:\engDev\examples\InternalToolbox\MF_Apps\MF_AppData\notebooks\appdata\inputs\overheating-toolbox\TEMPLATE.json
-dstn - C:\engDev\examples\InternalToolbox\MF_Apps\MF_AppData\notebooks\appdata\inputs\overheating-toolbox\001_test.json
-isfile - True
-process_name - 001_test
-template_process - C:\engDev\examples\InternalToolbox\MF_Apps\MF_AppData\notebooks\appdata\inputs\overheating-toolbox\TEMPLATE.json
