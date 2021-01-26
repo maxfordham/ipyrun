@@ -47,7 +47,7 @@ except:
 # -
 
 class SimpleEditCsv():
-    """NOTE IN USE"""
+    """NOT IN USE"""
     def __init__(self, fpth_in, fpth_out=None):
         self.fpth_in = fpth_in
         if fpth_out==None:
@@ -163,8 +163,10 @@ class ShowHideEditCsv():
         self.display() 
 
 
-# + jupyter={"source_hidden": true}
 class EditCsv(FileConfigController):
+    """
+    for use when csv is the argument to a script
+    """
 
     def __init__(self,config):
         self.config = config
@@ -237,14 +239,11 @@ class EditCsv(FileConfigController):
         self.update_display()
         self.display()
 
-
-# -
-
 if __name__ =='__main__':
 
     # FORM ONLY EXAMPLE
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\examples\testcsv\Ss_65_40_00_00-Ventilation_IndustryStandards.csv'))
+    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\data\eg_filetypes\eg_csv.csv'))
     
     #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
     a = ShowHideEditCsv(fpth)
@@ -254,3 +253,14 @@ if __name__ =='__main__':
     display(Markdown('---'))  
     display(Markdown('')) 
     
+    
+    
+    #b = EditCsv(fpth)
+    #display(Markdown('### Example1'))
+    #display(Markdown('''EditCsv'''))
+    #display(b)
+    #display(Markdown('---'))  
+    #display(Markdown('')) 
+
+
+
