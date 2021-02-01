@@ -78,11 +78,11 @@ class RunForm():
         self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
                                 tooltip='removes temporary output view',
                                 style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='5%'))
+                                layout=widgets.Layout(width='50px'))
         self.help = widgets.Button(icon='fa-question-circle',
                                 tooltip='describes the functionality of elements in the RunApp interface',
                                 style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='5%'))
+                                layout=widgets.Layout(width='50px'))
         self.edit_inputs = widgets.Button(description='edit inputs',
                                 tooltip='edit the user input information that is used when the script is executed',
                                 button_style='warning',
@@ -885,6 +885,5 @@ if __name__ == '__main__':
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
-
 
 

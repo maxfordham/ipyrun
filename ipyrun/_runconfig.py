@@ -96,6 +96,7 @@ class RunConfig():
         self.script_outputs_template = self._script_outputs_template()
         self.process_name = self._process_name()
         self.pretty_name = self._pretty_name()
+        self.fdir_appdata = self._fdir_appdata()
         self.fdir_inputs = self._fdir_inputs()
         self.fdir_inputs_archive = self._fdir_inputs_archive()
         self.fdir_template_inputs = self._fdir_template_inputs()
@@ -118,6 +119,7 @@ class RunConfig():
         self.config['jobno'] = self.jobno
         self.config['process_name'] = self.process_name
         self.config['pretty_name'] = self.pretty_name
+        self.config['fdir_appdata'] = self.fdir_appdata
         self.config['fdir_inputs'] = self.fdir_inputs
         self.config['fdir_inputs_archive'] = self.fdir_inputs_archive
         self.config['fpth_inputs'] = self.fpth_inputs
@@ -172,14 +174,23 @@ class RunConfig():
         else:
             return self.process_name
 
+    def _fdir_appdata(self):
+        # add inputs folder name
+        if 'fdir_appdata' in self.user_keys:
+            make_dir(self.config['fdir_inputs'])
+            return self.config['fdir_inputs']
+        else:
+            make_dir(os.path.join(self.fdir,r'appdata'))
+            return os.path.join(self.fdir,r'appdata')
+        
     def _fdir_inputs(self):
         # add inputs folder name
         if 'fdir_inputs' in self.user_keys:
             make_dir(self.config['fdir_inputs'])
             return self.config['fdir_inputs']
         else:
-            make_dir(os.path.join(self.fdir,r'appdata\inputs'))
-            return os.path.join(self.fdir,r'appdata\inputs')
+            make_dir(os.path.join(self.fdir,self.fdir_appdata,'inputs'))
+            return os.path.join(self.fdir,self.fdir_appdata,'inputs')
 
     def _fdir_inputs_archive(self):
         # add inputs folder name
@@ -187,8 +198,8 @@ class RunConfig():
             make_dir(self.config['fdir_inputs_archive'])
             return self.config['fdir_inputs_archive']
         else:
-            make_dir(os.path.join(self.fdir,r'appdata\inputs\archive'))
-            return os.path.join(self.fdir,r'appdata\inputs\archive')
+            make_dir(os.path.join(self.fdir,self.fdir_appdata,'archive'))
+            return os.path.join(self.fdir,self.fdir_inputs,'archive')
 
     def _fdir_template_inputs(self):
         return os.path.join(os.path.dirname(self.config['fpth_script']),r'template_inputs')
@@ -208,9 +219,12 @@ class RunConfig():
 
     def _fpth_inputs(self):
         src = self.fpth_template_input
+        ext = os.path.splitext(src)[1]
         
         if 'fpth_inputs' in self.user_keys:
             dstn = self.config['fpth_inputs']
+        elif self.process_name is not self.script_name:
+            dstn = os.path.join(self.fdir_inputs, 'inputs-'+self.process_name+ext)
         else:
             dstn = os.path.join(self.fdir_inputs, os.path.basename(src))
 
@@ -241,7 +255,8 @@ class RunConfig():
             for pattern in patterns:
                 fpths = recursive_glob(rootdir=v['fdir'],pattern=pattern,recursive=True)
                 fpths = [fpth for fpth in fpths if '.ipynb_checkpoints' not in fpth]
-                di[k]['fpths'] = fpths
+                di[k]['fpths'].extend(fpths)
+                di[k]['fpths'] = list(set(di[k]['fpths']))
                 cnt += len(fpths)
                 self.errors.append(['{0} not csv or json'.format(fpth) for fpth in fpths if os.path.splitext(fpth)[1] not in valid_exts])
         if cnt == 0:
@@ -252,7 +267,7 @@ class RunConfig():
         if 'fdir_log' in self.user_keys:
             return self.config['fdir_log']
         else:
-            return os.path.join(self.fdir,r'appdata\log')
+            return os.path.join(self.fdir_appdata,'log')
 
     def _fnm_log(self):
         if 'fnm_log' in self.user_keys:
@@ -266,7 +281,7 @@ class RunConfig():
             make_dir(fdir)
             return fdir
         else:
-            fdir = os.path.join(self.fdir,r'appdata\config')
+            fdir = os.path.join(self.fdir_appdata,'config')
             make_dir(fdir)
             return fdir
 
@@ -331,6 +346,7 @@ class RunConfig():
 if __name__ =='__main__':
     config = {
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        'process_name':'pipework',
         'fdir':'.',
         #'fpth_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test\test.csv',
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
@@ -338,6 +354,9 @@ if __name__ =='__main__':
     from pprint import pprint
     rc = RunConfig(config)
     pprint(rc.config)
+
+
+
 
 
 

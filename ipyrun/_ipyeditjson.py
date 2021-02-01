@@ -905,19 +905,6 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
         self._display()
 
 # -
-li_tmp = [
-    {
-        'name':'asdf',
-        'label':'asdf',
-        'value':pd.DataFrame({'cols':[0,1]}).to_json(),
-        'widget':'ipysheet'
-    }
-]
-D = EditListOfDicts(li_tmp)
-D
-
-D.
-
 if __name__ =='__main__':
 
     # FORM ONLY EXAMPLE
