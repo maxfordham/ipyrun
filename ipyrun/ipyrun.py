@@ -857,7 +857,7 @@ if __name__ == '__main__':
         'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         }  
 
-    defaultrunapp={
+    Run={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
         'script_outputs': {'0': {
@@ -885,5 +885,7 @@ if __name__ == '__main__':
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
+    
+
 
 
