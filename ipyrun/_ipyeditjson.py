@@ -903,6 +903,36 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
 
+    # Example1
+    FDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
+    simpleeditjson = SimpleEditJson(fpth)
+    # display
+    display(Markdown('### Example1'))
+    display(Markdown('''Simple Edit Json'''))
+    display(simpleeditjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+    
+    # Example2
+    # EDIT JSON FILE with custom config and file management
+    config={
+        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':'.',
+        'script_outputs': {'0': {
+            'fdir':'..\reports',
+            'fnm': r'JupyterReportDemo.pdf',
+            'description': "a pdf report from word"
+                }
+            }
+        }
+    editjson = EditJson(config)
+    # display
+    display(Markdown('### Example2'))
+    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
+    display(editjson)
+    display(Markdown('---'))  
+    display(Markdown(''))    
     
     # Example3
     # EDIT NESTED JSON FILE with custom config and file management
@@ -949,14 +979,7 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     
-    # Example6
-    editmfjson = EditMfJson(r'appdata\inputs')
-    # display
-    display(Markdown('### Example6'))
-    display(Markdown('''select mf json file and edit'''))
-    display(editmfjson)
-    display(Markdown('---'))  
-    display(Markdown('')) 
+
     
     # Example7
     nestedconfig={
@@ -971,36 +994,24 @@ if __name__ =='__main__':
     display(Markdown('---'))  
     display(Markdown('')) 
 
-    # Example1
-    FDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
-    simpleeditjson = SimpleEditJson(fpth)
+
+    
+    # Example6
+    editmfjson = EditMfJson(r'appdata\inputs')
     # display
-    display(Markdown('### Example1'))
-    display(Markdown('''Simple Edit Json'''))
-    display(simpleeditjson)
+    display(Markdown('### Example6'))
+    display(Markdown('''select mf json file and edit'''))
+    display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-    
-    # Example2
-    # EDIT JSON FILE with custom config and file management
-    config={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':'.',
-        'script_outputs': {'0': {
-            'fdir':'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
-                }
-            }
-        }
-    editjson = EditJson(config)
-    # display
-    display(Markdown('### Example2'))
-    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
-    display(editjson)
-    display(Markdown('---'))  
-    display(Markdown(''))    
+
+di = {
+    'name':'name',
+    'value':'value',
+    'label':'label',
+    'widget': 'FileChooser'
+}
+EditDict(di)
 
 
 

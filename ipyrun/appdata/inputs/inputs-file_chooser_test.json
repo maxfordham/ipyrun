@@ -1,0 +1,9 @@
+[
+    {
+        "name": "File Chooser",
+        "label": "test",
+        "options": null,
+        "value": "./",
+        "widget": "FileChooser"
+    }
+]
