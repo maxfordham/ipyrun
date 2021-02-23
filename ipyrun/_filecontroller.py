@@ -387,7 +387,7 @@ if __name__ == "__main__":
     
     # Example1
     config={
-    'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+    'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
     'fdir':'.',
     }
     fc = FileConfigController(config)
