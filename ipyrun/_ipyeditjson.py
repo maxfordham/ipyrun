@@ -16,7 +16,11 @@
 # +
 import os
 import pandas as pd
-from IPython.display import display, Image, JSON, Markdown, HTML, display_pdf, clear_output
+from IPython.display import display, JSON, Markdown, HTML, display_pdf, clear_output
+try: 
+    from IPython.display import Image 
+except:
+    pass
 from markdown import markdown
 from datetime import datetime
 
@@ -729,10 +733,7 @@ class EditJson(EditListOfDicts, FileConfigController):
     def __init__(self, config):
 
         self.out = widgets.Output()
-        self._errors()
-        self.config = config
-        self.user_keys = list(config.keys())
-        self._update_config()
+        self._init_RunConfig(config)
         self.file_control_form()
         self.li = read_json(self.fpth_inputs)
         self.li_apps = self._update_li()
