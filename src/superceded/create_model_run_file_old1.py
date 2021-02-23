@@ -10,7 +10,7 @@ and creates overheating tables and indoor temperature graphs of the model.
         **  analysis_directory: Folder where overheating analysis table are stored
         
     Image:
-        %mf_root%\\ipyrun\\examples\\testproject\\datadriven\\src\\create-model-run-doc.png
+        %MF_ROOT%\\ipyrun\\examples\\testproject\\datadriven\\src\\create-model-run-doc.png
 
 """
 # -*- coding: utf-8 -*-
