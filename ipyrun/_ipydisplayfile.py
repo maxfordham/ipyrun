@@ -32,7 +32,7 @@ from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.file_operations import open_file
 from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 from mf_modules.datamine_functions import recursive_glob
-from mf_modules.excel_in import mfexcel_in
+from mf_modules.excel_in import ExcelIn
 
 
 # +

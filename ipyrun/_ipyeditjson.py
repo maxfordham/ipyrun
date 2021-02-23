@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python [conda env:mf_main]
 #     language: python
 #     name: conda-env-mf_main-py
 # ---
@@ -102,7 +102,7 @@ class EditDictData():
             flex_flow='row',
             justify_content='flex-start',
             align_content='flex-start',
-            #border='solid 0.05px yellow',#'dashed 0.2px green',
+            border='dashed 0.2px green',
             grid_auto_columns='True',
             width='100%',
             align_items='flex-start',  
@@ -272,7 +272,7 @@ class EditDict(EditDictData):
 
             else:
                 # it is a vanilla widget 
-                self.widget_only = self.widget_lkup[self.widget_name](layout=widgets.Layout(width='60%'),**self.kwargs)
+                self.widget_only = self.widget_lkup[self.widget_name](**self.kwargs)
         else:
             # it is a user defined widget
             self.widget_only = self.widget_name(**self.kwargs)
@@ -427,28 +427,20 @@ class EditDict(EditDictData):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
         self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
-        self.save_ipysheet = widgets.Button(description='save',button_style='success')
-        self.add_row_ipysheet = widgets.Button(description='add row',button_style='info')
-        self.remove_row_ipysheet = widgets.Button(description='remove row',button_style='danger')
-        self.button_bar_ipysheet = widgets.HBox([self.save_ipysheet,self.add_row_ipysheet,self.remove_row_ipysheet])
-        self.box_ipysheet = widgets.VBox([self.button_bar_ipysheet])
+        self.save_ipysheet = widgets.Button(description='save')
         self._ipysheet_controls()
         
     def _ipysheet_controls(self):
         self.widget_only.observe(self.call_ipysheet, 'value')
         self.save_ipysheet.on_click(self._save_ipysheet)
-        self.add_row_ipysheet.on_click(self._add_row_ipysheet)
-        self.remove_row_ipysheet.on_click(self._remove_row_ipysheet)
         
     def call_ipysheet(self, sender):
         tmp = pd.read_json(self.di['value'])
         self.sheet = ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
-        self.box_ipysheet.children = [self.button_bar_ipysheet,self.sheet]
         with self.out:
             if self.widget_only.value:  
-                #display(self.button_bar_ipysheet)
-                #display(self.sheet)
-                display(self.box_ipysheet)
+                display(self.save_ipysheet)
+                display(self.sheet)
             else:
                 clear_output()
     
@@ -461,24 +453,10 @@ class EditDict(EditDictData):
             timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
             display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
         self.display()
-        
-    def _add_row_ipysheet(self, sender):
-        df = to_dataframe(self.sheet)
-        df = df.append(pd.DataFrame({c:[''] for c in list(df)}), ignore_index=True)
-        self.sheet = from_dataframe(df)
-        #self.box_ipysheet.children = [self.button_bar_ipysheet,self.sheet]
-        self.display()
-        
-    def _remove_row_ipysheet(self, sender):
-        df = to_dataframe(self.sheet)
-        ind = df.index.tolist()[:-1] # get a list of indexes drpping the last one
-        df = df.loc[ind]
-        self.sheet = from_dataframe(df)
-        self.display()
     # --------------------------------------------------------------------------
     
     # --------------------------------------------------------------------------
-    # code that allows for embedded ipyaggrids ---------------------------------
+    # code that allows for embedded ipysheets ----------------------------------
     def _ipyagrid(self):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
         self.kwargs['icon'] = 'arrow-down'
@@ -533,8 +511,7 @@ class EditDict(EditDictData):
     # --------------------------------------------------------------------------
     
     def display(self):
-        display(self.layout)
-        display(self.out)
+        display(self.layout, self.out)
          
     def _ipython_display_(self):
         self.display()    
@@ -664,13 +641,16 @@ class EditListOfDicts():
     def _init_observe(self): 
         for l in self.widgets:
             l.widget_only.observe(self._update_change, "value") 
-        
+
+    def _get_apps_layout(self):
+        app_layout = []
+        for w in self.widgets:
+            app_layout.append(widgets.VBox([w.layout, w.out]))
+        return tuple(app_layout)
+    
     def _lidi_display(self):
-        out = [l.layout for l in self.widgets]
-        self.applayout = widgets.VBox(out)
+        self.applayout = widgets.VBox(self._get_apps_layout())
         display(self.applayout)
-        for l in self.widgets:
-            display(l.out)
             
     def _ipython_display_(self):
         self._lidi_display()  
@@ -711,14 +691,17 @@ class SimpleEditJson(EditListOfDicts):
             dateTimeObj = datetime.now()
             timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
             display(Markdown('{0} changes to sheet logged.  to: {1}'.format(timestampStr,self.fpth_out)))
-            
+        
+    def _get_apps_layout(self):
+        app_layout = []
+        for w in self.widgets:
+            app_layout.append(widgets.VBox([w.layout, w.out]))
+        return tuple(app_layout)
+    
     def display(self):
         display(self.save_changes)
-        out = [l.layout for l in self.widgets]
-        self.applayout = widgets.VBox(out)
+        self.applayout = widgets.VBox(self._get_apps_layout())
         display(self.applayout)
-        for l in self.widgets:
-            display(l.out)
         display(self.out)
             
     def _ipython_display_(self):
@@ -920,16 +903,17 @@ if __name__ =='__main__':
     display(Markdown('---'))  
     display(Markdown('')) 
     
+
     # Example1
-    #FDIR = os.path.dirname(os.path.realpath('__file__'))
-    #fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
-    #simpleeditjson = SimpleEditJson(fpth)
-    ## display
-    #display(Markdown('### Example1'))
-    #display(Markdown('''Simple Edit Json'''))
-    #display(simpleeditjson)
-    #display(Markdown('---'))  
-    #display(Markdown('')) 
+    FDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
+    simpleeditjson = SimpleEditJson(fpth)
+    # display
+    display(Markdown('### Example1'))
+    display(Markdown('''Simple Edit Json'''))
+    display(simpleeditjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
     
     # Example2
     # EDIT JSON FILE with custom config and file management
@@ -950,7 +934,6 @@ if __name__ =='__main__':
     display(editjson)
     display(Markdown('---'))  
     display(Markdown(''))    
-
     
     # Example3
     # EDIT NESTED JSON FILE with custom config and file management
@@ -997,17 +980,9 @@ if __name__ =='__main__':
     display(Markdown('')) 
     
     
-    # Example6
-    editmfjson = EditMfJson(r'appdata\inputs')
-    # display
-    display(Markdown('### Example6'))
-    display(Markdown('''select mf json file and edit'''))
-    display(editmfjson)
-    display(Markdown('---'))  
-    display(Markdown('')) 
+
     
     # Example7
-    # THIS NEEDS FIXING
     nestedconfig={
         'fpth_script':r'C:\engDev\git_mf\ipyrun\examples\scripts\file_chooser_test.py',
         'fdir':'.',
@@ -1019,5 +994,25 @@ if __name__ =='__main__':
     display(editnestedjson)
     display(Markdown('---'))  
     display(Markdown('')) 
+
+
+    
+    # Example6
+    editmfjson = EditMfJson(r'appdata\inputs')
+    # display
+    display(Markdown('### Example6'))
+    display(Markdown('''select mf json file and edit'''))
+    display(editmfjson)
+    display(Markdown('---'))  
+    display(Markdown('')) 
+
+di = {
+    'name':'name',
+    'value':'value',
+    'label':'label',
+    'widget': 'FileChooser'
+}
+EditDict(di)
+
 
 

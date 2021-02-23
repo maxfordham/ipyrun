@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main]
+#     display_name: mf_base
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: mf_base
 # ---
 
 # +
@@ -514,4 +514,8 @@ class RunAppsOverheating(RunAppsTemplated):
             display(self.comp_out_dd)
             display(self.comp_out_btn)
             display(fig)
+
+
+
+
 
