@@ -8,15 +8,16 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: Python 3
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: python3
 # ---
 
 # +
 import os
+import sys
 import pandas as pd
-from IPython.display import display, Image, JSON, Markdown, HTML, IFrame, clear_output
+from IPython.display import display,  JSON, Markdown, HTML, IFrame, clear_output #Image,
 import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
@@ -181,7 +182,7 @@ class DisplayFile():
         }
     """
     def __init__(self,
-                 fpth=os.path.join(os.environ['mf_root'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
+                 fpth=os.path.join(os.environ['MF_ROOT'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
                  description=None,
                  mf_excel=True):
         self.fpth = fpth
@@ -379,12 +380,6 @@ class DisplayFiles():
         self.display()
 
 
-# +
-#fpths=[os.path.join(os.environ['mf_root'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly')]
-#d = DisplayFiles(fpths)
-#d
-# -
-
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
     # the below can be used to make documentation that looks at all functions or classes
@@ -400,7 +395,8 @@ if __name__ =='__main__':
     # -
 
     fdir = os.path.dirname(os.path.realpath('__file__'))
-    fdir = os.path.realpath(os.path.join(fdir,r'..\data\eg_filetypes'))
+    rel = os.path.join('..','data','eg_filetypes')
+    fdir = os.path.realpath(os.path.join(fdir,rel))
 
     fpths = recursive_glob(rootdir=fdir)
 
@@ -431,4 +427,7 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+
+
+
 
