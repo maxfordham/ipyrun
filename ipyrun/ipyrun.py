@@ -139,7 +139,7 @@ class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface
     """
-    def __init__(self,config):
+    def __init__(self,config,lkup_script=True):
         """
         class that builds a user interface for:
         - editing inputs, 
@@ -157,7 +157,7 @@ class RunApp(RunForm, RunConfig):
         Example:
             ```
             config={
-                'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+                'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
                 'fdir':NBFDIR,
                 }    
 
@@ -168,11 +168,15 @@ class RunApp(RunForm, RunConfig):
             ui
             ```
         """
+        self._init_RunApp(config,lkup_script=lkup_script)
+        
+        
+    def _init_RunApp(self,config,lkup_script=True):
         self.out = widgets.Output()
         self.config = config
         self.user_keys = list(config.keys())
         self.errors = []
-        self._update_config()
+        self._init_RunConfig(config, lkup_script=lkup_script)
         self.form()
         self.outputsfpth.options = list(self.fpths_outputs.values())
         self.show_me_the_code = widgets.Button(description='show source code',
@@ -203,7 +207,7 @@ class RunApp(RunForm, RunConfig):
     def _help(self, sender):
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunApp.png')
+            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunApp.png')
             display(Image(fpth))
             
     def _reset(self, sender):
@@ -393,7 +397,7 @@ class RunApps():
         
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunBatch.png')
+            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunBatch.png')
             display(Image(fpth))
             
     def _reset(self, sender):
@@ -579,7 +583,7 @@ class RunAppsTemplated():
     def _help(self, sender):
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunBatch.png')
+            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunBatch.png')
             display(Image(fpth))
             
     def _reset(self, sender):
@@ -736,7 +740,7 @@ if __name__ == '__main__':
     # EDIT JSON FILE with custom config and file management
 
     config={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
         'script_outputs': {
             '0': {
@@ -765,9 +769,9 @@ if __name__ == '__main__':
                 display(EditCsv(self.config))
 
     di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        #'process_name':os.path.basename(os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
+        #'fpth_inputs':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
         'fdir':NBFDIR,
         #'fpth_log':os.path.join(NBFDIR,'notebooks',config),
         #'fdir_outputs':os.path.join(NBFDIR,'notebooks')
@@ -791,15 +795,15 @@ if __name__ == '__main__':
 
     # Example3 --------------------------
     di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        #'process_name':os.path.basename(os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
+        #'fpth_inputs':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
         'fdir':os.path.join(NBFDIR,'notebooks'),
         'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         }  
 
     defaultrunapp={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
         'script_outputs': {'0': {
             'fdir':r'..\reports',
@@ -820,15 +824,15 @@ if __name__ == '__main__':
 
     ```
         di={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-            #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-            #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
+            'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+            #'process_name':os.path.basename(os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
+            #'fpth_inputs':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
             'fdir':os.path.join(NBFDIR,'notebooks'),
             'fdir_outputs':os.path.join(NBFDIR,'notebooks')
             }  
 
         defaultrunapp={
-            'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+            'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
             'fdir':NBFDIR,
             'script_outputs': {'0': {
                 'fdir':r'..\reports',
@@ -850,15 +854,15 @@ if __name__ == '__main__':
 
     # Example4 --------------------------
     di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        #'process_name':os.path.basename(os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
-        #'fpth_inputs':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        #'process_name':os.path.basename(os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')),
+        #'fpth_inputs':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\configs\eplus_pipework_params.csv'),
         'fdir':os.path.join(NBFDIR,'notebooks'),
         'fdir_outputs':os.path.join(NBFDIR,'notebooks')
         }  
 
     defaultrunapp={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
         'script_outputs': {'0': {
             'fdir':r'..\reports',
@@ -879,11 +883,10 @@ if __name__ == '__main__':
     '''))
     
     di={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py')
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py')
     }
     runappstemplated = RunAppsTemplated(di)
     display(runappstemplated)
     display(Markdown('---'))  
     display(Markdown('')) 
-
 
