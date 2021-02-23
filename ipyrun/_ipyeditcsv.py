@@ -171,9 +171,7 @@ class EditCsv(FileConfigController):
     def __init__(self,config):
         self.config = config
         self.out = widgets.Output()
-        self._errors()
-        self.user_keys = list(config.keys())
-        self._update_config()
+        self._init_RunConfig(config)
         self.file_control_form()
         self._init_file_controller()
         self.sheet = self._sheet_from_fpth(self.fpth_inputs)
@@ -261,6 +259,7 @@ if __name__ =='__main__':
     #display(b)
     #display(Markdown('---'))  
     #display(Markdown('')) 
+
 
 
 
