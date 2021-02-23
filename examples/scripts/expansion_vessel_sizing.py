@@ -42,7 +42,7 @@ Calculates sizes and/or pressure ratings for heating system, including the expan
         BS7074 - page?
 
 Image:
-    %mf_root%\engDevSetup\dev\icons\icon_png\expansion_vessel.jpg
+    %MF_ROOT%\engDevSetup\dev\icons\icon_png\expansion_vessel.jpg
 """
 
 import os
