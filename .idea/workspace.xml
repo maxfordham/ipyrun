@@ -3,10 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="4ad5ab94-956c-46f7-b0f9-1de14f0a0b15" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipydisplayfile.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditjson.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ipyrun/_ipyeditjson.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_ipyeditjson.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ipyrun/ipyrun.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/ipyrun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_runconfig.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_runconfig.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ipyrun/_runconfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/ipyrun/_runconfig.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +30,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.tabs" />
   </component>
