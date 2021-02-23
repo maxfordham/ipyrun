@@ -87,7 +87,7 @@ class RunAppReport(RunApp):
         Example:
             ```
             config={
-                'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+                'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
                 'fdir':NBFDIR,
                 }    
 
@@ -337,7 +337,7 @@ class RunAppsOverheating(RunAppsTemplated):
     def _help(self, sender):
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunBatch.png')
+            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunBatch.png')
             display(Image(fpth))
             
     def _reset(self, sender):

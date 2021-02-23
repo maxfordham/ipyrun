@@ -166,7 +166,7 @@ class RunAppsMrunsOld():
     def _help(self, sender):
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['mf_root'],r'ipyrun\docs\images\RunBatch.png')
+            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunBatch.png')
             display(Image(fpth))
             
     def _reset(self, sender):
