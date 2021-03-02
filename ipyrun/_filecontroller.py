@@ -203,7 +203,7 @@ class FileConfigController(RunConfig, FileController, Errors):
         self.out = widgets.Output()
         self._errors()
         self.user_keys = list(config.keys())
-        self._update_config()
+        self._init_RunConfig(config)
         self.file_control_form()
         self._init_file_controller()
   
@@ -419,8 +419,4 @@ users to edit the JSON file'''))
     display(Markdown('---'))  
     display(Markdown('')) 
 # -
-
-
-
-
 
