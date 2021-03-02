@@ -1,7 +1,7 @@
 """
 A script that takes creates a report of the overheating analysis,
 comparing both the 'As Designed' and 'Benchmark' options.
-        
+
     Args:
         ** software: Software used for overheating analysis
         ** site_location: Location of the site
@@ -9,7 +9,7 @@ comparing both the 'As Designed' and 'Benchmark' options.
 
     Returns:
         **  overheating_report: The final report, outputted as a PDF and Word document
-        
+
 """
 # -*- coding: utf-8 -*-
 
@@ -26,8 +26,8 @@ from mf_modules.pydtype_operations import read_json
 from mf_modules.file_operations import make_dir
 from mf_modules.md_helpers import write_md
 import datetime as dt
-import functools 
-import operator 
+import functools
+import operator
 
 try:
     from ipyword.ipyword import md_to_docx, md_to_pdf
@@ -57,7 +57,7 @@ def get_processes(tagname, inputs):
                 if(numtag in name_value[1] and tagname in name_value[1] and 'label' in name_value[1]):
                     output.append((process_value[0],name_value[0]))
                     continue
-    return output    
+    return output
 
 def img_string(img, caption="", size=None):
     size = size if size else 500
@@ -92,7 +92,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
 
     report = []
 
-    tmp = [] 
+    tmp = []
     benchmark_process = get_processes('benchmark', inputs)
     if benchmark_process:
         for process in benchmark_process:
@@ -105,7 +105,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
         report += tmp
         report.append('<br>')
 
-    tmp = [] 
+    tmp = []
     processes = get_processes('heatwave', inputs)
     if processes:
         for process in processes:
@@ -118,7 +118,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
         report += tmp
         report.append('<br>')
 
-    tmp = [] 
+    tmp = []
     processes = get_processes('future', inputs)
     if processes:
         for process in processes:
@@ -133,7 +133,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
     if report:
         report.append(r'\newpage')
 
-    tmp = [] 
+    tmp = []
 
     imgs = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__crit_category')
     tmp += [img_string(img, "", 1200) for img in imgs]
@@ -153,7 +153,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
         report += tmp
         report.append(r'\newpage')
 
-    imgs = [] 
+    imgs = []
 
     for value in get_results('comparison-graphs',inputs):
         imgs_tmp = find_imgs(fdir=fpth_parameters['fdir_graphs_interim'], prefix=benchmark_process[0][0] + '__' + value.split(".")[0])
@@ -171,7 +171,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
                 df.columns = ['Graphs of Example Rooms']
         report.append(df.to_markdown(showindex=False))
         report.append(r'\newpage')
-        
+
     all_processes = get_processes('benchmark', inputs) + get_processes('heatwave', inputs) + get_processes('future', inputs)
     dfs = []
     for process in all_processes:
@@ -180,7 +180,7 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
 
     df = pd.concat(dfs, axis=1)
     report.append(df.to_markdown(showindex=True))
-    
+
     report_name =  '{0}_Report'.format(analysis_name)
 
     md_path = os.path.join(outputs['1'], '{0}.md'.format(report_name))
@@ -190,24 +190,24 @@ def main(inputs, outputs, fpth_parameters, analysis_name):
     with open(md_path, 'w', encoding="utf-8") as f:
         for m in report:
             f.write("%s\n\n" % m)
-            
+
     #md_to_docx(fpth_md=md_path, fpth_docx=docx_path)
     md_to_pdf(fpth_md=md_path, fpth_pdf=pdf_path)
 
     return
 
-script_outputs = {
-    '0': {
-        'fdir':'', 
+script_outputs = [
+    {
+        'fdir':'',
         'fnm': r'',
         'description': "Reports Directory"
     },
-    '1': {
-        'fdir':'', 
+    {
+        'fdir':'',
         'fnm': r'',
         'description': "Markdown Directory"
     }
-}
+]
 
 if __name__ == '__main__':
 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
                     inputs[l['name']] = [l['value'], l['tags']]
                 else:
                     inputs[l['name']] = [l['value'], []]
-                
+
         return inputs
 
     calc_inputs = get_inputs(inputs, {})

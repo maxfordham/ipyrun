@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main]
+#     display_name: mf_base
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: mf_base
 # ---
 
 # +
@@ -33,7 +33,7 @@ from ipyfilechooser import FileChooser
 # core mf_modules
 from mf_modules.pydtype_operations import read_json, write_json 
 from mf_modules.file_operations import make_dir
-
+# -
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
@@ -46,8 +46,6 @@ except:
     from _runconfig import RunConfig
     from _ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
 
-
-# -
 
 def _markdown(value='_Markdown_',
               **kwargs):
@@ -920,12 +918,13 @@ if __name__ =='__main__':
     config={
         'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':'.',
-        'script_outputs': {'0': {
+        'script_outputs': [ 
+            {
             'fdir':'..\reports',
             'fnm': r'JupyterReportDemo.pdf',
             'description': "a pdf report from word"
-                }
             }
+            ]
         }
     editjson = EditJson(config)
     # display
@@ -1005,14 +1004,3 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))  
     display(Markdown('')) 
-
-di = {
-    'name':'name',
-    'value':'value',
-    'label':'label',
-    'widget': 'FileChooser'
-}
-EditDict(di)
-
-
-

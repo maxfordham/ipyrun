@@ -1,7 +1,10 @@
 [
-	{
+    {
+        "label": "input docx filepath",
+        "max": null,
+        "min": null,
         "name": "fpth_in",
-		"value": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\notebooks\\.mfengdev\\JupyterReportDemo.docx",
-		"label": "input docx filepath"
-	}
-]	
+        "options": null,
+        "value": "C:\\engDev\\git_mf\\MF_Toolbox\\dev\\notebooks\\.mfengdev\\JupyterReportDemo.docx"
+    }
+]

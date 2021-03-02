@@ -39,26 +39,26 @@
     "jobno": "C:\\e",
     "pretty_name": "gbxml",
     "process_name": "gbxml",
-    "script_outputs": {
-        "gbjson": {
+    "script_outputs": [
+        {
             "description": "the processed gbxml file converted to json format",
             "fdir": "..\\data\\interim",
             "fnm": "gbjson.json"
         },
-        "gbxml": {
+        {
             "description": "the reference gbxml file converted to json format",
             "fdir": "..\\data\\raw",
             "fnm": "gbxml.xml"
         },
-        "gbxml_datagrab": {
+        {
             "description": "a summary of salient data extract extracted from the gbXML simulation model",
             "fdir": "..\\data\\processed",
             "fnm": "gbxml_datagrab.xlsx"
         },
-        "gbxml_spcs-treemap": {
+        {
             "description": "a waffle chart with a floor by floor breakdown of space type and usage.",
             "fdir": "..\\data\\processed",
             "fnm": "gbxml_spcs-treemap.png"
         }
-    }
+    ]
 }

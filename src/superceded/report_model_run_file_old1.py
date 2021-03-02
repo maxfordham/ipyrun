@@ -1,7 +1,7 @@
 """
 A script that takes creates a report of the overheating analysis,
 comparing both the 'As Designed' and 'Benchmark' options.
-        
+
     Args:
         ** software: Software used for overheating analysis
         ** site_location: Location of the site
@@ -9,7 +9,7 @@ comparing both the 'As Designed' and 'Benchmark' options.
 
     Returns:
         **  overheating_report: The final report, outputted as a PDF and Word document
-        
+
 """
 # -*- coding: utf-8 -*-
 
@@ -66,7 +66,7 @@ def main(inputs, outputs, fpth_parameters):
 
     report = []
 
-    
+
     report.append('## Analysis Details')
     report.append('This section outlines the details of the overheating analysis')
 
@@ -81,7 +81,7 @@ def main(inputs, outputs, fpth_parameters):
         '![]({0})'.format(r'../references/img/ies_img.png'),
 
     ]
-        
+
     report += analysisdesc
     report.append('\\newpage')
 
@@ -99,9 +99,9 @@ def main(inputs, outputs, fpth_parameters):
     report.append('## Individual Model Details')
     report.append('This section outlines the assumptions and design inputs used within the overheating modelling, for both the *Benchmark* and *As Designed* models')
     for name in basenames:
-        
+
         report.append('### {0}'.format(name))
-        
+
         df = dfs[name]
         modeldesc = [
             '##### Description',
@@ -116,7 +116,7 @@ def main(inputs, outputs, fpth_parameters):
             '##### Summer (Elevated) Air Speed',
             '{0} m/s'.format(df.loc['Air Speed', 'Parameter Values']),
         ]
-        
+
         report += modeldesc
 
     report.append('\\newpage')
@@ -147,13 +147,13 @@ def main(inputs, outputs, fpth_parameters):
 
     return
 
-script_outputs = {
-    '0': {
+script_outputs = [
+    {
         'fdir':'', # relative to the location of the App / Notebook file
         'fnm': r'',
         'description': "Creates model run file."
     }
-}
+]
 
 if __name__ == '__main__':
 
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     compare_run_inputs = read_json(config['compare_run_inputs'])
     [calc_inputs.update({l['name']:l['value']}) for l in compare_run_inputs]
 
-    
+
     main(calc_inputs, outputs, config['fpth_parameters'])
     print('done')
 

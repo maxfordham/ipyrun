@@ -112,3 +112,11 @@ appdata
 mail-merge
 raw
 interim
+/ipyrun/ipyrun_overheating.ipynb
+/ipyrun/_filecontroller.ipynb
+/ipyrun/_ipydisplayfile.ipynb
+/ipyrun/_ipyeditcsv.ipynb
+/ipyrun/_ipyeditjson.ipynb
+/ipyrun/_runconfig.ipynb
+/ipyrun/ipyrun.ipynb
+/ipyrun/ipyrun_archived.ipynb

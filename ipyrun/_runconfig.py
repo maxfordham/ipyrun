@@ -206,7 +206,7 @@ class Outputs(BaseParams):
     """defines location of output files. note. fpths_outputs built from script_outputs"""
     fdir_outputs: str = os.path.join(BaseParams.fdir,'outputs')
     fdirs_outputs: List[str] = field(default_factory=list)
-    script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]
+    script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]  #  Dict[str:Output] = field(default_factory=dict)?
     fpths_outputs: List[str] = field(default_factory=list)
         
     def __post_init__(self):
@@ -216,10 +216,10 @@ class Outputs(BaseParams):
         self.fpths_outputs = _fpths_from_script_outputs_dict(self)
         
 def _fdirs_from_script_outputs_dict(outputs: Outputs):
-    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel)) for s in outputs.script_outputs]
+    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel)) for s in outputs.script_outputs] #  .items()
 
 def _fpths_from_script_outputs_dict(outputs: Outputs):
-    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel,s.fnm)) for s in outputs.script_outputs]
+    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel,s.fnm)) for s in outputs.script_outputs] #  .items()
 
 def _script_outputs_template(outputs: Outputs):
     """
@@ -267,9 +267,9 @@ class RunConfig():
                  config_job: JobDirs=JobDirs(), 
                  lkup_outputs_from_script: bool=True,
                  ):
-        self._init_RunConfig(config, config_job, lkup_outputs_from_script=lkup_outputs_from_script)
+        self._init_RunConfig(config, config_job=config_job, lkup_outputs_from_script=lkup_outputs_from_script)
         
-    def _init_RunConfig(self, config, config_job, lkup_outputs_from_script=True):
+    def _init_RunConfig(self, config, config_job=JobDirs(), lkup_outputs_from_script=True):
         self.errors = []
         self._update_config(config)
         self._init_config_job(config_job)
@@ -335,6 +335,17 @@ if __name__ =='__main__':
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     
+    config0 = {
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':FDIR,
+        'script_outputs': [
+            {
+                'fdir':r'..\reports',
+                'fnm': r'JupyterReportDemo.pdf',
+                'description': "a pdf report from word"
+            }
+        ]
+    }    
     config1 = {
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),#,
         'process_name':'pipework',
@@ -347,5 +358,4 @@ if __name__ =='__main__':
     config_app = AppConfig(**config1)
     rc = RunConfig(config_app,lkup_outputs_from_script=True)#, config_job=config_job)
     pprint(rc.config)
-
 

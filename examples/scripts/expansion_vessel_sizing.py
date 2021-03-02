@@ -169,18 +169,13 @@ def main(inputs, outputs):
 
     return df
 
-script_outputs = {
-    '0': {
+script_outputs = [
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'expansion_vessel_sizing.csv',
         'description': "a simple calc for sizing expansion vessels. could be expanded to size many vessels."
-    }#,
-    #'1': {
-    #    'fdir': '.',  # relative to the location of the App / Notebook file
-    #    'fnm': r'expansion_vessel_sizing.xlsx',
-    #    'description': "a simple calc for sizing expansion vessels. could be expanded to size many vessels."
-    #}
-}
+    }
+]
 
 if __name__ == '__main__':
 

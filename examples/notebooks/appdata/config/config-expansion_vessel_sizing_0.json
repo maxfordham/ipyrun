@@ -29,11 +29,11 @@
     "jobno": "C:\\e",
     "pretty_name": "expansion_vessel_sizing_0",
     "process_name": "expansion_vessel_sizing_0",
-    "script_outputs": {
-        "0": {
+    "script_outputs": [
+        {
             "description": "a simple calc for sizing expansion vessels. could be expanded to size many vessels.",
             "fdir": ".",
             "fnm": "expansion_vessel_sizing.csv"
         }
-    }
+    ]
 }

@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: mf_base
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: mf_base
 # ---
 
 # +
@@ -34,6 +34,8 @@ try:
 except:
     from _runconfig import RunConfig
 
+
+# +
 def _markdown(value='_Markdown_',
               **kwargs):
     """
@@ -199,10 +201,8 @@ class FileConfigController(RunConfig, FileController, Errors):
     """
 
     def __init__(self,config):
-        self.config = config
         self.out = widgets.Output()
         self._errors()
-        self.user_keys = list(config.keys())
         self._init_RunConfig(config)
         self.file_control_form()
         self._init_file_controller()
@@ -353,6 +353,8 @@ class SelectEditSaveMfJson():
 
 
 
+# -
+
 if __name__ == "__main__":
     
     # Example0: testing the FileController class only
@@ -383,7 +385,6 @@ if __name__ == "__main__":
     display(d)
     display(Markdown('---'))  
     display(Markdown('')) 
-    
     
     # Example1
     config={
@@ -417,6 +418,4 @@ navigate to a file and select it. It will then be merged with the JsonEdit class
 users to edit the JSON file'''))
     display(simpleedit)
     display(Markdown('---'))  
-    display(Markdown('')) 
-# -
-
+    display(Markdown(''))

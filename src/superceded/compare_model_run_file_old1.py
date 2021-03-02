@@ -1,15 +1,15 @@
 """
 A script that takes creates a set of graphs
-comparing the indoor temperatures between a 
+comparing the indoor temperatures between a
 'Benchmark' option and an 'As Designed' option
-        
+
     Args:
         ** benchmark: Name of the 'Benchmark' option
         ** as_designed: Name of the 'As Designed' option
 
     Returns:
         **  overheating_report: The final report, outputted as a PDF or Word document
-        
+
 """
 # -*- coding: utf-8 -*-
 
@@ -47,11 +47,11 @@ def main(inputs, outputs, input_dir):
         if color_index > len(colors):
             color_index = 0'''
 
-    # Get comparison files, 
+    # Get comparison files,
     # These are files common to all models
 
     basenames = []
-    
+
     for file in os.listdir(input_dir):
         if file.endswith(".plotly"):
             basenames.append(''.join(file.split('__')[1:]))
@@ -61,12 +61,12 @@ def main(inputs, outputs, input_dir):
 
     for basename in basenames:
         to_compare = True
-        
+
         for data_raw in dataset_raw:
             fpth = os.path.join(input_dir,"{0}__{1}".format(data_raw[0],basename))
             if not os.path.exists(fpth):
                 to_compare = False
-                
+
         if to_compare:
             files_tocompare.append(basename)
 
@@ -91,7 +91,7 @@ def main(inputs, outputs, input_dir):
                             name = "{0} - {1}".format(scatter['name'], os.path.basename(data_raw[0]))
                         plot['name'] = name
                         plot['line']['color'] = data_raw[2]
-                        
+
                         data_out.append(plot)
                     else:
                         plot['line']['color'] = exttemp_colour
@@ -115,13 +115,13 @@ def main(inputs, outputs, input_dir):
         fig.write_json(os.path.join(outputs['0'], filename))
     return
 
-script_outputs = {
-    '0': {
+script_outputs = [
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'./modelrunoutputs/',
         'description': "Creates model run file."
     }
-}
+]
 
 if __name__ == '__main__':
 

@@ -1,7 +1,7 @@
 """
-A script that takes details from an overheating model, 
+A script that takes details from an overheating model,
 and creates overheating tables and indoor temperature graphs of the model.
-        
+
     Args:
         ** model_run_inputs: Set of Inputs/Assumptions for this Model
 
@@ -49,13 +49,13 @@ except:
 def list_names_split_string (list_names, separator, maxsplit):
     '''
     ## given a list of names, returns list of split names ##
-    
+
     Args:
         list_names (list): list of strings (eg. B_04_XX_041_LivingRoom)
         separator (str): separator to be used as criterion for the split (eg. '_')
         maxsplit (int): max number of items you want to split the string (eg.  4 = 'B', '04', 'XX', '041', 'LivingRoom'; 3 = 'B', '04', 'XX', '041_LivingRoom')
     Returns:
-        list_split_names (list): list of split names 
+        list_split_names (list): list of split names
     '''
 
     list_split_names = []
@@ -63,25 +63,25 @@ def list_names_split_string (list_names, separator, maxsplit):
     for n in list(range(len(list_names))):
         list_split_name = list_names[n].split(separator,maxsplit)
         list_split_names.append(list_split_name)
-    
+
     return list_split_names
 
 def dict_from_list_ofsplit_names (list_split_names, list_of_tag_names):
     '''
     ## returns a dict of  ##
-    
+
     Args:
         list_split_names (list): list of split names
         list_of_tag_names (list): list of tag names to be used as keys in dict
-    
+
     Returns:
         dict_items (dict): dict of
     '''
-    
+
     dict_items = dict()
-    for i in list(range(len(list_of_tag_names))):       
+    for i in list(range(len(list_of_tag_names))):
         dict_items[str(list_of_tag_names[i])] = []
-    
+
     for i, x in enumerate(list_of_tag_names):
         for n in list(range(len(list_split_names))):
             try:
@@ -93,23 +93,23 @@ def dict_from_list_ofsplit_names (list_split_names, list_of_tag_names):
                     dict_items[str(x)].append(list_split_names[n][i])
             except:
                 dict_items[str(x)].append("undefined")
-    
+
     return dict_items
 
 
 def filter_df_by_list_keyvalues (df, list_keyvalues): #
     dict_keys_unique_values={}
-    for i in list_keyvalues:  
+    for i in list_keyvalues:
         dict_keys_unique_values[str(i)] = list(df[str(i)].unique())
     #e.g.
     #dict_keys_unique_values = {'air_speed': [0,1,2,3], 'block_number': [a,b]}
-    
+
     dict_dfs = dict()
-    for i in list(range(len(list_keyvalues))):       
+    for i in list(range(len(list_keyvalues))):
         dict_dfs['df_'+str(list_keyvalues[i])] = []
     #e.g.
     #dict_dfs = {'df_air_speed': [], 'df_block_number': []}
-    
+
     for x in list_keyvalues:
         for n in list(range(len(dict_keys_unique_values[x]))):
             dfi = df[df[x] == dict_keys_unique_values[x][n]]
@@ -117,7 +117,7 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
                 continue
             if not dfi.empty:
                 dict_dfs['df_'+str(x)].append(dfi)
-        
+
     return dict_dfs
 
 #############################################
@@ -138,7 +138,7 @@ class Plotter:
         self.process_name = process_name
         self.data_fpth = data_fpth
         self.start_day = 3984
-        self.time_period = 7*24 
+        self.time_period = 7*24
         self.dfs={}
 
     def make_tm52_overall_graphs(self):
@@ -149,8 +149,8 @@ class Plotter:
 
         settings = {
             "yaxis_title": '% of Rooms',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -163,22 +163,22 @@ class Plotter:
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'fail':
                     return 'Full Fail'
                 elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'fail':
-                    return 'Only Criterion A Passes'  
+                    return 'Only Criterion A Passes'
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'fail':
                     return 'Only Criterion B Passes'
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'pass':
-                    return 'Only Criterion C Passes'  
+                    return 'Only Criterion C Passes'
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'pass':
-                    return 'Only Criterion A Fails'  
+                    return 'Only Criterion A Fails'
                 elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'fail' and row['Criterion C (pass/fail)'] == 'pass':
                     return 'Only Criterion B Fails'
                 elif row['Criterion A (pass/fail)'] == 'pass' and row['Criterion B (pass/fail)'] == 'pass' and row['Criterion C (pass/fail)'] == 'fail':
-                    return 'Only Criterion C Fails'  
+                    return 'Only Criterion C Fails'
 
-            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1)
             pass_percentage[i] = len(df[df["TM52 (pass/fail)"]=='PASS'].index)/len(df.index)
             criterion_failing.append(df[i].value_counts(normalize=True))
-        
+
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
@@ -214,20 +214,20 @@ class Plotter:
             color='black',
             width=2,
             dash='dash')
-        crita_limit = go.Scatter(name='Criterion A - Upper Limit', 
-                                y=[0.03,0.03], 
+        crita_limit = go.Scatter(name='Criterion A - Upper Limit',
+                                y=[0.03,0.03],
                                 x=[list(mean_A.keys())[0],
-                                list(mean_A.keys())[-1]], 
+                                list(mean_A.keys())[-1]],
                                 mode='lines',
                                 line=line)
 
         line=dict(
             color='black',
             width=2)
-        critb_limit = go.Scatter(name='Criterion B - Upper Limit', 
-                                y=[0.06,0.06], 
+        critb_limit = go.Scatter(name='Criterion B - Upper Limit',
+                                y=[0.06,0.06],
                                 x=[list(mean_B.keys())[0],
-                                list(mean_B.keys())[-1]], 
+                                list(mean_B.keys())[-1]],
                                 mode='lines',
                                 line=line)
 
@@ -235,13 +235,13 @@ class Plotter:
             color='black',
             width=2,
             dash='dot')
-        critc_limit = go.Scatter(name='Criterion C - Upper Limit', 
-                                y=[0.04,0.04], 
+        critc_limit = go.Scatter(name='Criterion C - Upper Limit',
+                                y=[0.04,0.04],
                                 x=[list(mean_C.keys())[0],
-                                list(mean_C.keys())[-1]], 
+                                list(mean_C.keys())[-1]],
                                 mode='lines',
                                 line=line)
-                                
+
         data.append(go.Bar(name='Criterion A (%)', x=list(mean_A.keys()), y=list(mean_A.values())))
         data.append(go.Bar(name='Criterion B (%)', x=list(mean_B.keys()), y=list(mean_B.values())))
         data.append(go.Bar(name='Criterion C (%)', x=list(mean_C.keys()), y=list(mean_C.values())))
@@ -251,8 +251,8 @@ class Plotter:
 
         settings = {
             "yaxis_title": self.analysis_name + ' Criteria',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -268,8 +268,8 @@ class Plotter:
 
         settings = {
             "yaxis_title": '% of Rooms',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -282,10 +282,10 @@ class Plotter:
                 else:
                     return 'Fail'
 
-            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1)
             pass_percentage[i] = len(df[df["TM59 - MechVent (pass/fail)"]=='PASS'].index)/len(df.index)
             criterion_failing.append(df[i].value_counts(normalize=True))
-        
+
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
@@ -296,7 +296,7 @@ class Plotter:
         settings['title'] = '% of rooms failing each criteria, at different air speeds'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
         full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
-        
+
     def make_tm59_mv_average_graphs(self):
         layout = go.Layout(
                     xaxis_type='category',
@@ -317,20 +317,20 @@ class Plotter:
             color='black',
             width=2,
             dash='dash')
-        crit_limit = go.Scatter(name='Criterion B - Upper Limit', 
-                                y=[0.03,0.03], 
+        crit_limit = go.Scatter(name='Criterion B - Upper Limit',
+                                y=[0.03,0.03],
                                 x=[list(crit_mean.keys())[0],
-                                list(crit_mean.keys())[-1]], 
+                                list(crit_mean.keys())[-1]],
                                 mode='lines',
                                 line=line)
-                                
+
         data.append(go.Bar(name='Fixed Temp Criteria (%)', x=list(crit_mean.keys()), y=list(crit_mean.values())))
         data.append(crit_limit)
 
         settings = {
             "yaxis_title": self.analysis_name + ' Criteria',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -346,8 +346,8 @@ class Plotter:
 
         settings = {
             "yaxis_title": '% of Rooms',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -360,14 +360,14 @@ class Plotter:
                 elif row['Criterion A (pass/fail)'] == 'fail' and row['Criterion B (pass/fail)'] == 'fail':
                     return 'Full Fail'
                 elif row['Criterion A (pass/fail)'] == 'fail' :
-                    return 'Criterion A Fail'  
+                    return 'Criterion A Fail'
                 else:
                     return 'Criterion B Fail'
 
-            df[i] = df.apply(lambda row: category_filter(row), axis = 1) 
+            df[i] = df.apply(lambda row: category_filter(row), axis = 1)
             pass_percentage[i] = len(df[df["TM59 (pass/fail)"]=='PASS'].index)/len(df.index)
             criterion_failing.append(df[i].value_counts(normalize=True))
-        
+
         pass_percentage_data = go.Bar(x=list(pass_percentage.keys()),y=list(pass_percentage.values()))
 
         df_criterion_failing = pd.DataFrame(criterion_failing).fillna(0)
@@ -378,7 +378,7 @@ class Plotter:
         settings['title'] = '% of rooms failing each criteria, at different air speeds'
         filename = os.path.join(self.out_data_dir, "{0}__{1}".format(self.process_name, 'crit_category'))
         full_width_graph(data=criterion_failing_data, settings=settings, filename=filename, img=True, plotly=False)
-        
+
     def make_tm59_average_graphs(self):
         layout = go.Layout(
                     xaxis_type='category',
@@ -406,23 +406,23 @@ class Plotter:
             color='black',
             width=2,
             dash='dash')
-        critb_limit = go.Scatter(name='Criterion B - Upper Limit', 
-                                y=[0.01,0.01], 
+        critb_limit = go.Scatter(name='Criterion B - Upper Limit',
+                                y=[0.01,0.01],
                                 x=[list(bedroom_mean_B.keys())[0],
-                                list(bedroom_mean_B.keys())[-1]], 
+                                list(bedroom_mean_B.keys())[-1]],
                                 mode='lines',
                                 line=line)
 
         line=dict(
             color='black',
             width=2)
-        crita_limit = go.Scatter(name='Criterion A - Upper Limit', 
-                                y=[0.03,0.03], 
+        crita_limit = go.Scatter(name='Criterion A - Upper Limit',
+                                y=[0.03,0.03],
                                 x=[list(bedroom_mean_B.keys())[0],
-                                list(bedroom_mean_B.keys())[-1]], 
+                                list(bedroom_mean_B.keys())[-1]],
                                 mode='lines',
                                 line=line)
-                                
+
         data.append(go.Bar(name='Criterion A (%)', x=list(bedroom_mean_A.keys()), y=list(bedroom_mean_A.values())))
         data.append(go.Bar(name='Criterion B (%)', x=list(bedroom_mean_B.keys()), y=list(bedroom_mean_B.values())))
         data.append(critb_limit)
@@ -430,8 +430,8 @@ class Plotter:
 
         settings = {
             "yaxis_title": self.analysis_name + ' Criteria',
-            "xaxis_title": 'Air Speed (m/s)', 
-            "yaxis_tickformat":'%', 
+            "xaxis_title": 'Air Speed (m/s)',
+            "yaxis_tickformat":'%',
             "xaxis_type":'category',
         }
 
@@ -481,14 +481,14 @@ class Plotter:
 
         layout = {
             "autosize": False,
-            "width": 1500, 
-            "height":rows*30+100, 
+            "width": 1500,
+            "height":rows*30+100,
             "margin":{'l': 3, 'r': 3, 't': 10, 'b': 0},
             "template": "simple_white",
             "titlefont": {"size": 24},
             "font": {"size": 18},
             "font_family": "Calibri"
-        }    
+        }
 
         table = go.Figure(data=data, layout=layout)
 
@@ -511,7 +511,7 @@ class Plotter:
         end_day = self.start_day + self.time_period
 
         # Standard Figure Layout
-        
+
         settings = {
             "xaxis_title":"Date",
             "yaxis_title":"Temperature (C)",
@@ -527,7 +527,7 @@ class Plotter:
         for x in self.thermperf_data:
             if x[0] in dfs:
                 tmp = {}
-                tmp['fname'] = re.sub('[^A-Za-z0-9_]+', '', x[1]).lower() 
+                tmp['fname'] = re.sub('[^A-Za-z0-9_]+', '', x[1]).lower()
                 tmp['title'] = x[1]
                 tmp['data'] = dfs[x[0]]
                 tmp['color'] = x[2]
@@ -541,14 +541,14 @@ class Plotter:
                 df_maxweek = df_maxweek[self.start_day:end_day]
                 data.append(go.Scatter(x=xaxis, y=df_maxweek[roomName], name=input['title'],
                                 line=dict(width=1.5, color = input['color'])))
-            
+
             df_comparison = dfs[self.comparison_data[0]][self.start_day:end_day]
             data.append(go.Scatter(x=xaxis, y=df_comparison[self.comparison_data[1]], name=self.comparison_data[0],
                             line=dict(width=2, color = self.comparison_data[2])))
 
             subtitle = "Maximum Average ({0} to {1})".format(self.toDate(self.start_day).strftime("%d %b"), self.toDate(end_day).strftime("%d %b"))
             room_fname = re.sub('[^A-Za-z0-9_]+', '', roomName) # Create Valid filename from room name
-            
+
             settings['title'] = "{0} - {1}<br>{2}".format('Temperatures', roomName, subtitle)
             filename = os.path.join(self.out_data_dir, "{2}__{0}__{1}".format('temps', room_fname, self.process_name))
             full_width_graph(data=data, settings=settings, filename=filename, img=True, plotly=True)
@@ -577,7 +577,7 @@ class Plotter:
             ## Extract info from excel
             df_ies_output = pd.read_excel(IES_output_fpth, sheet_name_results)
             #df_project_info = pd.read_excel(IES_output_fpth, sheet_name_project_info)
-            
+
             ## Split room names given list of tags (e.g by block, level, flat, space code, space name)
             # e.g. A_00_1A_01_DoubleBedroom => BlockNumber_Level_FlatNumber_RoomCode_RoomName
             room_names = df_ies_output['room_name']
@@ -587,7 +587,7 @@ class Plotter:
             room_names_split = list_names_split_string (room_names, separator, maxsplit)
             IES_split_names = dict_from_list_ofsplit_names (room_names_split, list_of_tag_names)
 
-            ## Create Data Frame from Dict of Split Names 
+            ## Create Data Frame from Dict of Split Names
             df_IES_split_names = pd.DataFrame.from_dict(IES_split_names)
 
             ## Join Output data frame with Data Frame of split names
@@ -604,28 +604,28 @@ class Plotter:
 
             dfs_filt_as = filter_df_by_list_keyvalues (df, list_keyvalues)
 
-            ## CREATE PIVOT TABLE OF LIST OF DFs AND COLOUR BASED ON VALUES (e.g. PASS, FAIL) 
+            ## CREATE PIVOT TABLE OF LIST OF DFs AND COLOUR BASED ON VALUES (e.g. PASS, FAIL)
             values_pivot = 'values'
             index_pivot = list_of_tag_names + ['room_name']
             columns_pivot = ['value_names']
             num_cols = ['Criterion A (%)', 'Criterion B (%)', 'Criterion C (%)', 'Fixed Temp Criteria (%)']
-            
+
             for x in list(range(len(dfs_filt_as['df_air_speed']))):
                 df = pd.pivot_table(dfs_filt_as['df_air_speed'][x],\
                                     values=values_pivot,\
                                     index=index_pivot,\
                                     columns=columns_pivot,\
                                     aggfunc=np.min)
-                
+
                 df.reset_index(inplace=True)
                 types = {col:('float' if col in num_cols else 'str') for col in df}
-                df = df.astype(types) 
+                df = df.astype(types)
                 for col in df:
                     if col in num_cols:
                         df = df
-                
+
                 self.dfs[list(air_speeds)[x]] = df
-        
+
         except:
             import traceback
             with open("log.txt", "w") as log_file:
@@ -665,7 +665,7 @@ def main(inputs, outputs, analysis_name, process_name):
 
     try:
         results_raw_fpth = ""
-        results_pretty_fpth = "" 
+        results_pretty_fpth = ""
         if analysis_name == 'TM59':
             results_raw_fpth = tm59_raw_fpth
             results_pretty_fpth = tm59_pretty_fpth
@@ -703,28 +703,28 @@ def main(inputs, outputs, analysis_name, process_name):
 
     return
 
-script_outputs = {
-    '0': {
+script_outputs = [
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for data output"
     },
-    '1': {
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for analysis output"
     },
-    '2': {
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for raw data"
     }
-}
+]
 
 if __name__ == '__main__':
 
     fpth_config = sys.argv[1]
-    fpth_inputs = sys.argv[2]  
+    fpth_inputs = sys.argv[2]
 
     # get config and input data
     config = read_json(fpth_config)

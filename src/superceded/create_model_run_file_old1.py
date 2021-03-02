@@ -1,14 +1,14 @@
 """
-A script that takes details from an overheating model, 
+A script that takes details from an overheating model,
 and creates overheating tables and indoor temperature graphs of the model.
-        
+
     Args:
         ** model_run_inputs: Set of Inputs/Assumptions for this Model
 
     Returns:
         **  data_directory: Folder where graphs are stored
         **  analysis_directory: Folder where overheating analysis table are stored
-        
+
     Image:
         %MF_ROOT%\\ipyrun\\examples\\testproject\\datadriven\\src\\create-model-run-doc.png
 
@@ -40,13 +40,13 @@ import re
 def list_names_split_string (list_names, separator, maxsplit):
     '''
     ## given a list of names, returns list of split names ##
-    
+
     Args:
         list_names (list): list of strings (eg. B_04_XX_041_LivingRoom)
         separator (str): separator to be used as criterion for the split (eg. '_')
         maxsplit (int): max number of items you want to split the string (eg.  4 = 'B', '04', 'XX', '041', 'LivingRoom'; 3 = 'B', '04', 'XX', '041_LivingRoom')
     Returns:
-        list_split_names (list): list of split names 
+        list_split_names (list): list of split names
     '''
 
     list_split_names = []
@@ -54,25 +54,25 @@ def list_names_split_string (list_names, separator, maxsplit):
     for n in list(range(len(list_names))):
         list_split_name = list_names[n].split(separator,maxsplit)
         list_split_names.append(list_split_name)
-    
+
     return list_split_names
 
 def dict_from_list_ofsplit_names (list_split_names, list_of_tag_names):
     '''
     ## returns a dict of  ##
-    
+
     Args:
         list_split_names (list): list of split names
         list_of_tag_names (list): list of tag names to be used as keys in dict
-    
+
     Returns:
         dict_items (dict): dict of
     '''
-    
+
     dict_items = dict()
-    for i in list(range(len(list_of_tag_names))):       
+    for i in list(range(len(list_of_tag_names))):
         dict_items[str(list_of_tag_names[i])] = []
-    
+
     for i, x in enumerate(list_of_tag_names):
         for n in list(range(len(list_split_names))):
             try:
@@ -84,18 +84,18 @@ def dict_from_list_ofsplit_names (list_split_names, list_of_tag_names):
                     dict_items[str(x)].append(list_split_names[n][i])
             except:
                 dict_items[str(x)].append("undefined")
-    
+
     return dict_items
 
 def flatten_list (main_list):
     '''
     ## flatten list ##
-    
-    Args: 
-        main_list (ldfiist): list to be flattened 
-        
+
+    Args:
+        main_list (ldfiist): list to be flattened
+
     Returns:
-        flatten_list (list): flattened list 
+        flatten_list (list): flattened list
     '''
     flatten_list = [val for sublist in main_list for val in sublist]
     return flatten_list
@@ -103,21 +103,21 @@ def flatten_list (main_list):
 
 def filter_df_by_list_keyvalues (df, list_keyvalues): #
     '''
-    
-    
+
+
     '''
     dict_keys_unique_values={}
-    for i in list_keyvalues:  
+    for i in list_keyvalues:
         dict_keys_unique_values[str(i)] = list(df[str(i)].unique())
     #e.g.
     #dict_keys_unique_values = {'air_speed': [0,1,2,3], 'block_number': [a,b]}
-    
+
     dict_dfs = dict()
-    for i in list(range(len(list_keyvalues))):       
+    for i in list(range(len(list_keyvalues))):
         dict_dfs['df_'+str(list_keyvalues[i])] = []
     #e.g.
     #dict_dfs = {'df_air_speed': [], 'df_block_number': []}
-    
+
     for x in list_keyvalues:
         for n in list(range(len(dict_keys_unique_values[x]))):
             dfi = df[df[x] == dict_keys_unique_values[x][n]]
@@ -125,7 +125,7 @@ def filter_df_by_list_keyvalues (df, list_keyvalues): #
                 continue
             if not dfi.empty:
                 dict_dfs['df_'+str(x)].append(dfi)
-        
+
     return dict_dfs
 
 class TM59Plotter:
@@ -140,7 +140,7 @@ class TM59Plotter:
         self.process_name = process_name
         self.data_fpth = data_fpth
         self.dfs={}
-    
+
     def agg(self,x):
         if all(type(i) == str for i in x):
 
@@ -155,9 +155,9 @@ class TM59Plotter:
                 return 'PASS'
         else:
             return np.nansum(x)
-    
+
     def make_tm59_figs(self,air_speed):
-        
+
         colours = {'pass':'#b6f0b1',
                    'PASS':'#a1d99c',
                    'fail':' #f5b0b0',
@@ -167,11 +167,11 @@ class TM59Plotter:
         cell_colour = 'white'
         header_colour = 'whiteSmoke'
         line_colour = 'gainsboro'
-        
+
         df = self.dfs[air_speed]
         df = df.round(2)
         vals = df.T.values.tolist()
-        
+
         l = [[0.1, 'pass','FAIL',10,'A'],[0.1, 'pass','FAIL',10,'A']]
         colour_map = lambda x: colours[x] if x in colours else cell_colour
         cell_colours = list([list(map(colour_map, i)) for i in vals])
@@ -185,15 +185,15 @@ class TM59Plotter:
                            fill_color= cell_colours,
                            line_color=line_colour,
                            align='left')
-                
+
         )
-        
+
         layout = go.Layout(
             autosize=False,
             width=1500,
             height=rows*25+180,
         )
-        
+
         table = go.Figure(data=data, layout=layout)
         '''titleText = "TM59 Analysis, with air speed {0} m/s".format(air_speed)
         table.update_layout(
@@ -236,7 +236,7 @@ class TM59Plotter:
                         start_day = 4848
                         end_day = start_day + (7*24)
                         df_maxweek = df
-                        df_maxweek['date'] = [toDate(x) for x in df_maxweek['index']] 
+                        df_maxweek['date'] = [toDate(x) for x in df_maxweek['index']]
                         df_maxweek = df_maxweek[start_day:end_day]
                         df_exttemp = dfs[self.comparison_data[0]][start_day:end_day]
                         data = []
@@ -252,7 +252,7 @@ class TM59Plotter:
                         fig.write_image(os.path.join(self.out_data_dir, "{2}__{0}_{1}.jpeg".format(sheet_fname, room_fname, self.process_name)))
                         fig.write_json(os.path.join(self.out_data_dir, "{2}__{0}_{1}.plotly".format(sheet_fname, room_fname, self.process_name)))
 
-            
+
 
     def read_data_make_summary(self):
 
@@ -279,7 +279,7 @@ class TM59Plotter:
             room_names_split = list_names_split_string (room_names, separator, maxsplit)
             IES_split_names = dict_from_list_ofsplit_names (room_names_split, list_of_tag_names)
 
-            ## 4 ## create data frame from dict of split names 
+            ## 4 ## create data frame from dict of split names
             df_IES_split_names = pd.DataFrame.from_dict(IES_split_names)
 
             ## 5 ## join TM59 output data frame with data frame of split names
@@ -301,14 +301,14 @@ class TM59Plotter:
             #print_summary(xl, i)
 
 
-            ## 9 ## CREATE PIVOTS TABLE OF LIST OF DFs AND COLOUR BASED ON VALUES (e.g. PASS, FAIL) 
+            ## 9 ## CREATE PIVOTS TABLE OF LIST OF DFs AND COLOUR BASED ON VALUES (e.g. PASS, FAIL)
             #pivot table inputs
             values_pviot = 'TM59_values'
             index_pivot = list_of_tag_names
             columns_pivot = ['TM59_value_names']
             pf_cols = ['Criterion A (pass/fail)','Criterion B (pass/fail)', 'TM59 (pass/fail)']
             num_cols = ['Criterion A (%)', 'Criterion B (%)']
-            
+
             for x in list(range(len(dfs_filt_as['df_air_speed']))):
                 df = pd.pivot_table(dfs_filt_as['df_air_speed'][x],\
                                     values=values_pviot,\
@@ -317,7 +317,7 @@ class TM59Plotter:
                                     aggfunc=np.sum)#;
                 df.reset_index(inplace=True)
                 types = {col:('float' if col in num_cols else 'str') for col in df}
-                df = df.astype(types) 
+                df = df.astype(types)
                 for col in df:
                     if col in num_cols:
                         df = df
@@ -348,7 +348,7 @@ def main(inputs, outputs, process_name):
     # Create Plotter
     plotter = TM59Plotter(tm59_raw_fpth=tm59_raw_fpth, tm59_pretty_fpth=tm59_pretty_fpth, data_fpth=data_fpth, outputs=outputs, process_name=process_name)
     plotter.read_data_make_summary()
-    
+
     # Create TM59 Outputs
     plotter.make_tm59_figs(inputs["Air Speed"])
 
@@ -356,28 +356,28 @@ def main(inputs, outputs, process_name):
     plotter.make_data_figs()
     return
 
-script_outputs = {
-    '0': {
+script_outputs = [
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for data output"
     },
-    '1': {
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for tm59 output"
     },
-    '2': {
+    {
         'fdir':'.', # relative to the location of the App / Notebook file
         'fnm': r'.',
         'description': "Folder for raw data"
     }
-}
+]
 
 if __name__ == '__main__':
 
     fpth_config = sys.argv[1]
-    fpth_inputs = sys.argv[2]  
+    fpth_inputs = sys.argv[2]
 
     # get config and input data
     config = read_json(fpth_config)
