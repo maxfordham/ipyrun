@@ -8,16 +8,16 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: mf_base
 #     language: python
-#     name: python3
+#     name: mf_base
 # ---
 
 # +
 import os
 import sys
 import pandas as pd
-from IPython.display import display,  JSON, Markdown, HTML, IFrame, clear_output #Image,
+from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output #Image,
 import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
@@ -27,8 +27,7 @@ import copy
 
 from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.pandas_operations import del_matching
-from mf_modules.jupyter_formatting import md_fromfile
-from mf_modules.jupyter_formatting import display_python_file
+from mf_modules.jupyter_formatting import md_fromfile, display_python_file
 from mf_modules.file_operations import open_file
 from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 from mf_modules.datamine_functions import recursive_glob
@@ -427,7 +426,3 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
-
-
-
-
