@@ -8,347 +8,311 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: mf_base
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: mf_base
 # ---
 
+# +
 import os
+FDIR = os.path.dirname(os.path.realpath('__file__'))
 import importlib.util
 from shutil import copyfile
 from mf_modules.datamine_functions import recursive_glob
 from mf_modules.file_operations import make_dir
-from mf_modules.pydtype_operations import write_json    
+from mf_modules.pydtype_operations import write_json, flatten_list   
 import copy
-FDIR = os.path.dirname(os.path.realpath('__file__'))
 
-from pydantic import BaseModel, FilePath
-import pathlib
+#from IPython.display import Markdown
+#display(Markdown('<img src="../../ipypdt/img/check-xlsx.png" width="1200" height="400">'))
 
-pathlib.PureWindowsPath()
-
-# +
 from dataclasses import dataclass, field, asdict
-
-@dataclass
-class Config:
-    
-    jobno: int
-    fpth_script: str
-    #script_outputs_template: str
-    process_name: str
-    pretty_name: str
-    fdir_appdata: str
-    fdir_inputs: str
-    fdir_inputs_archive: str
-    fdir_template_inputs: str
-    #fpth_template_input: str
-    #fdir: pathlib.Path = '.'
-
-from_dict(data=rc.config,data_class=Config)
-# -
-
-rc.config
-
-
-
-# ?FilePath
-
-type(pathlib.Path(di['fpth_script'])) == type(pathlib.Path())
-
-li = list(Config.__dict__['__annotations__'].keys())
-li
-
-di = {l:rc.config[l] for l in li if l in rc.config.keys()}
-
-di
-
+from typing import Optional, List, Dict
+#from pydantic import BaseModel, FilePath #  ADD PYDANTIC IN THE FUTURE TO EXPORT TO SCHEMA
+import pathlib
 from dacite import from_dict
 
-# from dataclasses import dataclass, field, asdict
-# @dataclass
-# class Config:
-#     fdir: str
-#     jobno: int
-#     fpth_script: FilePath
-#     script_outputs_template: pathlib.Path
-#     process_name: str
-#     pretty_name: str
-#     fdir_appdata: pathlib.Path
-#     fdir_inputs: pathlib.Path
-#     fdir_inputs_archive: pathlib.Path
-#     fdir_template_inputs: pathlib.Path
-#     fpth_template_input: pathlib.Path
-#     template_input_ext 
-#     fpth_inputs
-#     fpth_inputs_options #dict
-#     script_outputs#dict
-#     fnms_outputs #list
-#     fpths_outputs #list
-#     fdir_log 
-#     fnm_log 
-#     fpth_log 
-#     fdir_config 
-#     fnm_config
-#     fpth_config 
-#     fdir_outputs
+from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
+from mf_modules.pydtype_operations import flatten_list
+from mf_modules.file_operations import make_dir, jobno_fromdir
+# -
+
+FDIR_EXAMPLE = '.'
+FPTH_SCRIPT_EXAMPLE = os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')
+
 
 # +
 
+# base ------------------------------
+@dataclass
+class BaseParams:
+    fdir: str = FDIR_EXAMPLE
+    fdir_appdata: str = os.path.join(fdir,'appdata')
+    fpth_script: str = FPTH_SCRIPT_EXAMPLE
+    script_name: str = 'script_name'
+    process_name: str = 'None'
+    pretty_name: str = 'None'
+    job_no: int = 'J4321'
+        
+    def __post_init__(self):
+        self.fdir_appdata = os.path.join(self.fdir,'appdata')
+        self.job_no = jobno_fromdir(self.fdir)
+        self.script_name = os.path.splitext(os.path.basename(self.fpth_script))[0]
+        self.process_name, self.pretty_name = default_names_BaseParams(self)
+        
+def default_names_BaseParams(base_params: BaseParams):
+    """create default names"""
+    if base_params.process_name == 'None':
+        process_name = base_params.script_name
+    else:
+        process_name = base_params.process_name
+    if base_params.pretty_name == 'None':
+        pretty_name = base_params.process_name
+    else:
+        pretty_name = base_params.pretty_name
+    return process_name, pretty_name
+    
+    
+# config ----------------------------
+@dataclass
+class Config(BaseParams):
+    """where to save the script config files"""
+    fdir_config: str = os.path.join(BaseParams.fdir_appdata,'config')
+    fnm_config: str = 'config-' + BaseParams.process_name + '.json'
+    fpth_config: str = os.path.join(fdir_config,fnm_config)
+        
+    def __post_init__(self):
+        super().__post_init__() 
+        self.fdir_config = os.path.join(self.fdir_appdata,'config')
+        self.fnm_config = 'config-' + self.process_name + '.json'
+        self.fpth_config = os.path.join(self.fdir_config,self.fnm_config)
+        
+# inputs ----------------------------
+@dataclass
+class InputDirs:
+    fdir: str = '.'
+    fpths: List[str] = field(default_factory=list)
+    
+@dataclass
+class InputOptions:
+    project: InputDirs 
+    template: InputDirs
+        
+@dataclass
+class Inputs(BaseParams):
+    """defines locations of project and template input files"""
+    ftyp_inputs: str = 'json'
+    fdir_inputs: str = os.path.join(BaseParams.fdir_appdata,'inputs')
+    fdir_template_inputs: str = os.path.join(os.path.dirname(BaseParams.fpth_script),'inputs')
+    fdir_inputs_archive: str = os.path.join(BaseParams.fdir_appdata,'archive')
+    fpth_inputs: str = os.path.join(fdir_inputs,'inputs-' + BaseParams.process_name + '.' + ftyp_inputs)
+    fpth_template_input: str = 'fpth_template_input'
+    fpth_inputs_options: InputOptions = InputOptions(
+        project=InputDirs(fdir=fdir_inputs),
+        template=InputDirs(fdir=fdir_template_inputs))
+        
+    def __post_init__(self):
+        # updates the inputs relative to changes in base params or class initiation
+        super().__post_init__() 
+        self.fdir_inputs = os.path.join(self.fdir_appdata,'inputs')
+        self.fdir_template_inputs = os.path.join(os.path.dirname(self.fpth_script),'template_inputs')
+        self.fdir_inputs_archive = os.path.join(self.fdir_appdata,'archive')
+        self.fpth_inputs = os.path.join(self.fdir_inputs,'inputs-' + self.process_name + '.' + self.ftyp_inputs)
+        self.fpth_inputs_options = _fpth_inputs_options(self)
+        self.fpth_template_input = _fpth_template_input(self)
+        #_fpth_inputs_file_from_template(self)
+        
+#  setting default inputs
+def _fpth_template_input(inputs: Inputs, print_errors=False) -> str:
+    """finds template inputs files"""
+    fpths = recursive_glob(rootdir=inputs.fdir_template_inputs,
+                          pattern='*'+'inputs-' + inputs.script_name+'.*',
+                          recursive=True)
+    if len(fpths) == 0:
+        fpth_default = os.path.join(inputs.fdir_inputs, 'inputs-'+inputs.process_name) + '.json'
+        error = 'could not find template input: {0}'.format(os.path.join(inputs.fdir_inputs, inputs.process_name))
+        print(error)
+        fpths.append(fpth_default)
+    fpth_template_input = fpths[0]
+    return fpth_template_input
+
+def _fpth_inputs_file_from_template(inputs: Inputs, print_errors=False) -> None:
+    """copies template inputs file into local folder"""
+    if os.path.isfile(inputs.fpth_template_input):
+        if not os.path.isfile(inputs.fpth_inputs):
+            if not os.path.isdir(os.path.dirname(inputs.fpth_inputs)):
+                make_dir(os.path.dirname(inputs.fpth_inputs))
+            copyfile(inputs.fpth_template_input, inputs.fpth_inputs)
+                
+def _fpth_inputs_options(inputs: Inputs, print_errors=True) -> InputOptions:
+    """finds all input options (from templates and from past runs)"""
+    patterns = ['*' + inputs.process_name + '*', '*' + inputs.script_name + '*']
+    patterns = list(set(patterns))
+    di = {
+        'template':{
+            'fdir': inputs.fdir_template_inputs,
+            'fpths':[]
+        },
+        'project':{
+            'fdir': inputs.fdir_inputs,
+            'fpths':[]
+        },
+    }
+    # NOTE. this is no longer how it gets the project files...
+    # these are taken from the log.csv ouptut.
+    errors = []
+    cnt = 0
+    valid_exts = ['.csv','.json']
+    for k,v in di.items():
+        for pattern in patterns:
+            fpths = recursive_glob(rootdir=v['fdir'],pattern=pattern,recursive=True)
+            fpths = [fpth for fpth in fpths if '.ipynb_checkpoints' not in fpth]
+            di[k]['fpths'].extend(fpths)
+            di[k]['fpths'] = list(set(di[k]['fpths']))
+            cnt += len(fpths)
+            errors.append(['{0} not csv or json'.format(fpth) for fpth in fpths if os.path.splitext(fpth)[1] not in valid_exts])
+    if cnt == 0:
+        errors.append('couldnt find and input files within the templates folder or in the project folder')
+    if print_errors:
+        [print(p) for p in flatten_list(errors)]
+    return from_dict(data=di,data_class=InputOptions)
+
+            
+# log -------------------------------
+@dataclass
+class Log(BaseParams):
+    """defines location of log files"""
+    fdir_log: str = os.path.join(BaseParams.fdir_appdata,'log')
+    fnm_log: str = 'log-' + BaseParams.process_name + '.csv'
+    fpth_log: str = os.path.join(fdir_log,fnm_log)
+        
+    def __post_init__(self):
+        # updates the inputs relative to changes in base params or class initiation
+        super().__post_init__()   
+        self.fdir_log = os.path.join(self.fdir_appdata,'log')
+        self.fnm_log = 'log-' + self.process_name + '.csv'
+        self.fpth_log = os.path.join(self.fdir_log, self.fnm_log)
+    
+# outputs -------------------------------
+@dataclass
+class Output:
+    fdir_rel: str = ''
+    fnm: str ='fnm.json'
+    description: str = 'description of output'
+    display_preview: bool = True
+        
+@dataclass 
+class Outputs(BaseParams):
+    """defines location of output files. note. fpths_outputs built from script_outputs"""
+    fdir_outputs: str = os.path.join(BaseParams.fdir,'outputs')
+    fdirs_outputs: List[str] = field(default_factory=list)
+    script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]
+    fpths_outputs: List[str] = field(default_factory=list)
+        
+    def __post_init__(self):
+        super().__post_init__() 
+        self.fdir_outputs = os.path.join(self.fdir,'outputs')
+        self.fdirs_outputs = _fdirs_from_script_outputs_dict(self)
+        self.fpths_outputs = _fpths_from_script_outputs_dict(self)
+        
+def _fdirs_from_script_outputs_dict(outputs: Outputs):
+    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel)) for s in outputs.script_outputs]
+
+def _fpths_from_script_outputs_dict(outputs: Outputs):
+    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel,s.fnm)) for s in outputs.script_outputs]
+
+def _script_outputs_template(outputs: Outputs):
+    """
+    looks in the script file and finds and returns object called "script_outputs". 
+    this should be a list of Output objects. 
+    """
+    if os.path.isfile(outputs.fpth_script):
+        try:
+            spec = importlib.util.spec_from_file_location(outputs.script_name, outputs.fpth_script)
+            foo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(foo)
+            script_outputs = foo.script_outputs
+        except:
+            print('error loading script: {0}'.format(outputs.fpth_script)) #  add to logging instead
+            script_outputs = []
+    else:
+        print('script not exist: {0}'.format(outputs.fpth_script)) #  add to logging instead
+        script_outputs = []
+    return script_outputs
+
+@dataclass
+class AppConfig(Config, Inputs, Log, Outputs):
+    pass
+    #jobno: int = 4321
+    
+def make_dirs_AppConfig(Ac: AppConfig):
+    """
+    makes all of the "fdirs" directories in an AppConfig object 
+    """
+    di = asdict(Ac)
+    make_dirs_from_fdir_keys(di)
+
+    
+#fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
+#Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\fuck\shit.py'),script_outputs=[Output(fdir_rel='asdf')])
+#from pprint import pprint     
+#make_dirs_AppConfig(Ac)
+#pprint(asdict(Ac))
+# -
 
 class RunConfig():
 
-    def __init__(self,config,lkup_script=True):
-        """
-        class that creates a default configuration of filepaths for:
-            - script filepath
-            - data outputs directories and filename
-            - log file directory and filename
-            - script input file (passed as argument to script) filepath
-            - a list of template or user modified script input files
-                (the user can then choose from templates or previous versions)
-        for simplicity and standardisation, it is strongly suggested that the defaults
-        defined by this class are used. This allows the developer to pass minimal information
-        and receive an out-of-the-box configuration. That said, if more information is passed
-        in the config dict the user-defined inputs will always be favoured allowing for custom
-        configurations. The required folders are created when the script runs.
-
-        Args:
-            config (di): a user configuration dict defining the script location and file
-                locations of outputs and log file
-
-        Example:
-            ```
-            config={
-                'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-                'fdir':'.',
-                }
-            m = RunConfig(config)
-            from pprint import pprint
-            >>> pprint(m.config)
-            {'fdir': '.',
-             'fdir_config': '.\\appdata\\config',
-             'fdir_inputs': '.\\appdata\\inputs',
-             'fdir_log': '.\\appdata\\log',
-             'fnm_config': 'config-eplus_pipework_params.json',
-             'fnm_log': 'log-eplus_pipework_params.csv',
-             'fpth_config': '.\\appdata\\config\\config-eplus_pipework_params.json',
-             'fpth_inputs': '.\\appdata\\inputs\\eplus_pipework_params.csv',
-             'fpth_inputs_options': {'project': {'fdir': '.\\appdata\\inputs',
-                                                 'fpths': ['.\\appdata\\inputs\\eplus_pipework_params.csv']},
-                                     'template': {'fdir': 'C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\template_inputs',
-                                                  'fpths': ['C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\template_inputs\\eplus_pipework_params.csv']}},
-             'fpth_log': '.\\appdata\\log\\log-eplus_pipework_params.csv',
-             'fpth_script': 'C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\eplus_pipework_params.py',
-             'script_outputs': {'0': {'description': 'a csv lookup table with the backend '
-                                                    'nomenclature of how pipework '
-                                                    'characteristics are named within '
-                                                    'energyPlus.',
-                                     'fdir': '..\\data\\external',
-                                     'fnm': 'eplus_pipework_params.csv'}},
-             'pretty_name': 'eplus_pipework_params',
-             'process_name': 'eplus_pipework_params'}
-             ```
-        """
-        self._init_RunConfig(config,lkup_script=lkup_script)
+    def __init__(self, 
+                 config: AppConfig, 
+                 config_job: JobDirs=JobDirs(), 
+                 lkup_outputs_from_script: bool=True,
+                 ):
+        self._init_RunConfig(config, config_job, lkup_outputs_from_script=lkup_outputs_from_script)
         
-    def _init_RunConfig(self,config,lkup_script=True):
-        self.config = config
-        self.lkup_script = lkup_script
-        self.user_keys = list(config.keys())
+    def _init_RunConfig(self, config, config_job, lkup_outputs_from_script=True):
         self.errors = []
-        self._update_config()
-        self.make_dirs()
-    
-    def _update_config(self):
+        self._update_config(config)
+        self._init_config_job(config_job)
+        self.lkup_outputs_from_script = lkup_outputs_from_script
+        #self.user_keys = list(config.keys())
+        self.errors = []
+        self._make_dirs()
+        if self.lkup_outputs_from_script:
+            self.script_outputs_template = _script_outputs_template(self.config_app)
+            self.config_app.script_outputs = self.script_outputs_template            
+        self._inherit_AppConfig()
+        
+    def _init_config_job(self, config_job):
+        self.config_job = config_job
+        
+    def _update_config(self, config):
         """
         a configuration dict is passed to the app that defines the configuration variables
         of the app. e.g filepaths for the script path, user inputs template file etc.
         where explicit inputs are not given this function updates the config dict with
         default values, flagging any errors that are spotted on the way.
         """
-
-        # assign vars
-        self.fdir = os.path.realpath(self._check_or_make_var('fdir',default='.'))
-        self.jobno = self._jobno()
-        self.fpth_script = self.config['fpth_script']
-        self.script_name = os.path.splitext(os.path.split(self.config['fpth_script'])[1])[0]
-        self.script_outputs_template = self._script_outputs_template()
-        self.process_name = self._check_or_make_var('process_name',default=self.script_name)
-        self.pretty_name = self._check_or_make_var('pretty_name',default=self.process_name)
-        self.fdir_appdata = self._check_or_make_var('fdir_appdata',default=os.path.join(self.fdir,r'appdata')) 
-        self.fdir_inputs = self._check_or_make_var('fdir_inputs',default=os.path.join(self.fdir,self.fdir_appdata,'inputs')) 
-        self.fdir_inputs_archive = self._check_or_make_var('fdir_inputs_archive',default=os.path.join(self.fdir,self.fdir_appdata,'archive')) 
-        self.fdir_template_inputs = self._check_or_make_var('fdir_inputs_archive',default=os.path.join(os.path.dirname(self.config['fpth_script']),r'template_inputs')) 
-        self.fpth_template_input = self._fpth_template_input()
-        self.template_input_ext = self._template_input_ext()
-        self.fpth_inputs = self._fpth_inputs()
-        self.fpth_inputs_options = self._fpth_inputs_options() #dict
-        self.script_outputs = self._update_script_outputs() #dict
-        self.fnms_outputs, self.fpths_outputs = self._fpths_outputs()
-        self.fdir_log = self._check_or_make_var('fdir_log',default=os.path.join(self.fdir_appdata,'log'))
-        self.fnm_log = self._check_or_make_var('fdir_log',default='log-' + self.process_name + '.csv')
-        self.fpth_log = os.path.join(self.fdir_log, self.fnm_log)
-        self.fdir_config = self._check_or_make_var('fdir_config',default=os.path.join(self.fdir_appdata,'config'))
-        self.fnm_config = self._check_or_make_var('fdir_config',default='config-' + self.process_name + '.json') ## self._fnm_config()
-        self.fpth_config = os.path.join(self.fdir_config, self.fnm_config)
-        self.fdir_outputs = self._fdir_outputs()
-
-        # update config
-        self.config['fdir'] = self.fdir
-        self.config['jobno'] = self.jobno
-        self.config['process_name'] = self.process_name
-        self.config['pretty_name'] = self.pretty_name
-        self.config['fdir_appdata'] = self.fdir_appdata
-        self.config['fdir_inputs'] = self.fdir_inputs
-        self.config['fdir_inputs_archive'] = self.fdir_inputs_archive
-        self.config['fdir_template_inputs'] = self.fdir_template_inputs 
-        self.config['fpth_inputs'] = self.fpth_inputs
-        self.config['fpth_inputs_options'] = self.fpth_inputs_options #dict
-        self.config['script_outputs'] = self.script_outputs #dict
-        self.config['fpths_outputs'] = self.fpths_outputs
-        self.config['fdir_log'] = self.fdir_log
-        self.config['fnm_log'] = self.fnm_log
-        self.config['fpth_log'] = self.fpth_log
-        self.config['fdir_config'] = self.fdir_config
-        self.config['fnm_config'] = self.fnm_config
-        self.config['fpth_config'] = self.fpth_config
-        self.config['fdir_outputs'] = self.fdir_outputs  
-
-    def make_dirs(self):
-        for k,v in self.config.items():
-            if 'fdir' in k:
-                try:
-                    make_dir(v)
-                except:
-                    pass
+        if type(config) != AppConfig:
+            print('DEPRECATION WARNING! - the "config_app" var passed to the RunConfig class should be an AppConfig object not a dict')
+            self.config_app = from_dict(data=config,data_class=AppConfig)
+        else:
+            self.config_app = config
+        _fpth_inputs_file_from_template(self.config_app)
+        #self.config_app.fpth_template_input = self._fpth_template_input()
+        #self.config_app.fpth_inputs = self._fpth_inputs()
         
-    def _check_or_make_var(self,varname,default=None):
-        if varname in self.user_keys:
-            return self.config[varname]
-        else:
-            return default
-
-    def _fdir_outputs(self):
-        try:
-            return [os.path.realpath(v['fdir']) for k, v in self.script_outputs.items()]
-        except:
-            pass
-
-    def _jobno(self):
-        """check if fdir given, otherwise put it local to app"""
-        if self.fdir == '.':
-            return 'engDev'
-        else:
-            path = os.path.normpath(self.fdir)
-            try:
-                job_no = int(path.split(os.sep)[1][1:])
-            except:
-                job_no = 9999
-            return job_no
-
-    def _fpth_template_input(self):
-        fpth = recursive_glob(rootdir=self.fdir_template_inputs,
-                              pattern='*'+'inputs-' + self.script_name+'.*',
-                              recursive=True)
-        if len(fpth)==0:
-            tmp = 'could not find template input: {0}'.format(os.path.join(self.fdir_inputs, self.process_name))
-            self.errors.append(tmp)
-            fpth.append(tmp)
-        return fpth[0]
+    def _inherit_AppConfig(self):
+        self.__dict__.update(**self.config)
+        
+    @property
+    def config(self):
+        return {**asdict(self.config_app), **asdict(self.config_job)}
+    
+    def _make_dirs(self):
+        make_dirs_AppConfig(self.config_app)
 
     def _template_input_ext(self):
         return os.path.splitext(self.fpth_template_input)[1]
-
-    def _fpth_inputs(self):
-        src = self.fpth_template_input
-        ext = os.path.splitext(src)[1]
-        if 'fpth_inputs' in self.user_keys:
-            dstn = self.config['fpth_inputs']
-        elif self.process_name is not self.script_name:
-            dstn = os.path.join(self.fdir_inputs, 'inputs-'+self.process_name+ext)
-        else:
-            dstn = os.path.join(self.fdir_inputs, os.path.basename(src))
-
-        if not os.path.isfile(dstn) and os.path.isfile(src):
-            copyfile(src, dstn)
-        return dstn
-
-    def _fpth_inputs_options(self):
-        patterns = ['*' + self.process_name + '*', '*' + self.script_name + '*']
-        patterns = list(set(patterns))
-
-        di = {
-            'template':{
-                'fdir': self.fdir_template_inputs,
-                'fpths':[]
-            },
-            'project':{
-                'fdir': self.fdir_inputs,
-                'fpths':[]
-            },
-        }
-        # NOTE. this is no longer how it gets the project files...
-        # these are taken from the log.csv ouptut.
-
-        cnt = 0
-        valid_exts = ['.csv','.json']
-        for k,v in di.items():
-            for pattern in patterns:
-                fpths = recursive_glob(rootdir=v['fdir'],pattern=pattern,recursive=True)
-                fpths = [fpth for fpth in fpths if '.ipynb_checkpoints' not in fpth]
-                di[k]['fpths'].extend(fpths)
-                di[k]['fpths'] = list(set(di[k]['fpths']))
-                cnt += len(fpths)
-                self.errors.append(['{0} not csv or json'.format(fpth) for fpth in fpths if os.path.splitext(fpth)[1] not in valid_exts])
-        if cnt == 0:
-            self.errors.append('couldnt find and input files within the templates folder or in the project folder')
-        return di
-
-    def _script_outputs_template(self):
-        """
-        looks in the script file and finds and returns object called "script_outputs"
-        """
-        if self.lkup_script:
-            if os.path.isfile(self.fpth_script):
-                try:
-                    spec = importlib.util.spec_from_file_location(self.script_name, self.fpth_script)
-                    foo = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(foo)
-                    script_outputs = foo.script_outputs
-                except:
-                    print('error loading script: {0}'.format(self.fpth_script)) #  add to logging instead
-                    script_outputs = {}
-            else:
-                print('script not exist: {0}'.format(self.fpth_script)) #  add to logging instead
-                script_outputs = {}
-        else:
-            print('user says skip: {0}'.format(self.fpth_script)) #  add to logging instead
-            script_outputs = {}
-        return script_outputs
-
-    def _update_script_outputs(self):
-        """overwrites the template fpth outputs with the user defined ones"""
-        if 'script_outputs' not in self.user_keys:
-            return self.script_outputs_template
-        else:
-            di = {}
-            for k, v in self.script_outputs_template.items():
-                di[k] = v
-                for _k,_v in v.items():
-                    di[k][_k] = self.config['script_outputs'][k][_k]
-            return di
-
-    def _fpths_outputs(self):
-        fnms = {}
-        fpths = {}
-        for k, v in self.script_outputs.items():
-            try:
-                fnms.update({k:v['fnm']})
-                fpths.update({k:os.path.realpath(os.path.join(v['fdir'],v['fnm']))})
-            except:
-                pass
-        return fnms, fpths
 
     def config_to_json(self):
         write_json(self.config,
@@ -357,10 +321,6 @@ class RunConfig():
                    fpth=self.config['fpth_config'],
                    print_fpth=False,
                    openFile=False)
-
-
-
-
 
 # +
 #  THIS CONFIG SETUP SHOULD BE BROKEN IN MULTIPLE SMALLER CLASSES THAT ARE COMBINED TO CREATE THE ONE BELOW. 
@@ -375,7 +335,7 @@ if __name__ =='__main__':
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     
-    config = {
+    config1 = {
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),#,
         'process_name':'pipework',
         'fdir':'.',
@@ -383,13 +343,9 @@ if __name__ =='__main__':
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     from pprint import pprint
-    rc = RunConfig(config,lkup_script=True)
+    config_job=JobDirs(rootdir='.')
+    config_app = AppConfig(**config1)
+    rc = RunConfig(config_app,lkup_outputs_from_script=True)#, config_job=config_job)
     pprint(rc.config)
-
-
-
-
-# -
-
 
 
