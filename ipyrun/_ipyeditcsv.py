@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.2
 #   kernelspec:
-#     display_name: Python [conda env:mf_main] *
+#     display_name: mf_base
 #     language: python
-#     name: conda-env-mf_main-py
+#     name: mf_base
 # ---
 
 # +
@@ -253,12 +253,12 @@ if __name__ =='__main__':
     
     
     
-    #b = EditCsv(fpth)
-    #display(Markdown('### Example1'))
-    #display(Markdown('''EditCsv'''))
-    #display(b)
-    #display(Markdown('---'))  
-    #display(Markdown('')) 
+    b = EditCsv(fpth)
+    display(Markdown('### Example1'))
+    display(Markdown('''EditCsv'''))
+    display(b)
+    display(Markdown('---'))  
+    display(Markdown('')) 
 
 
 
