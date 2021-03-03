@@ -52,7 +52,7 @@ class BaseParams:
     script_name: str = 'script_name'
     process_name: str = 'None'
     pretty_name: str = 'None'
-    job_no: int = 'J4321'
+    job_no: str = 'J4321'
         
     def __post_init__(self):
         self.fdir_appdata = os.path.join(self.fdir,'appdata')
@@ -97,6 +97,15 @@ class InputDirs:
 class InputOptions:
     project: InputDirs 
     template: InputDirs
+        
+@dataclass
+class SimpleInputs:
+    fdir_inputs: str = 'fdir_inputs'
+    fdir_template_inputs: str = 'fdir_template_inputs'
+    fpth_inputs: str = 'fpth_inputs'
+    fpth_inputs_options: InputOptions = InputOptions(
+        project=InputDirs(fdir=fdir_inputs),
+        template=InputDirs(fdir=fdir_template_inputs))
         
 @dataclass
 class Inputs(BaseParams):
