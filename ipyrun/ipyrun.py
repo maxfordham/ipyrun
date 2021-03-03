@@ -176,7 +176,7 @@ class RunApp(RunForm, RunConfig):
         self.errors = []
         self._init_RunConfig(config, lkup_outputs_from_script=lkup_outputs_from_script)
         self.form()
-        self.outputsfpth.options = list(self.fpths_outputs.values())
+        self.outputsfpth.options = self.fpths_outputs
         self.show_me_the_code = widgets.Button(description='show source code',
                       tooltip='shows the raw python code in the preview window below',
                       button_style='info')
@@ -310,7 +310,7 @@ class RunApp(RunForm, RunConfig):
             #    d = DisplayFile(fpth)
             #    d.preview_fpth()
 
-            fpths = [v for k,v in self.fpths_outputs.items()]
+            fpths = self.fpths_outputs
 
             if 'display_ignore' in self.config:
                 display_ignore = self.config['display_ignore']
@@ -352,13 +352,12 @@ config={
     'fdir':NBFDIR,
     'script_outputs': [
         {
-                'fdir':r'..\reports',
+                'fdir_rel':r'..\reports',
                 'fnm': r'JupyterReportDemo.pdf',
                 'description': "a pdf report from word"
-        }
+        },
     ]
 }
-
 
 #rjson = RunApp(config)
 #rjson
@@ -499,24 +498,6 @@ class RunApps_SS():
         display(self.applayout)
         for l in self.li:
             display(l.out)
-# +
-b = widgets.Button()
-out = widgets.Output()
-def cl1(caller):
-    with out:
-        display(Markdown('shit'))
-def cl2(caller):
-    with out:
-        display(Markdown('asdfasdfsdf'))
-
-b.on_click([cl2,cl1])
-display(b)
-display(out)
-# -
-
-
-
-
 # +
 class RunConfigTemplated(RunConfig):
     def _fdir_inputs(self, folder_name=None):
