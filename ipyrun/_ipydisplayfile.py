@@ -238,7 +238,7 @@ class DisplayFile():
         self.text.value = markdown('opening: `{0}`'.format(self.fpth))
         time.sleep(5)
         self.text.value = markdown('`{0}`'.format(self.fpth))
-        
+
     def pdf_prev(self):
         display(IFrame(self.fpth, width=1000, height=600))
 
@@ -328,7 +328,7 @@ class DisplayFiles():
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
-        
+
         self._init_controls()
 
     def _init_previews(self):

@@ -15,7 +15,7 @@
 
 # +
 # main imports
-import os 
+import os
 FDIR = os.path.dirname(os.path.realpath('__file__'))
 import pandas as pd
 from IPython.display import Markdown, clear_output
@@ -58,20 +58,20 @@ class SimpleEditCsv():
         self.form()
         self._init_controls()
         self.out = widgets.Output()
-        
+
     def form(self):
         self.save_changes = widgets.Button(description='save changes',button_style='success')
         self.button_bar = widgets.HBox([self.save_changes])
         self.layout = self.sheet
-        
+
     def _init_controls(self):
         self.save_changes.on_click(self._save_changes)
-        
+
     def _sheet_from_fpth(self, fpth):
         df=del_matching(pd.read_csv(fpth),'Unnamed')
         sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
         return sheet
-    
+
     def _save_changes(self, sender):
         self.data_out = to_dataframe(self.sheet)
         self.data_out.to_csv(self.fpth_out)
@@ -85,9 +85,9 @@ class SimpleEditCsv():
 
     def display(self):
         display(self.button_bar, self.out, self.layout)
-        
+
     def _ipython_display_(self):
-        self.display() 
+        self.display()
 
 
 class ShowHideEditCsv():
@@ -106,7 +106,7 @@ class ShowHideEditCsv():
         self.form()
         self._init_controls()
         self.out = widgets.Output()
-        
+
     def form(self):
         self.save_changes = widgets.Button(description='save changes',button_style='success')
         self.add_row = widgets.Button(description='add row',button_style='info')
@@ -117,17 +117,17 @@ class ShowHideEditCsv():
         self.acc = widgets.Accordion(children=[self.box])
         self.acc.set_title(0,self.title)
         self.acc.selected_index = None
-        
+
     def _init_controls(self):
         self.save_changes.on_click(self._save_changes)
         self.add_row.on_click(self._add_row)
         self.remove_row.on_click(self._remove_row)
-        
+
     def _sheet_from_fpth(self, fpth):
         df=del_matching(pd.read_csv(fpth),'Unnamed')
         sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
         return sheet
-    
+
     def _save_changes(self, sender):
         self.data_out = to_dataframe(self.sheet)
         self.data_out.to_csv(self.fpth_out)
@@ -138,7 +138,7 @@ class ShowHideEditCsv():
             timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
             display(Markdown('{0} changes saved to: {1}'.format(timestampStr,self.fpth_out)))
         self.display()
-    
+
     def _add_row(self, sender):
         df = to_dataframe(self.sheet)
         df = df.append(pd.DataFrame({c:[''] for c in list(df)}), ignore_index=True)
@@ -146,7 +146,7 @@ class ShowHideEditCsv():
         self.layout = self.sheet
         self.box.children = [widgets.VBox([self.button_bar,self.layout])]
         self.display()
-        
+
     def _remove_row(self, sender):
         df = to_dataframe(self.sheet)
         ind = df.index.tolist()[:-1] # get a list of indexes drpping the last one
@@ -155,12 +155,12 @@ class ShowHideEditCsv():
         self.layout = self.sheet
         self.box.children = [widgets.VBox([self.button_bar,self.layout])]
         self.display()
-        
+
     def display(self):
         display(self.acc)
-        
+
     def _ipython_display_(self):
-        self.display() 
+        self.display()
 
 
 class EditCsv(FileConfigController):
@@ -176,25 +176,25 @@ class EditCsv(FileConfigController):
         self._init_file_controller()
         self.sheet = self._sheet_from_fpth(self.fpth_inputs)
         self.display_sheet()
-        
+
     def _sheet_from_fpth(self, fpth):
         df=del_matching(pd.read_csv(fpth),'Unnamed')
         sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
         return sheet
-    
+
     def display_sheet(self):
         with self.out:
             clear_output()
             display(self.sheet)
-            
+
     def _revert(self, sender):
         """revert to last save of working inputs file"""
         fpth = self.fpth_inputs
         self.temp_message.value = markdown('revert to inputs in last save of: {0}'.format(fpth))
-        
+
         # add code here to revert to last save
         self.sheet = self._sheet_from_fpth(self.fpth_inputs)
-        
+
         self.display_sheet()
         self.update_display()
         self.display()
@@ -206,14 +206,14 @@ class EditCsv(FileConfigController):
         dateTimeObj = datetime.now()
         self.save_timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
         self.temp_message.value = markdown('{0} saved at: {1}'.format(fpth, self.save_timestampStr))
-        
+
         # add code here to save changes to file
         self.data_out = to_dataframe(self.sheet)
         self.data_out.to_csv(self.fpth_inputs)
-        
+
         self.update_display()
         self.display()
-        
+
     def _load_inputs(self,sender):
         """launches the inputs from file dialog"""
         self.temp_message.value = markdown('update the user input form with data from file')
@@ -228,11 +228,11 @@ class EditCsv(FileConfigController):
     def _load(self,sender):
 
         fpth = self.choose_inputs.value
-        
+
         # add code here to load form from file
         self.sheet = self._sheet_from_fpth(fpth)
         self.temp_message.value = markdown('input form load data from: {0}'.format(fpth))
-        
+
         self.display_sheet()
         self.update_display()
         self.display()
@@ -242,23 +242,23 @@ if __name__ =='__main__':
     # FORM ONLY EXAMPLE
     NBFDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.realpath(os.path.join(NBFDIR,r'..\data\eg_filetypes\eg_csv.csv'))
-    
+
     #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
     a = ShowHideEditCsv(fpth)
     display(Markdown('### Example0'))
     display(Markdown('''ShowHideEditCsv'''))
     display(a)
-    display(Markdown('---'))  
-    display(Markdown('')) 
-    
-    
-    
+    display(Markdown('---'))
+    display(Markdown(''))
+
+
+
     b = EditCsv(fpth)
     display(Markdown('### Example1'))
     display(Markdown('''EditCsv'''))
     display(b)
-    display(Markdown('---'))  
-    display(Markdown('')) 
+    display(Markdown('---'))
+    display(Markdown(''))
 
 
 

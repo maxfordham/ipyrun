@@ -69,7 +69,7 @@ class FileController(Errors):
         self._errors()
         self.file_control_form()
         self._init_control()
-        
+
     def _inherit_Inputs(self):
         self.__dict__.update(**asdict(self.inputs))
 
@@ -395,10 +395,10 @@ if __name__ == "__main__":
         'fdir_inputs': '.\\appdata\\inputs\\archive',
         'fdir_template_inputs': 'C:\\engDev\\git_mf\\MF_Toolbox\\dev\\mf_scripts\\template_inputs',
         'fpth_inputs': '.\\appdata\\inputs\\inputs-eplus_pipework_params.csv',
-        'fpth_inputs_options': 
+        'fpth_inputs_options':
             {
                 'project': {
-                    'fdir': '.\\appdata\\inputs\\archive', 
+                    'fdir': '.\\appdata\\inputs\\archive',
                     'fpths': [
                 '.\\appdata\\inputs\\inputs-eplus_pipework_params-1.csv',
                 '.\\appdata\\inputs\\inputs-eplus_pipework_params.csv',

@@ -359,8 +359,8 @@ config={
     ]
 }
 
-#rjson = RunApp(config)
-#rjson
+rjson = RunApp(config)
+rjson
 
 # +
 
@@ -500,6 +500,7 @@ class RunApps_SS():
             display(l.out)
 # +
 class RunConfigTemplated(RunConfig):
+    # DEPRECATED #
     def _fdir_inputs(self, folder_name=None):
         # add inputs folder name
         if 'fdir_inputs' in self.user_keys:
@@ -541,10 +542,14 @@ class RunAppsTemplated():
         """
 
         self.app = app
-        self.configapp = RunConfigTemplated
+        self.configapp = RunConfig#Templated
         self.di = di
-        self._fdir_inputs = self.configapp(di)._fdir_inputs(folder_name=folder_name)
-        self.processes = self._update_processes(self._fdir_inputs)
+        #self._fdir_inputs = self.configapp(di)._fdir_inputs(folder_name=folder_name)
+        #self.processes = self._update_processes(self._fdir_inputs)
+        self.runconfig = self.configapp(self.di)
+        
+        self.processes = self._update_processes(self.runconfig.fdir_inputs)
+        
         self.li = []
         self._form()
         self._init_controls()
@@ -557,7 +562,7 @@ class RunAppsTemplated():
         process_di['process_name'] = process_name
         process_di['pretty_name'] = process_name
         process = self.configapp(process_di)
-        process.config['fpth_inputs'] = process._fpth_inputs(process_name=process_name,template_process=template_process)
+        process.config['fpth_inputs'] = process.fpth_inputs#(process_name=process_name,template_process=template_process) #process._fpth_inputs(process_name=process_name,template_process=template_process)
         return {'app':self.app,'config':process.config}
 
     def _update_processes(self, fdir_inputs):
@@ -758,6 +763,21 @@ class RunAppsTemplated():
     def _ipython_display_(self):
         self.display()
 # -
+
+if __name__ == '__main__':
+    display(Markdown('### Example5'))
+    display(Markdown('''
+    Demonstrates how multiple RunApp's can be ran as a batch, with templating. If not explicitly defined, the app assumes the default
+    RunApp is used. But, if definied, a variant of RunApp can be used for the whole batch. New runs can be added, based on other runs or based on the template. Runs can also be deleted.
+    '''))
+
+    di={
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py')
+    }
+    runappstemplated = RunAppsTemplated(di)
+    display(runappstemplated)
+    display(Markdown('---'))
+    display(Markdown(''))
 
 if __name__ == '__main__':
 
