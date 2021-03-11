@@ -32,7 +32,8 @@ from typing import Optional, List, Dict
 import pathlib
 from dacite import from_dict
 
-from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
+#from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
+from mf_om.directories import JobDirs, make_dirs_from_fdir_keys
 from mf_modules.pydtype_operations import flatten_list
 from mf_modules.file_operations import make_dir, jobno_fromdir
 # -
@@ -98,6 +99,7 @@ class InputOptions:
     project: InputDirs
     template: InputDirs
 
+# not used here. for SimpleEditJson only. 
 @dataclass
 class SimpleInputs:
     fdir_inputs: str = 'fdir_inputs'
@@ -119,6 +121,8 @@ class Inputs(BaseParams):
     fpth_inputs_options: InputOptions = InputOptions(
         project=InputDirs(fdir=fdir_inputs),
         template=InputDirs(fdir=fdir_template_inputs))
+    create_execute_file: bool = False
+    fpth_execute: str = 'None'
 
     def __post_init__(self):
         # updates the inputs relative to changes in base params or class initiation
@@ -130,6 +134,8 @@ class Inputs(BaseParams):
         self.fpth_inputs_options = _fpth_inputs_options(self)
         self.fpth_template_input = _fpth_template_input(self)
         #_fpth_inputs_file_from_template(self)
+        if self.create_execute_file:
+            self.fpth_execute = os.path.join(self.fdir_inputs,'execute-' + self.process_name + '.' + self.ftyp_inputs)
 
 #  setting default inputs
 def _fpth_template_input(inputs: Inputs, print_errors=False) -> str:
@@ -270,12 +276,11 @@ def make_dirs_AppConfig(Ac: AppConfig):
     """
     makes all of the "fdirs" directories in an AppConfig object
     """
-    di = asdict(Ac)
-    make_dirs_from_fdir_keys(di)
+    make_dirs_from_fdir_keys(asdict(Ac))
 
 if __name__ =='__main__':
     fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
-    Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\fuck\shit.py'),script_outputs=[Output(fdir_rel='asdf')])
+    Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'),script_outputs=[Output(fdir_rel='asdf')])
     from pprint import pprint
     make_dirs_AppConfig(Ac)
     pprint(asdict(Ac))
@@ -286,18 +291,18 @@ if __name__ =='__main__':
 class RunConfig():
 
     def __init__(self,
-                 config: AppConfig, #  note - this is a "hint". if you inherit AppConfig and call it a new name you can still pass it to run config. 
+                 config_app: AppConfig, #  note - this is a "hint". if you inherit AppConfig and call it a new name you can still pass it to run config. 
                  #config_overrides={},
                  config_job: JobDirs=JobDirs(),
                  lkup_outputs_from_script: bool=True,
                  ):
-        self._init_RunConfig(config, config_job=config_job, lkup_outputs_from_script=lkup_outputs_from_script)
+        self._init_RunConfig(config_app, config_job=config_job, lkup_outputs_from_script=lkup_outputs_from_script)
 
-    def _init_RunConfig(self, config, config_job=JobDirs(), lkup_outputs_from_script=True):
+    def _init_RunConfig(self, config_app, config_job=JobDirs(), lkup_outputs_from_script=True):
         self.errors = []
         #self.config_overrides = config_overrides
-        self._update_config(config)
         self._init_config_job(config_job)
+        self._update_config(config_app)
         self.lkup_outputs_from_script = lkup_outputs_from_script
         
         self.errors = []
@@ -310,37 +315,33 @@ class RunConfig():
     def _init_config_job(self, config_job):
         self.config_job = config_job
 
-    def _update_config(self, config):
+    def _update_config(self, config_app):
         """
         a configuration dict is passed to the app that defines the configuration variables
         of the app. e.g filepaths for the script path, user inputs template file etc.
         where explicit inputs are not given this function updates the config dict with
         default values, flagging any errors that are spotted on the way.
         """
-        if type(config) != AppConfig:
+        if type(config_app) != AppConfig:
             print('DEPRECATION WARNING! - the "config_app" var passed to the RunConfig class should be an AppConfig object not a dict')
-            self.config_app = from_dict(data=config,data_class=AppConfig)
+            self.config_app = from_dict(data=config_app,data_class=AppConfig)
         else:
-            self.config_app = config
-        #if len(self.config_overrides) != 0:
-        #    tmp = asdict(self.config_app)
-        #    for k,v in self.config_overrides.items():
-        #        tmp[k] = v
-        #    self.config_app = from_dict(data=tmp,data_class=AppConfig)
+            self.config_app = config_app
         _fpth_inputs_file_from_template(self.config_app)
-        #self.config_app.fpth_template_input = self._fpth_template_input()
-        #self.config_app.fpth_inputs = self._fpth_inputs()
 
     def _inherit_AppConfig(self):
         self.__dict__.update(**self.config)
 
     @property
     def config(self):
-        return {**asdict(self.config_app), **asdict(self.config_job)}
+        out = asdict(self.config_app)
+        out['job_config'] = asdict(self.config_job)
+        return out
 
     def _make_dirs(self):
         """if fdir in string of key folder made from value"""
-        make_dirs_from_fdir_keys(self.config)
+        make_dirs_from_fdir_keys(asdict(self.config_app))
+        make_dirs_from_fdir_keys(asdict(self.config_job))
         #make_dirs_AppConfig(self.config_app)
 
     def _template_input_ext(self):
@@ -355,8 +356,6 @@ class RunConfig():
                    openFile=False)
 
 # +
-#  THIS CONFIG SETUP SHOULD BE BROKEN IN MULTIPLE SMALLER CLASSES THAT ARE COMBINED TO CREATE THE ONE BELOW.
-#  THIS WOULD ALLOW FOR, SAY, THE GENERATION OF THE INPUTS FILEPATHS WITHOUT THINKING ABOUT THE SCRIPT, ETC...
 
 if __name__ =='__main__':
     config = {
@@ -386,7 +385,7 @@ if __name__ =='__main__':
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     from pprint import pprint
-    config_job=JobDirs(rootdir='.')
+    config_job=JobDirs(fdirRoot='.')
     config_app = AppConfig(**config1)
     rc = RunConfig(config_app,lkup_outputs_from_script=True)#, config_job=config_job)
     pprint(rc.config)
