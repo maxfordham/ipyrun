@@ -134,12 +134,44 @@ class RunForm():
         self.layout = widgets.HBox([self.check,self.acc],layout=widgets.Layout(margin='0px',padding='0px',border='0px'))
 
 #RunForm()
+
+
+# -
+if __name__ == '__main__':
+    config={
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':NBFDIR,
+        'script_outputs': [
+            {
+                    'fdir_rel':r'..\reports',
+                    'fnm': r'JupyterReportDemo.pdf',
+                    'description': "a pdf report from word"
+            },
+        ]
+    }
+
+    rc = RunConfig(config)
+    rc.config_job
+
+
+# +
+
+def pre_execute_func(RunApp):
+    pass
+
+def post_execute_func(RunApp):
+    pass
+
+def execute(RunApp):
+    subprocess.check_output(['python','-O', RunApp.config['fpth_script'], RunApp.config['fpth_config'], RunApp.config['fpth_inputs']])
+
+
 # +
 class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface
     """
-    def __init__(self,config,lkup_outputs_from_script=True):
+    def __init__(self,config,lkup_outputs_from_script=True,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute):
         """
         class that builds a user interface for:
         - editing inputs,
@@ -168,10 +200,13 @@ class RunApp(RunForm, RunConfig):
             ui
             ```
         """
-        self._init_RunApp(config,lkup_outputs_from_script=lkup_outputs_from_script)
+        self._init_RunApp(config,lkup_outputs_from_script=lkup_outputs_from_script,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute)
 
 
-    def _init_RunApp(self,config,lkup_outputs_from_script=True):
+    def _init_RunApp(self,config,lkup_outputs_from_script=True,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute):
+        self.pre_execute_func = pre_execute_func
+        self.post_execute_func = post_execute_func
+        self.execute = execute
         self.out = widgets.Output()
         self.errors = []
         self._init_RunConfig(config, lkup_outputs_from_script=lkup_outputs_from_script)
@@ -236,17 +271,19 @@ class RunApp(RunForm, RunConfig):
         self.archive_inputs()
         self._log()
 
-    def pre_script_func(self):
-        pass
+    def _pre_execute_func(self):
+        self.pre_execute_func(self)
 
-    def post_script_func(self):
-        pass
+    def _post_execute_func(self):
+        self.post_execute_func(self)
+        
 
-    def execute_subproces(self):
-        subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
+    def _execute(self):
+        self.execute(self)
+        #subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
 
     def _run_script(self, sender):
-        self.pre_script_func()
+        self._pre_execute_func()
         self._cache()
         with self.out:
             clear_output()
@@ -254,7 +291,7 @@ class RunApp(RunForm, RunConfig):
                 spinner = HaloNotebook(animation='marquee', text='Running', spinner='dots')
                 try:
                     spinner.start()
-                    self.execute_subproces()
+                    self._execute()
                     spinner.succeed('Finished')
                 except subprocess.CalledProcessError as e:
                     spinner.fail('Error with Process')
@@ -267,7 +304,7 @@ class RunApp(RunForm, RunConfig):
                 display(Markdown('the input datafile should be saved here:'))
                 display(Markdown('`{0}`'.format(self.config['fpth_inputs'])))
 
-        self.post_script_func()
+        self._post_execute_func()
 
     def _log(self):
         if os.path.isfile(self.fpth_log):
@@ -346,21 +383,21 @@ class RunApp(RunForm, RunConfig):
     def _ipython_display_(self):
         self.display()
 
+if __name__ == '__main__':
+    config={
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':NBFDIR,
+        'script_outputs': [
+            {
+                    'fdir_rel':r'..\reports',
+                    'fnm': r'JupyterReportDemo.pdf',
+                    'description': "a pdf report from word"
+            },
+        ]
+    }
 
-config={
-    'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-    'fdir':NBFDIR,
-    'script_outputs': [
-        {
-                'fdir_rel':r'..\reports',
-                'fnm': r'JupyterReportDemo.pdf',
-                'description': "a pdf report from word"
-        },
-    ]
-}
-
-rjson = RunApp(config)
-rjson
+    rjson = RunApp(config)
+    rjson
 
 # +
 
