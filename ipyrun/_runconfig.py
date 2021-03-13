@@ -27,7 +27,7 @@ import copy
 #display(Markdown('<img src="../../ipypdt/img/check-xlsx.png" width="1200" height="400">'))
 
 from dataclasses import dataclass, field, asdict
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Type
 #from pydantic import BaseModel, FilePath #  ADD PYDANTIC IN THE FUTURE TO EXPORT TO SCHEMA
 import pathlib
 from dacite import from_dict
@@ -102,6 +102,7 @@ class InputOptions:
 # not used here. for SimpleEditJson only. 
 @dataclass
 class SimpleInputs:
+    """NOT IN USE. defines simple input locations for SimpleEditJson"""
     fdir_inputs: str = 'fdir_inputs'
     fdir_template_inputs: str = 'fdir_template_inputs'
     fpth_inputs: str = 'fpth_inputs'
@@ -136,9 +137,12 @@ class Inputs(BaseParams):
         #_fpth_inputs_file_from_template(self)
         if self.create_execute_file:
             self.fpth_execute = os.path.join(self.fdir_inputs,'execute-' + self.process_name + '.' + self.ftyp_inputs)
+            
+    
 
 #  setting default inputs
 def _fpth_template_input(inputs: Inputs, print_errors=False) -> str:
+    """looks for template input files locally to the script"""
     """finds template inputs files"""
     fpths = recursive_glob(rootdir=inputs.fdir_template_inputs,
                           pattern='*'+'inputs-' + inputs.script_name+'.*',
@@ -211,6 +215,7 @@ class Log(BaseParams):
 # outputs -------------------------------
 @dataclass
 class Output:
+    """defines location of an output file"""
     fdir_rel: str = ''
     fnm: str ='fnm.json'
     description: str = 'description of output'
@@ -291,11 +296,20 @@ if __name__ =='__main__':
 class RunConfig():
 
     def __init__(self,
-                 config_app: AppConfig, #  note - this is a "hint". if you inherit AppConfig and call it a new name you can still pass it to run config. 
+                 config_app: Type[AppConfig],
                  #config_overrides={},
-                 config_job: JobDirs=JobDirs(),
+                 config_job: Type[JobDirs]=JobDirs(),
                  lkup_outputs_from_script: bool=True,
                  ):
+        """
+        class that manages cache directories and input/output file-locations for the RunApp
+        
+        Args:
+            config_app: contains fdirs/fpths for inputs, log files and general app config
+            congfig_job: contains fdirs/fpths for data that will be passed to the app / created by the app
+            lkup_outputs_from_script: bool, default = True, if true, the RunConfig will look in the script for 
+                a dataobject called "script_outputs" (Type == Outputs)
+        """
         self._init_RunConfig(config_app, config_job=config_job, lkup_outputs_from_script=lkup_outputs_from_script)
 
     def _init_RunConfig(self, config_app, config_job=JobDirs(), lkup_outputs_from_script=True):
@@ -387,6 +401,5 @@ if __name__ =='__main__':
     from pprint import pprint
     config_job=JobDirs(fdirRoot='.')
     config_app = AppConfig(**config1)
-    rc = RunConfig(config_app,lkup_outputs_from_script=True)#, config_job=config_job)
+    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=True)#, config_job=config_job)
     pprint(rc.config)
-
