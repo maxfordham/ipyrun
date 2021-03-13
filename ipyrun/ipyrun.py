@@ -41,6 +41,7 @@ from mf_modules.pandas_operations import del_matching
 from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.pydtype_operations import read_json, write_json
+from mf_om.directories import JobDirs
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
@@ -138,7 +139,7 @@ class RunForm():
 
 # -
 if __name__ == '__main__':
-    config={
+    config_app={
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
         'script_outputs': [
@@ -149,13 +150,12 @@ if __name__ == '__main__':
             },
         ]
     }
-
-    rc = RunConfig(config)
+    config_job = JobDirs(fdirRoot='.')
+    rc = RunConfig(config_app,config_job=config_job)
     rc.config_job
 
 
 # +
-
 def pre_execute_func(RunApp):
     pass
 
@@ -277,7 +277,6 @@ class RunApp(RunForm, RunConfig):
     def _post_execute_func(self):
         self.post_execute_func(self)
         
-
     def _execute(self):
         self.execute(self)
         #subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
