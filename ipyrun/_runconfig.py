@@ -211,11 +211,11 @@ class Log(BaseParams):
         self.fdir_log = os.path.join(self.fdir_appdata,'log')
         self.fnm_log = 'log-' + self.process_name + '.csv'
         self.fpth_log = os.path.join(self.fdir_log, self.fnm_log)
-
+"""
 # outputs -------------------------------
 @dataclass
 class Output:
-    """defines location of an output file"""
+    #defines location of an output file
     fdir_rel: str = ''
     fnm: str ='fnm.json'
     description: str = 'description of output'
@@ -223,7 +223,7 @@ class Output:
 
 @dataclass
 class Outputs(BaseParams):
-    """defines location of output files. note. fpths_outputs built from script_outputs"""
+    #defines location of output files. note. fpths_outputs built from script_outputs
     fdir_outputs: str = os.path.join(BaseParams.fdir,'outputs')
     fdirs_outputs: List[str] = field(default_factory=list)
     script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]  #  Dict[str:Output] = field(default_factory=dict)?
@@ -240,6 +240,24 @@ def _fdirs_from_script_outputs_dict(outputs: Outputs):
 
 def _fpths_from_script_outputs_dict(outputs: Outputs):
     return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel,s.fnm)) for s in outputs.script_outputs] #  .items()
+"""
+
+# outputs -------------------------------
+@dataclass
+class Output:
+    """defines location of an output file"""
+    fpth: str
+    description: str
+
+@dataclass
+class Outputs(BaseParams):
+    """defines location of output files. note. fpths_outputs built from script_outputs"""
+    script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]  #  Dict[str:Output] = field(default_factory=dict)?
+    
+    @property
+    def fpths_outputs(self): 
+        return [s.fpth for s in self.script_outputs]
+
 
 def _script_outputs_template(outputs: Outputs):
     """
@@ -285,7 +303,7 @@ def make_dirs_AppConfig(Ac: AppConfig):
 
 if __name__ =='__main__':
     fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
-    Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'),script_outputs=[Output(fdir_rel='asdf')])
+    Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), script_outputs=[Output(fpth='asdf',description='asd')])
     from pprint import pprint
     make_dirs_AppConfig(Ac)
     pprint(asdict(Ac))
