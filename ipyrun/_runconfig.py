@@ -43,7 +43,6 @@ FPTH_SCRIPT_EXAMPLE = os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scr
 
 
 # +
-
 # base ------------------------------
 @dataclass
 class BaseParams:
@@ -123,6 +122,7 @@ class Inputs(BaseParams):
         project=InputDirs(fdir=fdir_inputs),
         template=InputDirs(fdir=fdir_template_inputs))
     create_execute_file: bool = False
+    fdir_execute: str = 'None'
     fpth_execute: str = 'None'
 
     def __post_init__(self):
@@ -136,9 +136,8 @@ class Inputs(BaseParams):
         self.fpth_template_input = _fpth_template_input(self)
         #_fpth_inputs_file_from_template(self)
         if self.create_execute_file:
-            self.fpth_execute = os.path.join(self.fdir_inputs,'execute-' + self.process_name + '.' + self.ftyp_inputs)
-            
-    
+            self.fdir_execute = os.path.join(self.fdir_appdata,'execute')
+            self.fpth_execute = os.path.join(self.fdir_execute,'execute-' + self.process_name + '.' + self.ftyp_inputs)
 
 #  setting default inputs
 def _fpth_template_input(inputs: Inputs, print_errors=False) -> str:
@@ -211,6 +210,7 @@ class Log(BaseParams):
         self.fdir_log = os.path.join(self.fdir_appdata,'log')
         self.fnm_log = 'log-' + self.process_name + '.csv'
         self.fpth_log = os.path.join(self.fdir_log, self.fnm_log)
+        
 """
 # outputs -------------------------------
 @dataclass
@@ -276,6 +276,11 @@ def _script_outputs_template(outputs: Outputs):
     else:
         print('script not exist: {0}'.format(outputs.fpth_script)) #  add to logging instead
         script_outputs = []
+    if type(script_outputs) != Outputs:
+        try:
+            script_outputs = from_dict(data=script_outputs,data_class=Outputs)
+        except:
+            pass
     return script_outputs
 
 @dataclass
@@ -303,7 +308,13 @@ def make_dirs_AppConfig(Ac: AppConfig):
 
 if __name__ =='__main__':
     fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
-    Ac = AppConfig(fdir=fdir,process_name='pretty_name',pretty_name='boo',fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), script_outputs=[Output(fpth='asdf',description='asd')])
+    Ac = AppConfig(fdir=fdir,
+                   process_name='pretty_name',
+                   pretty_name='boo',
+                   fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), 
+                   script_outputs=[Output(fpth='asdf',description='asd')],
+                   create_execute_file=True
+                  )
     from pprint import pprint
     make_dirs_AppConfig(Ac)
     pprint(asdict(Ac))
@@ -386,6 +397,11 @@ class RunConfig():
                    fpth=self.config['fpth_config'],
                    print_fpth=False,
                    openFile=False)
+        
+    @property
+    def fpths_outputs(self): 
+        print('DEPRECATED: use self.config_app.fpths_outputs instead')
+        return [s['fpth'] for s in self.script_outputs]
 
 # +
 
@@ -419,5 +435,5 @@ if __name__ =='__main__':
     from pprint import pprint
     config_job=JobDirs(fdirRoot='.')
     config_app = AppConfig(**config1)
-    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=True)#, config_job=config_job)
+    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=False)#, config_job=config_job)
     pprint(rc.config)
