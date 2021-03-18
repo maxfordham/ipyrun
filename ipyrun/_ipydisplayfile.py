@@ -17,7 +17,7 @@
 import os
 import sys
 import pandas as pd
-from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output #Image,
+from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output,Image
 import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
@@ -35,7 +35,6 @@ from mf_modules.excel_in import ExcelIn
 
 
 # +
-
 def default_ipyagrid(df,**kwargs):
 
     """
@@ -155,6 +154,30 @@ class PreviewPy():
     def _ipython_display_(self):
         self.display()
 
+def open_ui(fpth: str)-> [widgets.Button,widgets.Button]:
+    """
+    creates open file and open folder buttons
+    fpth used for building tooltip
+    
+    Args:
+        fpth
+    
+    Returns:
+        openfile
+        openfolder
+    """
+    openfile = widgets.Button(
+        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),
+        icon='fa-file-upload',
+        tooltip='open file: {0}'.format(fpth),
+        style={'font_weight': 'bold','button_color':'white'})  
+    openfolder = widgets.Button(
+        #description='+', 
+        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),#,height='20px'
+        icon='fa-folder',
+        tooltip='open folder: {0}'.format(os.path.dirname(fpth)),
+        style={'font_weight': 'bold','button_color':'white'})  
+    return openfile, openfolder
 
 class DisplayFile():
     """
@@ -183,8 +206,10 @@ class DisplayFile():
     def __init__(self,
                  fpth=os.path.join(os.environ['MF_ROOT'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
                  description=None,
-                 mf_excel=True):
+                 mf_excel=True #  REMOVE THIS - ADD PARAM TO XLSXWRITER PROPERTIES!!! 
+                ):
         self.fpth = fpth
+        self.fdir = os.path.dirname(fpth)
         self.mf_excel = mf_excel
         self.ext = os.path.splitext(fpth)[1].lower()
 
@@ -215,18 +240,17 @@ class DisplayFile():
             self.ext_map[self.ext]=self._open_option
         fn = self.ext_map[self.ext]
         fn()
-
-    def _display_meta(self):
-        self.text = _markdown('`{0}`'.format(self.fpth))
-
-    def _init_controls(self):
-        self.open_file.on_click(self._open_file)
-
+        
     def _open_form(self):
         self.open_file = widgets.Button(description='open file',button_style='success')
         #self.text = widgets.Text(value=self.fpth,locked=True)
-        self.text = _markdown('`{0}`'.format(self.fpth))
-        self.open_form = widgets.HBox([self.open_file,self.text])
+        self.open_file, self.open_folder = open_ui(fpth)
+        self.text = _markdown('`{0}`  _(no preview available for this filetype)_'.format(self.fpth))
+        self.open_form = widgets.HBox([self.open_file,self.open_folder,self.text])
+        
+    def _init_controls(self):
+        self.open_file.on_click(self._open_file)
+        self.open_folder.on_click(self._open_folder)
 
     def _open_option(self):
         self._open_form()
@@ -238,6 +262,12 @@ class DisplayFile():
         self.text.value = markdown('opening: `{0}`'.format(self.fpth))
         time.sleep(5)
         self.text.value = markdown('`{0}`'.format(self.fpth))
+        
+    def _open_folder(self, sender):
+        open_file(self.fdir)
+        self.text.value = markdown('opening: `{0}`'.format(self.fdir))
+        time.sleep(5)
+        self.text.value = markdown('`{0}`'.format(self.fdir))
 
     def pdf_prev(self):
         display(IFrame(self.fpth, width=1000, height=600))
@@ -293,6 +323,131 @@ class DisplayFile():
             mfexcel_display(self.fpth)
         else:
             self._open_option()
+
+
+# +
+from _runconfig import Output, Outputs
+from mf_modules.file_operations import time_meta_data
+from dataclasses import dataclass, asdict
+from dacite import from_dict
+from typing import List
+
+BUTTON_WIDTH = '37px'
+BUTTON_HEIGHT = '22px'
+
+@dataclass
+class Output:
+    fpth: str
+    description: str = ''
+    note: str = ''
+    author: str = 'unknown'
+        
+@dataclass
+class OutputPlus(Output):
+    fdir: str = ''
+    time_of_file_creation: str = ''
+        
+    def __post_init__(self):
+        self.fdir = os.path.dirname(self.fpth)
+        self.time_of_file_creation = time_meta_data(fpth,as_DataFrame=False).get('time_of_file_creation')
+
+def preview_output_ui(output: Output):
+    """
+    function that builds all of the PreviewOutput ui components and outputs form
+    as well as individual components of the form such that they can be given controls
+    
+    Args:
+        output: dataclass that defines file and file attributes (see def)
+    
+    Returns:
+        displayui
+        out
+        displaypreview
+        displayheader
+        openpreview
+        openfile
+        openfolder
+        note
+        
+    """
+    # buttons
+    openpreview = widgets.ToggleButton(
+        description='+', 
+        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),
+        tooltip='preview file',
+        style={'font_weight': 'bold','button_color':'white'})   
+    openfile, openfolder = open_ui(output.fpth)  
+
+    # file data
+    name = os.path.basename(output.fpth)
+    name = widgets.HTML('<b>{0}</b>'.format(name), layout=widgets.Layout(justify_items='center'))
+    time = widgets.HTML('<i>{0}</i>'.format(output.time_of_file_creation), layout=widgets.Layout(justify_items='center'))
+    note = widgets.HTML('{0}'.format(output.note), layout=widgets.Layout(justify_items='center'))
+    author = widgets.HTML('{0}'.format(output.author), layout=widgets.Layout(justify_items='center'))
+    
+    # put content in containers
+    item0 = widgets.HBox([openpreview, openfile, openfolder, name],layout=widgets.Layout(width='40%'))
+    item1 = widgets.HBox([author,note, time],layout=widgets.Layout(width='60%',justify_content='space-between'))
+    displayheader = widgets.HBox([item0, item1],layout=widgets.Layout(width='100%',justify_content='space-between'))
+    displaypreview = DisplayFile(output.fpth, description=output.description)#.preview_fpth()
+    out = widgets.Output()
+    displayui = widgets.VBox([displayheader, out])
+    
+    return displayui, out, displaypreview, displayheader, openpreview, openfile, openfolder, note
+
+
+class PreviewOutput():
+    """
+    class that creates a ipywidgets based ui for previewing a file in the browser
+    """
+    def __init__(self, output: Output):
+        self.output = from_dict(data=asdict(output),data_class=OutputPlus)
+        self._buildui()
+        self._init_controls()
+        
+    def _buildui(self):
+        self.displayui, self.out, self.displaypreview, self.displayheader, self.openpreview, self.openfile, self.openfolder, self.note = display_output_ui(self.output)
+        #self.displayui, self.displaypreview, self.openpreview, self.openfile, self.openfolder, self.note = display_output_ui(self.output)
+        
+    def _init_controls(self):
+        self.openpreview.observe(self._openpreview, names='value')
+        self.openfile.on_click(self.displaypreview._open_file)
+        self.openfolder.on_click(self.displaypreview._open_folder)
+        
+    def _openpreview(self,onchange):
+        if self.openpreview.value:
+            self.openpreview.description = '-'
+            with self.out:
+                self.displaypreview.preview_fpth()
+        else:
+            self.openpreview.description = '+'
+            with self.out:
+                clear_output()
+                
+    def display_PreviewOutput(self):
+        display(self.displayui)   
+            
+    def _ipython_display_(self):
+        self.display_PreviewOutput() 
+        
+class PreviewOutputs():
+    """
+    class that creates a ipywidgets based ui for previewing multiple files in the browser
+    """
+    def __init__(self, outputs: List[Outputs]):
+        self.outputs = [from_dict(data=asdict(o),data_class=OutputPlus) for o in outputs]
+        self._init_form()
+          
+    def _init_form(self):
+        self.display_outputs = [DisplayOutput(o) for o in self.outputs]
+        self.display_uis = [ui.displayui for ui in self.display_outputs]
+        self.display_previews = widgets.VBox(self.display_uis,layout=widgets.Layout(height='100%',justify_items='center'))
+        
+    def display_PreviewOutputs(self):
+        display(self.display_previews) 
+        
+    def _ipython_display_(self):
+        self.display_PreviewOutputs()
 
 
 # -
@@ -379,6 +534,7 @@ class DisplayFiles():
         self.display()
 
 
+# +
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
     # the below can be used to make documentation that looks at all functions or classes
@@ -406,6 +562,15 @@ if __name__ =='__main__':
     display(d0.preview_fpth())
     display(Markdown('---'))
     display(Markdown(''))
+    
+    # single file
+    o0 = Output(fpth=fpths[0])
+    p0 = PreviewOutput(o0)
+    display(Markdown('### Example0'))
+    display(Markdown('''display single Output'''))
+    display(p0)
+    display(Markdown('---'))
+    display(Markdown(''))
 
     # multiple file
     d1 = DisplayFiles(fpths)
@@ -426,3 +591,8 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+    
+    
+# -
+
+
