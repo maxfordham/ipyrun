@@ -36,6 +36,11 @@ from dacite import from_dict
 from mf_om.directories import JobDirs, make_dirs_from_fdir_keys
 from mf_modules.pydtype_operations import flatten_list
 from mf_modules.file_operations import make_dir, jobno_fromdir
+
+from mf_om.document import DocumentHeader
+from mf_modules.file_operations import time_meta_data
+import getpass
+from typing import Optional
 # -
 
 FDIR_EXAMPLE = '.'
@@ -115,7 +120,7 @@ class Inputs(BaseParams):
     ftyp_inputs: str = 'json'
     fdir_inputs: str = os.path.join(BaseParams.fdir_appdata,'inputs')
     fdir_template_inputs: str = os.path.join(os.path.dirname(BaseParams.fpth_script),'inputs')
-    fdir_inputs_archive: str = os.path.join(BaseParams.fdir_appdata,'archive')
+    fdir_inputs_archive: str = os.path.join(fdir_inputs,'archive')
     fpth_inputs: str = os.path.join(fdir_inputs,'inputs-' + BaseParams.process_name + '.' + ftyp_inputs)
     fpth_template_input: str = 'fpth_template_input'
     fpth_inputs_options: InputOptions = InputOptions(
@@ -130,7 +135,7 @@ class Inputs(BaseParams):
         super().__post_init__()
         self.fdir_inputs = os.path.join(self.fdir_appdata,'inputs')
         self.fdir_template_inputs = os.path.join(os.path.dirname(self.fpth_script),'template_inputs')
-        self.fdir_inputs_archive = os.path.join(self.fdir_appdata,'archive')
+        self.fdir_inputs_archive = os.path.join(self.fdir_inputs,'archive')
         self.fpth_inputs = os.path.join(self.fdir_inputs,'inputs-' + self.process_name + '.' + self.ftyp_inputs)
         self.fpth_inputs_options = _fpth_inputs_options(self)
         self.fpth_template_input = _fpth_template_input(self)
@@ -174,7 +179,7 @@ def _fpth_inputs_options(inputs: Inputs, print_errors=True) -> InputOptions:
         'project':{
             'fdir': inputs.fdir_inputs,
             'fpths':[]
-        },
+        }
     }
     # NOTE. this is no longer how it gets the project files...
     # these are taken from the log.csv ouptut.
@@ -243,17 +248,28 @@ def _fpths_from_script_outputs_dict(outputs: Outputs):
 """
 
 # outputs -------------------------------
+        
+
 @dataclass
 class Output:
-    """defines location of an output file"""
     fpth: str
-    description: str
-
+    fdir: str = ''
+    description: str = None
+    note: str = ''
+    author: str = 'unknown'
+    document_header: DocumentHeader = None
+        
+    def __post_init__(self):
+        # updates the inputs relative to changes in base params or class initiation
+        self.fdir = os.path.dirname(self.fpth)
+        self.author = getpass.getuser()
+        self.time_of_file_creation = time_meta_data(self.fpth,as_DataFrame=False).get('time_of_file_creation')
+        
 @dataclass
 class Outputs(BaseParams):
     """defines location of output files. note. fpths_outputs built from script_outputs"""
     script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]  #  Dict[str:Output] = field(default_factory=dict)?
-    
+    lkup_outputs_from_script: bool = False
     @property
     def fpths_outputs(self): 
         return [s.fpth for s in self.script_outputs]
@@ -298,7 +314,14 @@ class AppConfig(Config, Inputs, Log, Outputs):
     ---------------------------------
     """
     pass
+    #config_job: Type[JobDirs] = field(default_factory=JobDirs)
+    #config_job: Optional[JobDirs] #= field(default_factory=JobDirs)
+    #pass
     #jobno: int = 4321
+    
+@dataclass
+class AppConfigJob(AppConfig):
+    config_job: Type[JobDirs] = field(default_factory=JobDirs)
 
 def make_dirs_AppConfig(Ac: AppConfig):
     """
@@ -327,8 +350,8 @@ class RunConfig():
     def __init__(self,
                  config_app: Type[AppConfig],
                  #config_overrides={},
-                 config_job: Type[JobDirs]=JobDirs(),
-                 lkup_outputs_from_script: bool=True,
+                 #config_job: Type[JobDirs]=JobDirs(),
+                 #lkup_outputs_from_script: bool=True,
                  ):
         """
         class that manages cache directories and input/output file-locations for the RunApp
@@ -339,24 +362,23 @@ class RunConfig():
             lkup_outputs_from_script: bool, default = True, if true, the RunConfig will look in the script for 
                 a dataobject called "script_outputs" (Type == Outputs)
         """
-        self._init_RunConfig(config_app, config_job=config_job, lkup_outputs_from_script=lkup_outputs_from_script)
+        self._init_RunConfig(config_app)# lkup_outputs_from_script=lkup_outputs_from_script) #config_job=config_job,
 
-    def _init_RunConfig(self, config_app, config_job=JobDirs(), lkup_outputs_from_script=True):
+    def _init_RunConfig(self,config_app):# lkup_outputs_from_script=True): #config_job=JobDirs(),
         self.errors = []
         #self.config_overrides = config_overrides
-        self._init_config_job(config_job)
+        #self._init_config_job(config_job)
         self._update_config(config_app)
-        self.lkup_outputs_from_script = lkup_outputs_from_script
-        
+        #self.lkup_outputs_from_script = lkup_outputs_from_script
         self.errors = []
         self._make_dirs()
-        if self.lkup_outputs_from_script:
+        if self.config_app.lkup_outputs_from_script:
             self.script_outputs_template = _script_outputs_template(self.config_app)
             self.config_app.script_outputs = self.script_outputs_template
         self._inherit_AppConfig()
 
-    def _init_config_job(self, config_job):
-        self.config_job = config_job
+   # def _init_config_job(self, config_job):
+   #     self.config_job = config_job
 
     def _update_config(self, config_app):
         """
@@ -365,11 +387,11 @@ class RunConfig():
         where explicit inputs are not given this function updates the config dict with
         default values, flagging any errors that are spotted on the way.
         """
-        if type(config_app) != AppConfig:
-            print('DEPRECATION WARNING! - the "config_app" var passed to the RunConfig class should be an AppConfig object not a dict')
-            self.config_app = from_dict(data=config_app,data_class=AppConfig)
-        else:
-            self.config_app = config_app
+        #if type(config_app) != AppConfig:
+        #    print('DEPRECATION WARNING! - the "config_app" var passed to the RunConfig class should be an AppConfig object not a dict')
+        #    self.config_app = from_dict(data=config_app,data_class=AppConfig)
+        #else:
+        self.config_app = config_app
         _fpth_inputs_file_from_template(self.config_app)
 
     def _inherit_AppConfig(self):
@@ -377,14 +399,16 @@ class RunConfig():
 
     @property
     def config(self):
-        out = asdict(self.config_app)
-        out['job_config'] = asdict(self.config_job)
-        return out
+        return asdict(self.config_app)
+        #out['job_config'] = asdict(self.config_job)
 
     def _make_dirs(self):
         """if fdir in string of key folder made from value"""
         make_dirs_from_fdir_keys(asdict(self.config_app))
-        make_dirs_from_fdir_keys(asdict(self.config_job))
+        try:
+            make_dirs_from_fdir_keys(asdict(self.config_job.config_job))  # add recursive func to make_dirs_from_fdir_keys
+        except:
+            pass
         #make_dirs_AppConfig(self.config_app)
 
     def _template_input_ext(self):
@@ -433,7 +457,20 @@ if __name__ =='__main__':
         #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
         }
     from pprint import pprint
-    config_job=JobDirs(fdirRoot='.')
+    #config_job=JobDirs(fdirRoot='.')
+
+    print('AppConfig: vanilla')
+    print('--------------------')
     config_app = AppConfig(**config1)
-    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=False)#, config_job=config_job)
+    rc = RunConfig(config_app)#, config_job=config_job)#,lkup_outputs_from_script=False
     pprint(rc.config)
+    print('')
+    
+    print('AppConfigJob: added config_job for context')
+    print('--------------------')
+    config_app = AppConfigJob(**config1)
+    rc1 = RunConfig(config_app)#,lkup_outputs_from_script=False
+    pprint(rc1.config)
+    print('')
+    
+    
