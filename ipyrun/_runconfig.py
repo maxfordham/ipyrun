@@ -26,11 +26,14 @@ import copy
 #from IPython.display import Markdown
 #display(Markdown('<img src="../../ipypdt/img/check-xlsx.png" width="1200" height="400">'))
 
-from dataclasses import dataclass, field, asdict
-from typing import Optional, List, Dict, Type
-#from pydantic import BaseModel, FilePath #  ADD PYDANTIC IN THE FUTURE TO EXPORT TO SCHEMA
+from dataclasses import field, asdict #dataclass, 
+from typing import Optional, List, Dict, Type, Any
+from pydantic import BaseModel, FilePath #  ADD PYDANTIC IN THE FUTURE TO EXPORT TO SCHEMA
+from datetime import datetime
+from pydantic.dataclasses import dataclass
 import pathlib
 from dacite import from_dict
+#import pydantic
 
 #from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
 from mf_om.directories import JobDirs, make_dirs_from_fdir_keys
@@ -41,6 +44,11 @@ from mf_om.document import DocumentHeader
 from mf_modules.file_operations import time_meta_data
 import getpass
 from typing import Optional
+
+import json
+from mf_modules.pydtype_operations import read_json
+from pydantic.json import pydantic_encoder
+from datetime import datetime
 # -
 
 FDIR_EXAMPLE = '.'
@@ -48,6 +56,13 @@ FPTH_SCRIPT_EXAMPLE = os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scr
 
 
 # +
+def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.json'):
+    """writes a pydantic BaseModel to file"""
+    f = open(fpth, "w")
+    f.write(json.dumps(data, indent=4, default=pydantic_encoder))
+    f.close()
+    return fpth
+
 # base ------------------------------
 @dataclass
 class BaseParams:
@@ -249,7 +264,12 @@ def _fpths_from_script_outputs_dict(outputs: Outputs):
 
 # outputs -------------------------------
         
-
+def get_time_of_file_creation(fpth):
+    try:
+         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_file_creation')
+    except:
+        return None
+    
 @dataclass
 class Output:
     fpth: str
@@ -257,13 +277,14 @@ class Output:
     description: str = None
     note: str = ''
     author: str = 'unknown'
-    document_header: DocumentHeader = None
+    document_header: Optional[DocumentHeader] = None #https://github.com/samuelcolvin/pydantic/issues/1223
+    time_of_file_creation: datetime = None
         
     def __post_init__(self):
         # updates the inputs relative to changes in base params or class initiation
         self.fdir = os.path.dirname(self.fpth)
         self.author = getpass.getuser()
-        self.time_of_file_creation = time_meta_data(self.fpth,as_DataFrame=False).get('time_of_file_creation')
+        self.time_of_file_creation = get_time_of_file_creation(self.fpth)
         
 @dataclass
 class Outputs(BaseParams):
@@ -313,15 +334,18 @@ class AppConfig(Config, Inputs, Log, Outputs):
     All other params are overwritten on initiation of an AppConfig obj using the __post_init__
     ---------------------------------
     """
-    pass
+    config_job: JobDirs = None # field(default_factory=JobDirs)
+    config_ui: Any = None # field(default_factory=JobDirs)
+    config_type: str = None
+    
+    def __post_init__(self):
+        super().__post_init__()
+        self.config_type = str(type(self))
     #config_job: Type[JobDirs] = field(default_factory=JobDirs)
     #config_job: Optional[JobDirs] #= field(default_factory=JobDirs)
     #pass
     #jobno: int = 4321
-    
-@dataclass
-class AppConfigJob(AppConfig):
-    config_job: Type[JobDirs] = field(default_factory=JobDirs)
+
 
 def make_dirs_AppConfig(Ac: AppConfig):
     """
@@ -335,20 +359,48 @@ if __name__ =='__main__':
                    process_name='pretty_name',
                    pretty_name='boo',
                    fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), 
-                   script_outputs=[Output(fpth='asdf',description='asd')],
-                   create_execute_file=True
+                   #script_outputs=[Output(fpth='asdf',description='asd')],
+                   create_execute_file=True,
+                   #config_job=JobDirs()
                   )
     from pprint import pprint
     make_dirs_AppConfig(Ac)
     pprint(asdict(Ac))
 
 
-# -
+# +
+def class_obj_from_type_string(class_type_string:str)-> Type:
+    """
+    given the str(type(Obj)) of an Obj, this function
+    imports it from the relevant lib (using getattr and
+    importlib) and returns the Obj. 
+    
+    makes it easy to define class used as a string in a json
+    object and then use this class to re-initite it.
+    
+    Args:
+        class_type_string
+    Returns: 
+        obj
+    """
+    
+    def find(s, ch):
+        return [i for i, ltr in enumerate(s) if ltr == ch]
+    cl = class_type_string
+    ind = find(cl, "'")
+    nm  = cl[ind[0]+1:ind[1]]
+    nms =  nm.split('.')
+    clss = nms[-1:][0]
+    mod = '.'.join(nms[:-1])
+    return getattr(importlib.import_module(mod), clss)
+
 
 class RunConfig():
 
     def __init__(self,
-                 config_app: Type[AppConfig],
+                 config_app: AppConfig,
+                 #config_app_type: Type[AppConfig]=AppConfig,
+                 revert_to_file:bool=True,
                  #config_overrides={},
                  #config_job: Type[JobDirs]=JobDirs(),
                  #lkup_outputs_from_script: bool=True,
@@ -358,27 +410,20 @@ class RunConfig():
         
         Args:
             config_app: contains fdirs/fpths for inputs, log files and general app config
-            congfig_job: contains fdirs/fpths for data that will be passed to the app / created by the app
-            lkup_outputs_from_script: bool, default = True, if true, the RunConfig will look in the script for 
-                a dataobject called "script_outputs" (Type == Outputs)
+            revert_to_file: if a config file already exists, then AppConfig is updated based on that 
         """
-        self._init_RunConfig(config_app)# lkup_outputs_from_script=lkup_outputs_from_script) #config_job=config_job,
+        self._init_RunConfig(config_app, revert_to_file=revert_to_file)# lkup_outputs_from_script=lkup_outputs_from_script) #config_job=config_job,
 
-    def _init_RunConfig(self,config_app):# lkup_outputs_from_script=True): #config_job=JobDirs(),
+    def _init_RunConfig(self,config_app, revert_to_file=True):# lkup_outputs_from_script=True): #config_job=JobDirs(),
+        self.revert_to_file = revert_to_file
         self.errors = []
-        #self.config_overrides = config_overrides
-        #self._init_config_job(config_job)
         self._update_config(config_app)
-        #self.lkup_outputs_from_script = lkup_outputs_from_script
         self.errors = []
         self._make_dirs()
         if self.config_app.lkup_outputs_from_script:
             self.script_outputs_template = _script_outputs_template(self.config_app)
             self.config_app.script_outputs = self.script_outputs_template
         self._inherit_AppConfig()
-
-   # def _init_config_job(self, config_job):
-   #     self.config_job = config_job
 
     def _update_config(self, config_app):
         """
@@ -391,7 +436,19 @@ class RunConfig():
         #    print('DEPRECATION WARNING! - the "config_app" var passed to the RunConfig class should be an AppConfig object not a dict')
         #    self.config_app = from_dict(data=config_app,data_class=AppConfig)
         #else:
-        self.config_app = config_app
+        if self.revert_to_file:
+            if os.path.isfile(config_app.fpth_config):
+                try:
+                    self.config_app = RunConfig.config_from_json(config_app.fpth_config)
+                except:
+                    print('Reading AppConfig from: {0}'.format(config_app.fpth_config))
+                    print('not a valid AppConfig object {0} '.format(config_app.fpth_config))
+                    self.config_app = config_app
+            else:
+                self.config_app = config_app
+        else:
+            self.config_app = config_app
+
         _fpth_inputs_file_from_template(self.config_app)
 
     def _inherit_AppConfig(self):
@@ -415,20 +472,48 @@ class RunConfig():
         return os.path.splitext(self.fpth_template_input)[1]
 
     def config_to_json(self):
-        write_json(self.config,
-                   sort_keys=True,
-                   indent=4,
-                   fpth=self.config['fpth_config'],
-                   print_fpth=False,
-                   openFile=False)
+        pydantic_dataclass_to_file(self.config_app,fpth=self.config_app.fpth_config)
+        
+    @staticmethod
+    def config_from_json(fpth: str) -> AppConfig:
+        di = read_json(fpth)
+        classtype = class_obj_from_type_string(di['config_type'])
+        return classtype(**di)
         
     @property
     def fpths_outputs(self): 
         print('DEPRECATED: use self.config_app.fpths_outputs instead')
         return [s['fpth'] for s in self.script_outputs]
 
-# +
 
+# -
+
+if __name__ =='__main__':
+    from ipypdt.create_schedule import ScheduleAppPaths, ScheduleUI
+
+    @dataclass 
+    class ScheduleAppConfig(AppConfig):
+        config_job: ScheduleAppPaths
+
+        def __post_init__(self):
+            # updates the inputs relative to changes in base params or class initiation
+            super().__post_init__()
+
+    config_app = ScheduleAppConfig(
+        fdir=r'C:\engDev\git_mf\ipypdt\example\J6667\Automation\Schedule',
+        fpth_script=r'c:\engdev\git_mf\ipypdt\ipypdt\create_schedule.py',
+        create_execute_file=True,
+        process_name='GrilleSchedule',
+        config_job=ScheduleAppPaths(
+            fdirRoot=r'C:\engDev\git_mf\ipypdt\example',
+            jobNumber='J6667',
+            documentDescription='GrilleSchedule'
+        )
+    )
+    RC = RunConfig(config_app)
+    #RC.config_to_json()
+
+#Output()
 if __name__ =='__main__':
     config = {
         'fpth_script':r'C:\engDev\git_mf\ipypdt\ipypdt\rvttxt_to_schedule.py',#os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
@@ -443,8 +528,7 @@ if __name__ =='__main__':
         'fdir':FDIR,
         'script_outputs': [
             {
-                'fdir':r'..\reports',
-                'fnm': r'JupyterReportDemo.pdf',
+                'fpth':FPTH_SCRIPT_EXAMPLE,
                 'description': "a pdf report from word"
             }
         ]
@@ -461,16 +545,15 @@ if __name__ =='__main__':
 
     print('AppConfig: vanilla')
     print('--------------------')
-    config_app = AppConfig(**config1)
+    config_app = AppConfig(**config0)
     rc = RunConfig(config_app)#, config_job=config_job)#,lkup_outputs_from_script=False
+    rc.config_to_json()
+    from mf_modules.file_operations import open_file
+    open_file(rc.config_app.fpth_config)
     pprint(rc.config)
     print('')
-    
-    print('AppConfigJob: added config_job for context')
-    print('--------------------')
-    config_app = AppConfigJob(**config1)
-    rc1 = RunConfig(config_app)#,lkup_outputs_from_script=False
-    pprint(rc1.config)
-    print('')
-    
-    
+
+
+if __name__ =='__main__':
+    #  validate round trip: AppConfig dataclass from json
+    obj = rc.config_from_json(rc.config_app.fpth_config)
