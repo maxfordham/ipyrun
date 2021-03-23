@@ -31,9 +31,9 @@ from ipyfilechooser import FileChooser
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 try:
-    from ipyrun._runconfig import RunConfig, SimpleInputs
+    from ipyrun._runconfig import RunConfig, SimpleInputs, AppConfig
 except:
-    from _runconfig import RunConfig, SimpleInputs
+    from _runconfig import RunConfig, SimpleInputs, AppConfig
 
 
 # +
@@ -94,9 +94,9 @@ class FileController(Errors):
     def file_control_form(self):
 
         # button bar
-        self.load_inputs = widgets.ToggleButton(description='inputs from file',button_style='info',style={'font_weight':'bold'})
-        self.revert = widgets.Button(description='revert to last save',button_style='warning',style={'font_weight':'bold'})#,button_style='success'
-        self.save_changes = widgets.Button(description='save changes',button_style='success',style={'font_weight':'bold'})
+        self.load_inputs = widgets.ToggleButton(icon='folder-open',tooltip='open inputs from file',button_style='info',layout=widgets.Layout(width='50px'))# (FontAwesome names without the `fa-` prefix)
+        self.revert = widgets.Button(icon='fa-undo',tooltip='revert to last save',button_style='warning',style={'font_weight':'bold'},layout=widgets.Layout(width='50px'))#,button_style='success'
+        self.save_changes = widgets.Button(icon='fa-save',tooltip='save changes',button_style='success',layout=widgets.Layout(width='50px'))
         self.button_bar = widgets.HBox([ self.load_inputs, self.revert, self.save_changes])
 
         # nested buttons
@@ -207,7 +207,7 @@ class FileConfigController(RunConfig, FileController, Errors):
     of the inputs and working files
     """
 
-    def __init__(self,config):
+    def __init__(self,config: AppConfig):
         self._init_FileConfigController(config)
 
     def _init_FileConfigController(self, config):
