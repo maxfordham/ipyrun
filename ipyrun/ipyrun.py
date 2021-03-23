@@ -42,19 +42,25 @@ from mf_modules.mydocstring_display import display_module_docstring
 from mf_modules.jupyter_formatting import display_python_file
 from mf_modules.pydtype_operations import read_json, write_json
 from mf_om.directories import JobDirs
+from typing import Type
+from dacite import from_dict
+
+from dataclasses import  field, asdict #dataclass,
+from typing import Optional, List, Dict, Type
+from pydantic.dataclasses import dataclass
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 try:
-    from ipyrun._runconfig import RunConfig
+    from ipyrun._runconfig import RunConfig, AppConfig
     from ipyrun._ipyeditcsv import EditCsv
     from ipyrun._ipyeditjson import EditJson
-    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles
+    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 except:
-    from _runconfig import RunConfig
+    from _runconfig import RunConfig, AppConfig
     from _ipyeditcsv import EditCsv
     from _ipyeditjson import EditJson
-    from _ipydisplayfile import DisplayFile, DisplayFiles
+    from _ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 
 def get_mfuser_initials():
     user = getpass.getuser()
@@ -67,49 +73,65 @@ class RunForm():
     simple user input form for running scripts.
     the buttons are not connected to actions in this class.
     """
+    minwidth='50px'
+    medwidth='90px'
+    
+    
     def __init__(self):
         """
         to inputs required. this class is intended to be inherited by RunApp
         """
         self.config = {'fpth_script':'script fpth','fpth_inputs':'script config','process_name':'process_name'}
+        self.display_paths= False
         self.form()
-        display(self.layout)
+        
 
     def form(self):
         self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
                                 tooltip='removes temporary output view',
                                 style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='50px'))
+                                layout=widgets.Layout(width=self.minwidth))
         self.help = widgets.Button(icon='fa-question-circle',
                                 tooltip='describes the functionality of elements in the RunApp interface',
                                 style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='50px'))
-        self.edit_inputs = widgets.Button(description='edit inputs',
+                                layout=widgets.Layout(width=self.minwidth))
+        self.edit_inputs = widgets.Button(description='inputs',
                                 tooltip='edit the user input information that is used when the script is executed',
                                 button_style='warning',
-                                style={'font_weight':'bold'})
-        self.show_docstring = widgets.Button(description='show guide',
+                                icon = 'fa-edit',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
+        self.show_docstring = widgets.Button(
+                                #description='show guide',
                                 tooltip='read the "docstring", ie. the documentation that was written to accompany the script',
-                                button_style='info',
-                                style={'font_weight':'bold'})
-        self.run_script = widgets.Button(description='run',
+                                #button_style='info',
+                                icon='fa-book',                                
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.minwidth))
+        self.run_script = widgets.Button(description=' run',
+                                icon = 'fa-play',
                                 tooltip='execute the script based on the user inputs',
                                 button_style='success',
-                                style={'font_weight':'bold'})
-        self.preview_outputs = widgets.Button(description='preview outputs',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
+        self.preview_outputs = widgets.Button(description=' outputs',
+                                icon='fa-search',
                                 tooltip='show a preview of the output files generated when the script runs',
                                 button_style='info',
-                                style={'font_weight':'bold'})
-        self.show_log = widgets.Button(description='show log',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
+        self.show_log = widgets.Button(description='log',
                                 tooltip='show a log of when the script was executed to generate the outputs, and by who',
                                 button_style='info',
-                                style={'font_weight':'bold'})
+                                icon='fa-scroll',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
         self.scriptfpth = widgets.Text(value=self.config['fpth_script'],
                                 description='script',
                                 layout=widgets.Layout(indent=False,
                                                       width='auto',
                                                       height='30px'), disabled=True)
-        self.configfpth = widgets.Text(value=self.config['fpth_inputs'],
+        self.inputsfpth = widgets.Text(value=self.config['fpth_inputs'],
                                 description='inputs',
                                 layout=widgets.Layout(indent=False,
                                                       width='auto',
@@ -128,50 +150,55 @@ class RunForm():
                         )
         self.form = widgets.HBox([self.reset, self.help, self.show_docstring, self.edit_inputs, self.run_script, self.preview_outputs, self.show_log],
                     layout=widgets.Layout(width='100%',align_items='stretch'))
-        self.paths = widgets.VBox([self.configfpth,self.scriptfpth,self.outputsfpth],
+        self.make_acc()
+        
+    def make_acc(self):
+        self.paths = widgets.VBox([self.inputsfpth,self.scriptfpth,self.outputsfpth],
                     layout=widgets.Layout(width='100%',align_items='stretch'))
-        self.acc = widgets.Accordion(children=[widgets.VBox([widgets.Box([self.form]),self.paths])],selected_index=None,layout=widgets.Layout(width='100%'))
+        if self.display_paths:
+            self.acc_children = widgets.VBox([widgets.Box([self.form]),self.paths])
+        else:
+            self.acc_children = widgets.VBox([widgets.Box([self.form])])
+        self.acc = widgets.Accordion(children=[self.acc_children],selected_index=None,layout=widgets.Layout(width='100%'))
         self.acc.set_title(0,self.config['process_name'])
         self.layout = widgets.HBox([self.check,self.acc],layout=widgets.Layout(margin='0px',padding='0px',border='0px'))
+    
+    def display(self):
+        display(self.layout)
 
-#RunForm()
-
-
+    def _ipython_display_(self):
+        self.display()
+        
+if __name__ == '__main__':
+    display(RunForm())
 # -
 if __name__ == '__main__':
     config_app={
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
+        'fdir':r'C:\engDev\git_mf\ipypdt\example\J6667\Automation\Schedule',#NBFDIR,
+        'process_name':'process_name',
         'script_outputs': [
             {
-                    'fdir_rel':r'..\reports',
-                    'fnm': r'JupyterReportDemo.pdf',
+                    'fpth':r'..\reports\JupyterReportDemo.pdf',
                     'description': "a pdf report from word"
             },
         ]
     }
-    config_job = JobDirs(fdirRoot='.')
-    rc = RunConfig(config_app,config_job=config_job)
-    rc.config_job
-
-
-# +
-def pre_execute_func(RunApp):
-    pass
-
-def post_execute_func(RunApp):
-    pass
-
-def execute(RunApp):
-    subprocess.check_output(['python','-O', RunApp.config['fpth_script'], RunApp.config['fpth_config'], RunApp.config['fpth_inputs']])
-
+    #config_job = JobDirs(fdirRoot='.')
+    config_app = from_dict(data=config_app,data_class=AppConfig)
+    rc = RunConfig(config_app)#,config_job=config_job,lkup_outputs_from_script=False
+    from pprint import pprint
+    pprint(rc.config)
 
 # +
+
+
+
 class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface
     """
-    def __init__(self,config,lkup_outputs_from_script=True,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute):
+    def __init__(self,config_app:Type[AppConfig] = AppConfig()):
         """
         class that builds a user interface for:
         - editing inputs,
@@ -200,18 +227,17 @@ class RunApp(RunForm, RunConfig):
             ui
             ```
         """
-        self._init_RunApp(config,lkup_outputs_from_script=lkup_outputs_from_script,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute)
+        self.display_paths= False
+        self._init_RunApp(config_app)
+        
 
-
-    def _init_RunApp(self,config,lkup_outputs_from_script=True,pre_execute_func=pre_execute_func,post_execute_func=post_execute_func,execute=execute):
-        self.pre_execute_func = pre_execute_func
-        self.post_execute_func = post_execute_func
-        self.execute = execute
+    def _init_RunApp(self,config_app):
+        self.config_app = config_app
         self.out = widgets.Output()
         self.errors = []
-        self._init_RunConfig(config, lkup_outputs_from_script=lkup_outputs_from_script)
+        self._init_RunConfig(config_app) #,config_job=config_app.config_job
         self.form()
-        self.outputsfpth.options = self.fpths_outputs
+        self.outputsfpth.options = self.config_app.fpths_outputs#[]#
         self.show_me_the_code = widgets.Button(description='show source code',
                       tooltip='shows the raw python code in the preview window below',
                       button_style='info')
@@ -227,6 +253,23 @@ class RunApp(RunForm, RunConfig):
         self.preview_outputs.on_click(self._preview_outputs)
         self.show_log.on_click(self._show_log)
         self.acc.observe(self._close_acc, names='selected_index')
+        self.init_user_added_controls()
+        
+    # ANTICIPATED THAT THE USER TO INHERIT AND EDIT THESE FUNCTIONS ---------
+        
+    def pre_execute_func(self):
+        pass
+
+    def post_execute_func(self):
+        pass
+
+    def execute(self):
+        subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
+        
+    def init_user_added_controls(self):
+        pass
+        
+    # -----------------------------------------------------------------------
 
     def _close_acc(self, change):
         if self.acc.selected_index!=0:
@@ -250,7 +293,7 @@ class RunApp(RunForm, RunConfig):
     def _edit_inputs(self, sender):
         with self.out:
             clear_output()
-            display(EditJson(self.config))
+            display(EditJson(self.config_app))
 
     def _show_docstring(self, sender):
         with self.out:
@@ -271,18 +314,9 @@ class RunApp(RunForm, RunConfig):
         self.archive_inputs()
         self._log()
 
-    def _pre_execute_func(self):
-        self.pre_execute_func(self)
-
-    def _post_execute_func(self):
-        self.post_execute_func(self)
-        
-    def _execute(self):
-        self.execute(self)
-        #subprocess.check_output(['python','-O', self.config['fpth_script'], self.config['fpth_config'], self.config['fpth_inputs']])
 
     def _run_script(self, sender):
-        self._pre_execute_func()
+        self.pre_execute_func()
         self._cache()
         with self.out:
             clear_output()
@@ -290,7 +324,7 @@ class RunApp(RunForm, RunConfig):
                 spinner = HaloNotebook(animation='marquee', text='Running', spinner='dots')
                 try:
                     spinner.start()
-                    self._execute()
+                    self.execute()
                     spinner.succeed('Finished')
                 except subprocess.CalledProcessError as e:
                     spinner.fail('Error with Process')
@@ -303,7 +337,7 @@ class RunApp(RunForm, RunConfig):
                 display(Markdown('the input datafile should be saved here:'))
                 display(Markdown('`{0}`'.format(self.config['fpth_inputs'])))
 
-        self._post_execute_func()
+        self.post_execute_func()
 
     def _log(self):
         if os.path.isfile(self.fpth_log):
@@ -338,15 +372,14 @@ class RunApp(RunForm, RunConfig):
     def _preview_outputs(self, sender):
         with self.out:
             clear_output()
-
-            #fpths = self.outputsfpth.options
-            #for fpth in fpths:
-             #   display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(fpth))[0])))
-            #    display(Markdown('`{0}`'.format(fpth)))
-            #    d = DisplayFile(fpth)
-            #    d.preview_fpth()
-
-            fpths = self.fpths_outputs
+            fpths = self.config_app.fpths_outputs
+            
+            if len(fpths) == 0:
+                display(Markdown('there a no output files listed. you likely still need to "run" the script'))
+            else:
+                display(PreviewOutputs(self.config_app.script_outputs))
+            """OLD
+            fpths = self.config_app.fpths_outputs
 
             if 'display_ignore' in self.config:
                 display_ignore = self.config['display_ignore']
@@ -365,6 +398,7 @@ class RunApp(RunForm, RunConfig):
                     if not os.path.isfile(f) and not os.path.isdir(f):
                         fpths.remove(f)
                 display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
+            """
 
     def _show_log(self, sender):
         with self.out:
@@ -382,25 +416,66 @@ class RunApp(RunForm, RunConfig):
     def _ipython_display_(self):
         self.display()
 
+
+@dataclass 
+class RunAppDefinition:
+    """input fields and types required for 1 RunApp from a list of RunApps"""
+    config_app: AppConfig = field(default_factory=AppConfig) 
+    app: Type[RunApp] = RunApp
+        
+        
+def init_RunApp(app_def:RunAppDefinition) -> Type[RunApp]:
+    """generates a RunApp from a RunAppDefinition"""
+    return app_def.app(app_def.config_app)   
+
+
+# -
+
 if __name__ == '__main__':
     config={
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
         'fdir':NBFDIR,
+        'ftyp':'csv',
         'script_outputs': [
             {
-                    'fdir_rel':r'..\reports',
-                    'fnm': r'JupyterReportDemo.pdf',
+                    'fpth': r'..\reports\JupyterReportDemo.pdf',
                     'description': "a pdf report from word"
             },
         ]
     }
+    #config_app = RunAppInput(
+    #    config_app=from_dict(data=config,data_class=AppConfig),
+    #    config_job=JobDirs()
+    #)
+    config_app=from_dict(data=config,data_class=AppConfig)
+    rjson = RunApp(config_app)#config, config_job=JobDirs(fdirRoot='.')
+    display(rjson)
 
-    rjson = RunApp(config)
-    rjson
 
 # +
+# Example2 --------------------------
+class RunAppEditCsv(RunApp):
+
+    def __init__(self, config_app):
+        super().__init__(config_app)
+
+    def _edit_inputs(self, sender):
+        with self.out:
+            clear_output()
+            display(EditCsv(self.config_app))
+            
+if __name__ == '__main__':
+
+    config_app=AppConfig(
+            fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+            fdir='.',
+            ftyp_inputs='csv'
+        )
+    rcsv = RunAppEditCsv(config_app)
+    display(rcsv)
 
 
+# +
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that
 # as a first estimate. we could also then keep an ongoing record of time-taken to run a script within
@@ -412,25 +487,30 @@ if __name__ == '__main__':
 
 class RunApps():
 
-    def __init__(self,configs):
+    def __init__(self,apps_inputs: List[RunAppDefinition]):
         """
         Args:
             configs (list): list of RunApp input configs.
                 can explicitly specify a different RunApp to be used when passing
                 the list
         """
-        self.inputconfigs = configs
-        self.processes = self._update_configs()
+        self.out = widgets.Output()
+        self._init_RunApps(apps_inputs)
+        #self.processes = self._update_configs()
+
+    def _init_RunApps(self, apps_inputs):
+        self.apps_inputs = apps_inputs
         self.li = []
         self._form()
         self._init_controls()
-        for process in self.processes:
-            self.li.append(process['app'](process['config']))
-        self.out = widgets.Output()
-
+        for app_def in self.apps_inputs:
+            app = init_RunApp(app_def)
+            self.li.append(app)
+            
+            
     def _update_configs(self):
         newconfigs = []
-        for config in self.inputconfigs:
+        for app in self.app_defs:
             if list(config.keys()) == ['app','config']:
                 # app to use already explicitly specified
                 newconfigs.append(config)
@@ -498,6 +578,79 @@ class RunApps():
 
     def _ipython_display_(self):
         self.display()
+# -
+
+if __name__ == '__main__':
+    # Example3 --------------------------
+    config_app=AppConfig(
+        fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        fdir='.',
+        ftyp_inputs='csv'
+    )
+    app_def = RunAppDefinition(
+        config_app=config_app,
+        app=RunAppEditCsv
+    )
+
+    defaultrunapp={
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':NBFDIR,
+        'script_outputs': [
+                {
+                'fpth':r'..\reports\JupyterReportDemo.pdf',
+                'description': "a pdf report from word"
+                }
+            ]
+        }
+    config_app=from_dict(data=defaultrunapp,data_class=AppConfig)
+    app1_def = RunAppDefinition(
+        config_app=config_app,
+    )
+
+    runapps = RunApps([app_def,app1_def])
+
+    display(Markdown('### Example3'))
+    display(Markdown('''
+    demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
+    RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:
+
+    ```
+    # Example3 --------------------------
+    config_app=AppConfig(
+        fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
+        fdir='.',
+        ftyp_inputs='csv'
+    )
+    app_def = RunAppDefinition(
+        config_app=config_app,
+        app=RunAppEditCsv
+    )
+
+    defaultrunapp={
+        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':NBFDIR,
+        'script_outputs': [
+                {
+                'fpth':r'..\reports\JupyterReportDemo.pdf',
+                'description': "a pdf report from word"
+                }
+            ]
+        }
+    config_app=from_dict(data=defaultrunapp,data_class=AppConfig)
+    app1_def = RunAppDefinition(
+        config_app=config_app,
+    )
+
+    runapps = RunApps([app_def,app1_def])
+
+    ```
+    '''))
+    display(runapps)
+    display(Markdown('---'))
+    display(Markdown(''))
+
+# +
+
 
 
 # SUPERCEDED
@@ -516,24 +669,7 @@ class RunApps():
 #    else:
 #        print("{0} doesn't exist".format(fpth))
 
-# option 2: looks better but the outputs appear at the bottom instead of in-line
-class RunApps_SS():
 
-    def __init__(self,configs):
-        self.out = widgets.Output()
-        self.configs = configs
-        self.li = []
-        for config in configs:
-            self.li.append(RunApp(config))
-        self.display()
-
-    def display(self):
-
-        out = [l.layout for l in self.li]
-        self.applayout = widgets.VBox(out)
-        display(self.applayout)
-        for l in self.li:
-            display(l.out)
 # +
 class RunConfigTemplated(RunConfig):
     # DEPRECATED #
@@ -567,7 +703,7 @@ class RunConfigTemplated(RunConfig):
 
         return dstn
 
-class RunAppsTemplated():
+class RunAppsTemplated(): #  NEEDS UPDATING
 
     def __init__(self, di, app=RunApp, folder_name=None):
         """
@@ -808,8 +944,14 @@ if __name__ == '__main__':
     '''))
 
     di={
+        'fdir':r'..\examples',
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py')
     }
+    
+    config_job=JobDirs(fdirRoot='.')
+    config_app = from_dict(dataclass=AppConfig,data=di)
+    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=False)#, config_job=config_job)
+    
     runappstemplated = RunAppsTemplated(di)
     display(runappstemplated)
     display(Markdown('---'))
@@ -839,16 +981,7 @@ if __name__ == '__main__':
     display(Markdown('''default RunApp.'''))
     display(rjson)
 
-    # Example2 --------------------------
-    class RunAppEditCsv(RunApp):
 
-        def __init__(self, config):
-            super().__init__(config)
-
-        def _edit_inputs(self, sender):
-            with self.out:
-                clear_output()
-                display(EditCsv(self.config))
 
     di={
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
