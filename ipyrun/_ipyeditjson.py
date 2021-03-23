@@ -38,14 +38,13 @@ from mf_modules.file_operations import make_dir
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 try:
+    from ipyrun._runconfig import RunConfig, AppConfig
     from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
-    from ipyrun._runconfig import RunConfig
     from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
 except:
+    from _runconfig import RunConfig, AppConfig
     from _filecontroller import FileConfigController, SelectEditSaveMfJson
-    from _runconfig import RunConfig
     from _ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
-
 
 
 def _markdown(value='_Markdown_',
@@ -59,9 +58,8 @@ def _markdown(value='_Markdown_',
     _kwargs.update(kwargs)  # user overides
     return widgets.HTML(**_kwargs)
 
+
 # +
-
-
 class EditDictData():
     """
     contains form layout specs and mapping dict used for associating input
@@ -101,7 +99,7 @@ class EditDictData():
             flex_flow='row',
             justify_content='flex-start',
             align_content='flex-start',
-            border='dashed 0.2px green',
+            #border='dashed 0.2px green',
             grid_auto_columns='True',
             width='100%',
             align_items='flex-start',
@@ -190,7 +188,8 @@ class EditDictData():
                 '_recursive_guess':self._recursive_guess,
                 'ipysheet':self._ipysheet,
                 'ipyagrid':self._ipyagrid,
-                'FileChooser':self._file_picker
+                'FileChooser':self._file_picker,
+                'header':self._header
             }
 
             self.widget_lkup_di = dict(self.standard_widgets, **self.mfcustom_widgets)
@@ -275,7 +274,11 @@ class EditDict(EditDictData):
         else:
             # it is a user defined widget
             self.widget_only = self.widget_name(**self.kwargs)
-
+            
+        if self.widget_name == 'header':
+            layout = widgets.HBox([self.widget_only],layout=self.MF_FORM_ITEM_LAYOUT2)
+            return layout
+            
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
         self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
         if 'fpth_help' in self.di.keys():
@@ -337,6 +340,7 @@ class EditDict(EditDictData):
                 di[keyname]=valuename
             return di
         tmp = self.di
+        #tmp = add_to_dict(tmp,keyname='hidden', valuename=False)
         tmp = add_to_dict(tmp,keyname='min')
         tmp = add_to_dict(tmp,keyname='max')
         tmp = add_to_dict(tmp,keyname='options')
@@ -508,6 +512,9 @@ class EditDict(EditDictData):
         self.widget_only.layout=widgets.Layout(border='solid 1px #BBBBBB', padding='0px 10px 0px 10px')
 
     # --------------------------------------------------------------------------
+    
+    def _header(self):
+        self.widget_only = widgets.HTML('{0}'.format(self.di['value']))
 
     def display(self):
         display(self.layout, self.out)
@@ -826,12 +833,13 @@ if __name__ =='__main__':
         'fdir':'.',
         'script_outputs': [
             {
-            'fdir':'..\reports',
-            'fnm': r'JupyterReportDemo.pdf',
+            'fpth': r'..\reports\JupyterReportDemo.pdf',
             'description': "a pdf report from word"
             }
             ]
         }
+    from dacite import from_dict
+    config = from_dict(data=config,data_class=AppConfig) 
     editjson = EditJson(config)
     # display
     display(Markdown('### Example2'))
