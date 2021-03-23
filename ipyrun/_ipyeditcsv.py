@@ -94,11 +94,11 @@ class ShowHideEditCsv():
     """a simple csv editor that allows the user to add and remove rows from the table"""
     def __init__(self, fpth_in, fpth_out=None, title=None):
         self.fpth_in = fpth_in
-        if fpth_out==None:
+        if fpth_out is None:
             self.fpth_out = fpth_in
         else:
             self.fpth_out = fpth_out
-        if title==None:
+        if title is None:
             self.title = 'edit: {0}'.format(self.fpth_out)
         else:
             self.title = title
@@ -163,17 +163,38 @@ class ShowHideEditCsv():
         self.display()
 
 
+# +
+#a.box
+
+# +
+if __name__ =='__main__':
+
+    # FORM ONLY EXAMPLE
+    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\data\eg_filetypes\eg_csv.csv'))
+
+    #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
+    a = ShowHideEditCsv(fpth)
+    display(Markdown('### Example0'))
+    display(Markdown('''ShowHideEditCsv'''))
+    display(a)
+    display(Markdown('---'))
+    display(Markdown(''))
+
+
+# -
+
 class EditCsv(FileConfigController):
     """
     for use when csv is the argument to a script
     """
 
     def __init__(self,config):
-        self.config = config
+        #self.config = config
         self.out = widgets.Output()
         self._init_RunConfig(config)
         self.file_control_form()
-        self._init_file_controller()
+        self._init_FileController()
         self.sheet = self._sheet_from_fpth(self.fpth_inputs)
         self.display_sheet()
 
@@ -239,27 +260,9 @@ class EditCsv(FileConfigController):
 
 if __name__ =='__main__':
 
-    # FORM ONLY EXAMPLE
-    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\data\eg_filetypes\eg_csv.csv'))
-
-    #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
-    a = ShowHideEditCsv(fpth)
-    display(Markdown('### Example0'))
-    display(Markdown('''ShowHideEditCsv'''))
-    display(a)
-    display(Markdown('---'))
-    display(Markdown(''))
-
-
-
     b = EditCsv(fpth)
     display(Markdown('### Example1'))
     display(Markdown('''EditCsv'''))
     display(b)
     display(Markdown('---'))
     display(Markdown(''))
-
-
-
-
