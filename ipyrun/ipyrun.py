@@ -51,16 +51,16 @@ from pydantic.dataclasses import dataclass
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
-try:
-    from ipyrun._runconfig import RunConfig, AppConfig
-    from ipyrun._ipyeditcsv import EditCsv
-    from ipyrun._ipyeditjson import EditJson
-    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
-except:
-    from _runconfig import RunConfig, AppConfig
-    from _ipyeditcsv import EditCsv
-    from _ipyeditjson import EditJson
-    from _ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
+#try:
+from ipyrun._runconfig import RunConfig, AppConfig
+from ipyrun._ipyeditcsv import EditCsv
+from ipyrun._ipyeditjson import EditJson
+from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
+#except:
+#    from _runconfig import RunConfig, AppConfig
+#    from _ipyeditcsv import EditCsv
+#    from _ipyeditjson import EditJson
+#    from _ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 
 def get_mfuser_initials():
     user = getpass.getuser()
@@ -190,10 +190,8 @@ if __name__ == '__main__':
     from pprint import pprint
     pprint(rc.config)
 
+
 # +
-
-
-
 class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface

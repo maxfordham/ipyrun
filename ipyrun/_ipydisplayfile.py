@@ -31,12 +31,12 @@ from mf_modules.jupyter_formatting import md_fromfile, display_python_file
 from mf_modules.file_operations import open_file
 from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
 from mf_modules.datamine_functions import recursive_glob
-from mf_modules.excel_in import ExcelIn
+from mf_modules.excel_in import ExcelIn, mfexcel_in
 
-try:
-    from _runconfig import Output, Outputs
-except:
-    from ipyrun._runconfig import Output, Outputs
+#try:
+from _runconfig import Output, Outputs
+#except:
+#    from ipyrun._runconfig import Output, Outputs
 
 from mf_modules.file_operations import time_meta_data
 from dataclasses import dataclass, asdict
@@ -45,7 +45,6 @@ from typing import List
 
 BUTTON_WIDTH = '37px'
 BUTTON_HEIGHT = '25px'
-
 
 # +
 def default_ipyagrid(df,**kwargs):
@@ -340,10 +339,7 @@ class DisplayFile():
 # +
 
 
-def preview_output_ui(
-    output: Output
-    
-):
+def preview_output_ui(output: Output):
     """
     function that builds all of the PreviewOutput ui components and outputs form
     as well as individual components of the form such that they can be given controls
@@ -374,7 +370,7 @@ def preview_output_ui(
     # file data
     name = os.path.basename(output.fpth)
     name = widgets.HTML('<b>{0}</b>'.format(name), layout=widgets.Layout(justify_items='center'))
-    time = widgets.HTML('<i>{0}</i>'.format(output.time_of_file_creation), layout=widgets.Layout(justify_items='center'))
+    time = widgets.HTML('<i>{0}</i>'.format(output.time_of_most_recent_content_modification), layout=widgets.Layout(justify_items='center'))
     note = widgets.HTML('{0}'.format(output.note), layout=widgets.Layout(justify_items='center'))
     author = widgets.HTML('{0}'.format(output.author), layout=widgets.Layout(justify_items='center'))
     
@@ -393,10 +389,13 @@ class PreviewOutput():
     """
     class that creates a ipywidgets based ui for previewing a file in the browser
     """
-    def __init__(self, output: Output):
+    def __init__(self, output: Output, auto_open=False):
         self.output = output  # from_dict(data=asdict(output),data_class=OutputPlus)
         self._buildui()
         self._init_controls()
+        if auto_open:
+            self.openpreview.value = True
+            #self._openpreview(None)
         
     def _buildui(self):
         self.displayui, self.out, self.displaypreview, self.displayheader, self.openpreview, self.openfile, self.openfolder, self.note = preview_output_ui(self.output)
@@ -426,12 +425,13 @@ class PreviewOutputs():
     """
     class that creates a ipywidgets based ui for previewing multiple files in the browser
     """
-    def __init__(self, outputs: List[Outputs]):
+    def __init__(self, outputs: List[Outputs],auto_open=False):
         self.outputs = outputs #  [from_dict(data=asdict(o),data_class=OutputPlus) for o in outputs]
+        self.auto_open=auto_open
         self._init_form()
           
     def _init_form(self):
-        self.display_outputs = [PreviewOutput(o) for o in self.outputs]
+        self.display_outputs = [PreviewOutput(o,auto_open=self.auto_open) for o in self.outputs]
         self.display_uis = [ui.displayui for ui in self.display_outputs]
         self.display_previews = widgets.VBox(self.display_uis,layout=widgets.Layout(height='100%',justify_items='center'))
         

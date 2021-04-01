@@ -30,10 +30,10 @@ from ipyfilechooser import FileChooser
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
-try:
-    from ipyrun._runconfig import RunConfig, SimpleInputs, AppConfig
-except:
-    from _runconfig import RunConfig, SimpleInputs, AppConfig
+# try:
+from ipyrun._runconfig import RunConfig, SimpleInputs, AppConfig
+#except:
+#    from _runconfig import RunConfig, SimpleInputs, AppConfig
 
 
 # +

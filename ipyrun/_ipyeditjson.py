@@ -17,7 +17,7 @@
 import os
 import pandas as pd
 from IPython.display import display, JSON, Markdown, HTML, display_pdf, clear_output
-try:
+try:  # this is due to a known IPython display bug. remove in future. 
     from IPython.display import Image
 except:
     pass
@@ -37,14 +37,14 @@ from mf_modules.file_operations import make_dir
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
-try:
-    from ipyrun._runconfig import RunConfig, AppConfig
-    from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
-    from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
-except:
-    from _runconfig import RunConfig, AppConfig
-    from _filecontroller import FileConfigController, SelectEditSaveMfJson
-    from _ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
+# try:
+from ipyrun._runconfig import RunConfig, AppConfig
+from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
+from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
+#except:
+#    from ._runconfig import RunConfig, AppConfig
+#    from ._filecontroller import FileConfigController, SelectEditSaveMfJson
+#    from ._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
 
 
 def _markdown(value='_Markdown_',

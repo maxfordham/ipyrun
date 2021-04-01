@@ -37,12 +37,12 @@ from mf_modules.pandas_operations import del_matching
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
-try:
-    from ipyrun._runconfig import RunConfig
-    from ipyrun._filecontroller import FileConfigController
-except:
-    from _runconfig import RunConfig
-    from _filecontroller import FileConfigController
+#try:
+from ipyrun._runconfig import RunConfig, AppConfig
+from ipyrun._filecontroller import FileConfigController
+#except:
+#    from _runconfig import RunConfig
+#    from _filecontroller import FileConfigController
 
 # -
 

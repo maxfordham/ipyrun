@@ -264,9 +264,9 @@ def _fpths_from_script_outputs_dict(outputs: Outputs):
 
 # outputs -------------------------------
         
-def get_time_of_file_creation(fpth):
+def get_time_of_most_recent_content_modification(fpth):
     try:
-         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_file_creation')
+         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_most_recent_content_modification')
     except:
         return None
     
@@ -278,13 +278,13 @@ class Output:
     note: str = ''
     author: str = 'unknown'
     document_header: Optional[DocumentHeader] = None #https://github.com/samuelcolvin/pydantic/issues/1223
-    time_of_file_creation: datetime = None
+    time_of_most_recent_content_modification: datetime = None
         
     def __post_init__(self):
         # updates the inputs relative to changes in base params or class initiation
         self.fdir = os.path.dirname(self.fpth)
         self.author = getpass.getuser()
-        self.time_of_file_creation = get_time_of_file_creation(self.fpth)
+        self.time_of_most_recent_content_modification = get_time_of_most_recent_content_modification(self.fpth)
         
 @dataclass
 class Outputs(BaseParams):
@@ -357,7 +357,7 @@ if __name__ =='__main__':
     fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
     Ac = AppConfig(fdir=fdir,
                    process_name='pretty_name',
-                   pretty_name='boo',
+                   #pretty_name='boo',
                    fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), 
                    #script_outputs=[Output(fpth='asdf',description='asd')],
                    create_execute_file=True,
