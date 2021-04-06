@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.11.1
 #   kernelspec:
-#     display_name: mf_base
+#     display_name: Python 3.9 (XPython)
 #     language: python
-#     name: mf_base
+#     name: xpython
 # ---
 
 # +
@@ -51,11 +51,12 @@ from pydantic.json import pydantic_encoder
 from datetime import datetime
 # -
 
-FDIR_EXAMPLE = '.'
-FPTH_SCRIPT_EXAMPLE = os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py')
+FDIR_ROOT_EXAMPLE = os.path.join('..','examples','J0000')
+FDIR_EXAMPLE = os.path.join(FDIR_ROOT_EXAMPLE,'Automation','ExampleApp')
+FPTH_SCRIPT_EXAMPLE = os.path.join('..','examples','scripts','expansion_vessel_sizing.py')
 
 
-# +
+# + tags=[]
 def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.json'):
     """writes a pydantic BaseModel to file"""
     f = open(fpth, "w")
@@ -354,11 +355,11 @@ def make_dirs_AppConfig(Ac: AppConfig):
     make_dirs_from_fdir_keys(asdict(Ac))
 
 if __name__ =='__main__':
-    fdir=r'C:\engDev\git_mf\ipypdt\example\J0000'
-    Ac = AppConfig(fdir=fdir,
+
+    Ac = AppConfig(fdir=FDIR_EXAMPLE,
                    process_name='pretty_name',
                    #pretty_name='boo',
-                   fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\test\test.py'), 
+                   fpth_script=FPTH_SCRIPT_EXAMPLE, 
                    #script_outputs=[Output(fpth='asdf',description='asd')],
                    create_execute_file=True,
                    #config_job=JobDirs()
@@ -489,43 +490,57 @@ class RunConfig():
 # -
 
 if __name__ =='__main__':
-    from ipypdt.create_schedule import ScheduleAppPaths, ScheduleUI
+    
+    #  example - extending AppConfig
+    @dataclass
+    class Job:#(BaseModel)
+        jobName: str = 'Digital Design'
+        jobNumber: str = 'J4321'
+            
+    @dataclass
+    class JobDirs(Job):#,BaseModel
+        fdirRoot: str = 'J:\\'
+        fdirJob: str = 'fdirJob'#os.path.join(fdirRoot, str(Job.jobNumber))
+        fdirSchedule: str = ''
+        fdirRevit: str = os.path.join(fdirJob, 'Cad', 'Revit')
+        fdirAutomation: str = os.path.join(fdirJob, 'Automation')
+
+        def __post_init__(self):
+            self.fdirJob = os.path.join(self.fdirRoot, self.jobNumber)
+            self.fdirSchedule = os.path.join(self.fdirJob, 'Schedule')
+            self.fdirRevit = os.path.join(self.fdirJob, 'Cad', 'Revit')
+            self.fdirAutomation = os.path.join(self.fdirJob, 'Automation')
 
     @dataclass 
-    class ScheduleAppConfig(AppConfig):
-        config_job: ScheduleAppPaths
+    class ExtendAppConfig(AppConfig):
+        config_job: JobDirs
 
         def __post_init__(self):
             # updates the inputs relative to changes in base params or class initiation
             super().__post_init__()
-
-    config_app = ScheduleAppConfig(
-        fdir=r'C:\engDev\git_mf\ipypdt\example\J6667\Automation\Schedule',
-        fpth_script=r'c:\engdev\git_mf\ipypdt\ipypdt\create_schedule.py',
+            
+    fdir=os.path.join('..','examples','J0000','Automation')
+    fpth_script=os.path.join('..','examples','scripts','expansion_vessel_sizing.py')
+    
+    config_app = ExtendAppConfig(
+        fdir=FDIR_EXAMPLE,
+        fpth_script=FPTH_SCRIPT_EXAMPLE,
         create_execute_file=True,
         process_name='GrilleSchedule',
-        config_job=ScheduleAppPaths(
-            fdirRoot=r'C:\engDev\git_mf\ipypdt\example',
-            jobNumber='J6667',
-            documentDescription='GrilleSchedule'
+        config_job=JobDirs(
+            fdirRoot=fdir,
+            jobNumber='J0000',
         )
     )
     RC = RunConfig(config_app)
-    #RC.config_to_json()
+    RC.config_to_json()
 
 #Output()
 if __name__ =='__main__':
-    config = {
-        'fpth_script':r'C:\engDev\git_mf\ipypdt\ipypdt\rvttxt_to_schedule.py',#os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        'process_name':'pipework',
-        'fdir':'.',
-        #'fpth_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test\test.csv',
-        #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
-        }
 
-    config0 = {
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':FDIR,
+    config = {
+        'fpth_script':FPTH_SCRIPT_EXAMPLE,
+        'fdir':FDIR_EXAMPLE,
         'script_outputs': [
             {
                 'fpth':FPTH_SCRIPT_EXAMPLE,
@@ -533,19 +548,12 @@ if __name__ =='__main__':
             }
         ]
     }
-    config1 = {
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),#,
-        'process_name':'pipework',
-        'fdir':'.',
-        #'fpth_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test\test.csv',
-        #'fdir_inputs':r'C:\engDev\git_mf\ipyrun\ipyrun\appdata\inputs\test'
-        }
     from pprint import pprint
     #config_job=JobDirs(fdirRoot='.')
 
     print('AppConfig: vanilla')
     print('--------------------')
-    config_app = AppConfig(**config0)
+    config_app = AppConfig(**config)
     rc = RunConfig(config_app)#, config_job=config_job)#,lkup_outputs_from_script=False
     rc.config_to_json()
     from mf_modules.file_operations import open_file

@@ -6,12 +6,14 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: mf_base
 #     language: python
 #     name: mf_base
 # ---
+
+from ipyrun._runconfig import RunConfig, AppConfig
 
 # +
 import os
@@ -65,6 +67,8 @@ from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
+# -
+
 
 
 # +
