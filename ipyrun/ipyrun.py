@@ -32,24 +32,26 @@ import sys
 import plotly.io as pio
 import plotly.graph_objects as go
 
+from dataclasses import  field, asdict #dataclass,
+from dacite import from_dict
+from typing import Optional, List, Dict, Type
+from pydantic.dataclasses import dataclass
+
 # widget stuff
 import ipywidgets as widgets
 from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
 # core mf_modules
-from mf_modules.file_operations import make_dir
-from mf_modules.pandas_operations import del_matching
-from mf_modules.mydocstring_display import display_module_docstring
-from mf_modules.jupyter_formatting import display_python_file
-from mf_modules.pydtype_operations import read_json, write_json
+#from mf_modules.file_operations import make_dir
+#from mf_modules.pandas_operations import del_matching
+#from mf_modules.mydocstring_display import display_module_docstring
+#from mf_modules.jupyter_formatting import display_python_file
+#from mf_modules.pydtype_operations import read_json, write_json
 from mf_om.directories import JobDirs
-from typing import Type
-from dacite import from_dict
 
-from dataclasses import  field, asdict #dataclass,
-from typing import Optional, List, Dict, Type
-from pydantic.dataclasses import dataclass
+from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
+
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution

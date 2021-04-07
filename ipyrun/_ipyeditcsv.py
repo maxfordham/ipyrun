@@ -29,15 +29,10 @@ import ipywidgets as widgets
 from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
-# core mf_modules
-from mf_modules.file_operations import make_dir
-from mf_modules.datamine_functions import time_meta_data
-from mf_modules.pandas_operations import del_matching
-
-
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 #try:
+from ipyrun.utils import make_dir, time_meta_data, del_matching
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController
 #except:

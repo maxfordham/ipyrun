@@ -25,12 +25,13 @@ from datetime import datetime
 import time
 from dataclasses import dataclass, field, asdict
 
-from mf_modules.pydtype_operations import read_json, read_yaml
+
 from ipyfilechooser import FileChooser
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 # try:
+from ipyrun.utils import read_json, read_yaml
 from ipyrun._runconfig import RunConfig, SimpleInputs, AppConfig
 #except:
 #    from _runconfig import RunConfig, SimpleInputs, AppConfig

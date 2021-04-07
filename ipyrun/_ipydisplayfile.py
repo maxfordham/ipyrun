@@ -31,7 +31,7 @@ from typing import List
 
 #  from mf_modules.mydocstring_display import display_module_docstring
 from ipyrun.mydocstring_display import display_module_docstring
-from ipyrun.utils import del_cols, del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
+from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
 
 BUTTON_WIDTH = '37px'
 BUTTON_HEIGHT = '25px'

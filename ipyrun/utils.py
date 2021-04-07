@@ -16,6 +16,7 @@ from datetime import datetime
 from mf_modules.excel_in import ExcelIn, mfexcel_in
 
 #  from mf_modules.pandas_operations import del_matching
+#  ------------------------------------------------------------------------------------------------
 def del_cols(df, cols):
     """delete a pandas column if it is in
     the column index otherwise ignore it. """
@@ -41,6 +42,7 @@ def del_matching(df, string):
     return df
 
 #  from mf_modules.jupyter_formatting import md_fromfile, display_python_file
+#  ------------------------------------------------------------------------------------------------
 def md_fromfile(fpth):
     """
     read an md file and display in jupyter notebook
@@ -64,7 +66,7 @@ def display_python_file(fpth):
         data = myfile.read()
     return Markdown("\n ```Python \n" + data + " \n ```")
 
-#  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data
+#  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data, make_dir
 def open_file(filename, from_server=True):
     '''Open document with default application in Python.'''
     if from_server:
@@ -172,8 +174,36 @@ def time_meta_data(fpth,
     else:
         return di
         
+def make_dir(directory):
+    '''
+    check if folder exists, if not, make a new folder using python
+    '''
+    import os, errno
 
-#  from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
+    try:
+        os.makedirs(directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+#  from mf_modules.pydtype_operations flatten_list, import read_json, read_txt, read_yaml
+#  ------------------------------------------------------------------------------------------------
+def flatten_list(list_of_lists: list)-> list: 
+    """Flatten a list of (lists of (lists of strings)) for any level 
+    of nesting
+    
+    Args:
+        list_of_lists: with mix of lists and other
+    Returns:
+        rt: list with no nested lists
+        
+    """
+    rt = []
+    for i in list_of_lists:
+        if isinstance(i,list): rt.extend(flatten_list(i))
+        else: rt.append(i)
+    return rt
+
 def read_json(fpth, encoding='utf8'):
     '''
     read info in a .json file
@@ -221,6 +251,6 @@ def read_yaml(fpth, encoding='utf8'):
         except yaml.YAMLError as exc:
             print(exc)
     return data
-
+#  ------------------------------------------------------------------------------------------------
 
 

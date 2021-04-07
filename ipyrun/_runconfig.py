@@ -15,40 +15,29 @@
 
 # +
 import os
-FDIR = os.path.dirname(os.path.realpath('__file__'))
 import importlib.util
+import pathlib
 from shutil import copyfile
-from mf_modules.datamine_functions import recursive_glob
-from mf_modules.file_operations import make_dir
-from mf_modules.pydtype_operations import write_json, flatten_list
 import copy
-
-#from IPython.display import Markdown
-#display(Markdown('<img src="../../ipypdt/img/check-xlsx.png" width="1200" height="400">'))
-
+import getpass
+import json
 from dataclasses import field, asdict #dataclass, 
+from dacite import from_dict
 from typing import Optional, List, Dict, Type, Any
 from pydantic import BaseModel, FilePath #  ADD PYDANTIC IN THE FUTURE TO EXPORT TO SCHEMA
 from datetime import datetime
-from pydantic.dataclasses import dataclass
-import pathlib
-from dacite import from_dict
 #import pydantic
+from pydantic.dataclasses import dataclass
+from pydantic.json import pydantic_encoder
 
 #from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
-from mf_om.directories import JobDirs, make_dirs_from_fdir_keys
-from mf_modules.pydtype_operations import flatten_list
-from mf_modules.file_operations import make_dir, jobno_fromdir
-
+from mf_om.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
 from mf_om.document import DocumentHeader
-from mf_modules.file_operations import time_meta_data
-import getpass
-from typing import Optional
 
-import json
-from mf_modules.pydtype_operations import read_json
-from pydantic.json import pydantic_encoder
-from datetime import datetime
+from mf_modules.pydtype_operations import flatten_list, write_json, flatten_list
+from mf_modules.file_operations import make_dir, read_json, time_meta_data, recursive_glob
+
+from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
 # -
 
 FDIR_ROOT_EXAMPLE = os.path.join('..','examples','J0000')

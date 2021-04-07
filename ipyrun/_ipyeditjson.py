@@ -29,15 +29,12 @@ import ipywidgets as widgets
 import ipysheet
 from ipysheet import from_dataframe, to_dataframe
 from ipyfilechooser import FileChooser
-
-# core mf_modules
-from mf_modules.pydtype_operations import read_json, write_json
-from mf_modules.file_operations import make_dir
 # -
 
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 # try:
+from ipyrun.utils import make_dir, read_json, write_json
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
 from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
