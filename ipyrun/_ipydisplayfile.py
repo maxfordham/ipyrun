@@ -15,33 +15,23 @@
 
 # +
 import os
+import subprocess
 import sys
 import pandas as pd
-from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output,Image
+from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output, Image
 import time
 from ipyaggrid import Grid
 import ipywidgets as widgets
 from markdown import markdown
 import plotly.io as pio
 import copy
-
-from mf_modules.mydocstring_display import display_module_docstring
-from mf_modules.pandas_operations import del_matching
-from mf_modules.jupyter_formatting import md_fromfile, display_python_file
-from mf_modules.file_operations import open_file
-from mf_modules.pydtype_operations import read_json, read_txt, read_yaml
-from mf_modules.datamine_functions import recursive_glob
-from mf_modules.excel_in import ExcelIn, mfexcel_in
-
-#try:
-from _runconfig import Output, Outputs
-#except:
-#    from ipyrun._runconfig import Output, Outputs
-
-from mf_modules.file_operations import time_meta_data
 from dataclasses import dataclass, asdict
 from dacite import from_dict
 from typing import List
+
+#  from mf_modules.mydocstring_display import display_module_docstring
+from ipyrun.mydocstring_display import display_module_docstring
+from ipyrun.utils import del_cols, del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
 
 BUTTON_WIDTH = '37px'
 BUTTON_HEIGHT = '25px'
