@@ -1,17 +1,42 @@
 """
-
+wrappers around mydocstring. 
+consider incorporating into the core package. 
 """
 
 import os
 import subprocess
 from IPython.display import display, Markdown
 try:
-    from IPython.display import Image #  this is due to a known issue with xeus-python. remove this in future.
+    from IPython.display import Image #  this is due to a known issue with xeus-python. remove try except in future.
 except:
     pass
-from mf_modules.file_operations import read_module_docstring
-from mf_modules.pydtype_operations import list_items_after
+from ipyrun.utils import read_module_docstring
 
+#  from mf_modules.pydtype_operations import list_items_after
+def list_items_after(li,after='Image'):
+    """
+    list all items in list after a given item 
+    is found
+
+    Args:
+        li (list): 
+        **after (?): list item after which new list begins
+            uses find in so partial string matches work
+
+    Returns:
+        li_ (list): category
+    """
+    li_=[]
+    b=False
+    for l in li:
+        if after in l:
+            b=True
+        li_.append(b)
+    if True not in li_:
+        return None
+    else:
+        index = [n for n in range(0,len(li_)) if li_[n]]
+        return li[index[0]:index[len(index)-1]+1]
 
 def docstring_img_list(doc):
 
