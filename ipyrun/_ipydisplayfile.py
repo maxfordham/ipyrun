@@ -83,7 +83,7 @@ def default_ipyagrid(df,**kwargs):
 
 def mfexcel_display(fpth):
     """
-    displays mfexcel (written using xlsx_templater) using ipyaggrid
+    displays mfexcel (written using xlsxtemplater) using ipyaggrid
     """
     li = mfexcel_in(fpth)
     for l in li:
@@ -316,6 +316,9 @@ class DisplayFile():
         """
         p = PreviewPy(self.fpth)
         display(p)
+
+    def txt_prev(self):
+        display(Markdown("```{}```".format(read_txt(self.fpth))))
 
     def xl_prev(self):
         """

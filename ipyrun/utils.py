@@ -14,6 +14,7 @@ import time
 from datetime import datetime
 
 from mf_modules.excel_in import ExcelIn, mfexcel_in
+import applauncher_wrapper as al
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -67,12 +68,12 @@ def display_python_file(fpth):
     return Markdown("\n ```Python \n" + data + " \n ```")
 
 #  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data, make_dir
-def open_file(filename, from_server=True):
-    '''Open document with default application in Python.'''
-    if from_server:
+def open_file(filename):
+    """Open document with default application in Python."""
+    if sys.platform == 'linux':
+        al.open_file(filename)
         #  note. this is an MF custom App for opening folders and files
         #        from a Linux file server on the local network
-        print('add code to open using AppLauncher')
     else:
         try:
             os.startfile(filename)
