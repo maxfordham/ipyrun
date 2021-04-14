@@ -5,9 +5,9 @@ ipyrun is designed for rapidly creating a user interface (to be operated in a ju
 
 ## Use cases
 
-A generic user interface for running scripts. 
-Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and data files are generated as outputs when the script is run. 
-A timestamped record of script execution is maintained. 
+A generic user interface for running scripts.
+Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and data files are generated as outputs when the script is run.
+A timestamped record of script execution is maintained.
 An ipywdiget user interface allows users to edit script input data and view outputs of script execution.
 
 ## Install
