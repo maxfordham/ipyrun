@@ -29,14 +29,20 @@ from dataclasses import dataclass, asdict
 from dacite import from_dict
 from typing import List
 
+#  from mf library
+from xlsxtemplater import from_excel
+
 #  from mf_modules.mydocstring_display import display_module_docstring
 from ipyrun.mydocstring_display import display_module_docstring
 from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
+
+#
 
 BUTTON_WIDTH = '37px'
 BUTTON_HEIGHT = '25px'
 
 # +
+#  consider replacing this with beakerx
 def default_ipyagrid(df,**kwargs):
 
     """
@@ -85,7 +91,7 @@ def mfexcel_display(fpth):
     """
     displays mfexcel (written using xlsxtemplater) using ipyaggrid
     """
-    li = mfexcel_in(fpth)
+    li = from_excel(fpth)
     for l in li:
         l['grid'] = default_ipyagrid(l['df'])
         display(Markdown('### {0}'.format(l['sheet_name'])))
