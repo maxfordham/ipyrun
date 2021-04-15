@@ -32,16 +32,44 @@ from typing import List
 #  from mf library
 from xlsxtemplater import from_excel
 
-#  from mf_modules.mydocstring_display import display_module_docstring
 from ipyrun.mydocstring_display import display_module_docstring
 from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
-
-#
 
 BUTTON_WIDTH = '37px'
 BUTTON_HEIGHT = '25px'
 
 # +
+
+def get_ext(fpth):
+    """get file extension including compound json files"""
+    ext = os.path.splitext(fpth)[1].lower()
+    _ext = ''
+    if ext =='.json':
+        li_fstr = os.path.splitext(fpth)[0].lower().split('.')
+        
+        if len(li_fstr) > 1:
+            _ext = li_fstr[-1]
+    return _ext + ext
+
+def Vega(spec):
+    """
+    render Vega in jupyterlab
+    https://github.com/jupyterlab/jupyterlab/blob/master/examples/vega/vega-extension.ipynb
+    """
+    bundle = {}
+    bundle['application/vnd.vega.v5+json'] = spec
+    display(bundle, raw=True)
+
+def VegaLite(spec):
+    """
+    render VegaLite in jupyterlab
+    https://github.com/jupyterlab/jupyterlab/blob/master/examples/vega/vega-extension.ipynb
+    """
+    bundle = {}
+    bundle['application/vnd.vegalite.v4+json'] = spec
+    display(bundle, raw=True)
+
+
 #  consider replacing this with beakerx
 def default_ipyagrid(df,**kwargs):
 
@@ -87,11 +115,10 @@ def default_ipyagrid(df,**kwargs):
     g = Grid(**_kwargs)
     return g
 
-def mfexcel_display(fpth):
+def xlsxtemplated_display(li):
     """
-    displays mfexcel (written using xlsxtemplater) using ipyaggrid
+    displays xlsxtemplated (written using xlsxtemplater) using ipyaggrid
     """
-    li = from_excel(fpth)
     for l in li:
         l['grid'] = default_ipyagrid(l['df'])
         display(Markdown('### {0}'.format(l['sheet_name'])))
@@ -226,16 +253,18 @@ class DisplayFile():
         return {
             '.csv':self.df_prev,
             '.xlsx':self.xl_prev,
-            #'.xlsx':self._open_option,
             '.json':self.json_prev,
-            '.plotly':self.plotly_prev,
+            '.plotly.json':self.plotlyjson_prev,
+            '.vg.json':self.vegajson_prev,
+            '.vl.json':self.vegalitejson_prev,
+            '.ipyui.json':self.ipyuijson_prev,
             '.yaml':self.yaml_prev,
             '.yml':self.yaml_prev,
             '.png':self.img_prev,
             '.jpg':self.img_prev,
             '.jpeg':self.img_prev,
             #'.obj':self.obj_prev,
-            #'.txt':self.txt_prev,
+            '.txt':self.txt_prev,
             '.md':self.md_prev,
             '.py':self.py_prev,
             '.pdf':self.pdf_prev,
@@ -294,15 +323,23 @@ class DisplayFile():
         except:
             display(self.data.style)
 
-    def json_prev(self):
-        self.data = read_json(self.fpth)
-        display(JSON(self.data))
+    def vegajson_prev(self):
+        """display a plotly json file"""
+        display(Vega(read_json(self.fpth)))
 
-    def plotly_prev(self):
-        """
-        display a plotly json file
-        """
+    def vegalitejson_prev(self):
+        """display a plotly json file"""
+        display(VegaLite(read_json(self.fpth)))
+
+    def plotlyjson_prev(self):
+        """display a plotly json file"""
         display(pio.read_json(self.fpth))
+
+    def ipyuijson_prev(self):
+        print('add here!')
+
+    def json_prev(self):
+        display(JSON(read_json(self.fpth)))
 
     def yaml_prev(self):
         self.data = read_yaml(self.fpth)
@@ -327,16 +364,14 @@ class DisplayFile():
         display(Markdown("```{}```".format(read_txt(self.fpth))))
 
     def xl_prev(self):
-        """
-
-        """
-        if self.mf_excel:
-            mfexcel_display(self.fpth)
+        """display excel. if xlsxtemplated display as Grid, otherwise as _open_option"""
+        li = from_excel(fpth)
+        if li is not None:
+            xlsxtemplated_display(li)
         else:
             self._open_option()
 
 # +
-
 
 def preview_output_ui(output: Output):
     """
