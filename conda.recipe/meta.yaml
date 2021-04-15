@@ -35,7 +35,6 @@ requirements:
     - xmltodict
     - plotly
     - xlsxwriter
-    - Markdown
     - markdown
     - ipython
     - ipysheet
@@ -51,6 +50,6 @@ requirements:
 
 about:
   home: https://github.com/gunstonej/ipyrun
-  summary: Short description
+  summary: {{ data.get('description') }}
   license: {{ data.get('license') }}
   license_file: LICENSE
