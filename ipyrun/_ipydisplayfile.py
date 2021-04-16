@@ -241,12 +241,10 @@ class DisplayFile():
     def __init__(self,
                  fpth=os.path.join(os.environ['MF_ROOT'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
                  description=None,
-                 mf_excel=True #  REMOVE THIS - ADD PARAM TO XLSXWRITER PROPERTIES!!! 
                 ):
         self.fpth = fpth
         self.fdir = os.path.dirname(fpth)
-        self.mf_excel = mf_excel
-        self.ext = os.path.splitext(fpth)[1].lower()
+        self.ext = get_ext(fpth)
 
     @property
     def _map(self):
@@ -254,6 +252,7 @@ class DisplayFile():
             '.csv':self.df_prev,
             '.xlsx':self.xl_prev,
             '.json':self.json_prev,
+            '.plotly':self.plotlyjson_prev,
             '.plotly.json':self.plotlyjson_prev,
             '.vg.json':self.vegajson_prev,
             '.vl.json':self.vegalitejson_prev,
@@ -263,7 +262,7 @@ class DisplayFile():
             '.png':self.img_prev,
             '.jpg':self.img_prev,
             '.jpeg':self.img_prev,
-            #'.obj':self.obj_prev,
+            #'.obj':self.obj_prev, # add ipyvolume viewer? 
             '.txt':self.txt_prev,
             '.md':self.md_prev,
             '.py':self.py_prev,
