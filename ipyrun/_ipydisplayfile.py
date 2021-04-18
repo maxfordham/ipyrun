@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.11.1
 #   kernelspec:
-#     display_name: mf_base
+#     display_name: Python 3
 #     language: python
-#     name: mf_base
+#     name: python3
 # ---
 
 # +
@@ -34,12 +34,56 @@ from xlsxtemplater import from_excel
 
 from ipyrun.mydocstring_display import display_module_docstring
 from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
+from ipyrun._runconfig import Output, Outputs
 
-BUTTON_WIDTH = '37px'
+BUTTON_WIDTH = '41px'
 BUTTON_HEIGHT = '25px'
 
 # +
+def mdboldstr(string, di):
+    return '__{}__: {}'.format(string,di[string])
 
+def mdnorms(di):
+    return mdboldstr('JobNo', di) + ' ........ ' + mdboldstr('Date', di) + ' ........ ' + mdboldstr('Author', di)
+
+def mdwildcars(di):
+    exclude = ['sheet_name', 'xlsx_params', 'xlsx_exporter', 'JobNo', 'Date', 'Author', 'df', 'grid']
+    others = {k:v for k,v in di.items() if k not in exclude}
+    mdstr = ''
+    for k, v in others.items():
+        mdstr = mdstr + '__{}__: {}<br>'.format(k,v) 
+    return mdstr
+
+def mdheader(di):
+    return '### {} \n {} <br> {}'.format(
+        di['sheet_name'], mdnorms(di), mdwildcars(di)
+    )
+
+def xlsxtemplated_display(li):
+    """
+    displays xlsxtemplated (written using xlsxtemplater) using ipyaggrid
+    """
+    for l in li:
+        l['grid'] = default_ipyagrid(l['df'])
+        display(Markdown(mdheader(l)))
+        display(l['grid'])
+#  string = 'JobNo'
+#  mdheader(di)
+
+
+# -
+
+def display_button_styles():
+    """displays default ipywidget button styles"""
+    styles = ['primary', 'success', 'info', 'warning', 'danger']
+    for s in styles:
+        b = widgets.ToggleButton(description=s, button_style=s)
+        t = _markdown('```widgets.ToggleButton(description="{}", button_style="{}")```'.format(s,s))
+        display(widgets.HBox([b,t]))
+
+
+
+# +
 def get_ext(fpth):
     """get file extension including compound json files"""
     ext = os.path.splitext(fpth)[1].lower()
@@ -48,7 +92,7 @@ def get_ext(fpth):
         li_fstr = os.path.splitext(fpth)[0].lower().split('.')
         
         if len(li_fstr) > 1:
-            _ext = li_fstr[-1]
+            _ext = '.'+li_fstr[-1]
     return _ext + ext
 
 def Vega(spec):
@@ -58,7 +102,7 @@ def Vega(spec):
     """
     bundle = {}
     bundle['application/vnd.vega.v5+json'] = spec
-    display(bundle, raw=True)
+    display(bundle, raw=True);
 
 def VegaLite(spec):
     """
@@ -67,7 +111,7 @@ def VegaLite(spec):
     """
     bundle = {}
     bundle['application/vnd.vegalite.v4+json'] = spec
-    display(bundle, raw=True)
+    display(bundle, raw=True);
 
 
 #  consider replacing this with beakerx
@@ -115,15 +159,7 @@ def default_ipyagrid(df,**kwargs):
     g = Grid(**_kwargs)
     return g
 
-def xlsxtemplated_display(li):
-    """
-    displays xlsxtemplated (written using xlsxtemplater) using ipyaggrid
-    """
-    for l in li:
-        l['grid'] = default_ipyagrid(l['df'])
-        display(Markdown('### {0}'.format(l['sheet_name'])))
-        display(Markdown('{0}'.format(l['description'])))
-        display(l['grid'])
+
 
 def _markdown(value='_Markdown_',
               **kwargs):
@@ -144,8 +180,9 @@ class PreviewPy():
     docstring with a toggle option to view the code
     """
 
-    def __init__(self, module):
+    def __init__(self, module, preview_script=True):
         self.input = module
+        self.preview_script = preview_script
         self.out = widgets.Output()
         self.fpth = self._handle_input()
         self._init_form()
@@ -157,28 +194,49 @@ class PreviewPy():
             fpth = self.input.__file__
         else:
             fpth = self.input
-        if os.path.splitext(fpth)[1] !='.py':
+        if os.path.splitext(fpth)[1] != '.py':
             print('{0}: not a python file'.format(fpth))
         return fpth
 
     def _init_form(self):
-        self.show_me_the_code = widgets.ToggleButton(description='show source code',
-                              tooltip='shows the raw python code in the preview window below',
-                              button_style='info')
+        self.script_name = os.path.splitext(os.path.basename(self.fpth))[0]
+        self.title = widgets.HTML('placeholder')
+        self.show_fpth = _markdown('``` {} ```'.format(self.fpth))          
+        self.show_me_the_code = widgets.ToggleButton(
+                              layout=widgets.Layout(width=BUTTON_WIDTH)
+        )
+        self.headerbox = widgets.VBox([widgets.HBox([self.show_me_the_code, self.title]), self.show_fpth])
+                               
+        if self.preview_script:
+            display(self.headerbox)
+            
     def _init_controls(self):
         self.show_me_the_code.observe(self._show_me_the_code, 'value')
+    
+    def _update_title(self):
+        self.title.value = '<b>{}</b>: {}'.format(self.script_name, self.description)
 
     def _show_docstring(self):
+        self.show_me_the_code.icon='scroll'
+        self.show_me_the_code.tooltip='show the raw python code'
+        self.show_me_the_code.button_style='warning'
+        self.description = 'script documentation'
+        self._update_title()
         with self.out:
             clear_output()
-            display(self.show_me_the_code)
+            #display(self.show_me_the_code)
             display_module_docstring(self.fpth)
 
     def _show_me_the_code(self, sender):
+        self.show_me_the_code.icon='book'
+        self.show_me_the_code.tooltip='show the python script documentation'
+        self.show_me_the_code.button_style='info'
+        self.description = 'python script'
+        self._update_title()
         with self.out:
             clear_output()
             if self.show_me_the_code.value:
-                display(self.show_me_the_code)
+                
                 display(display_python_file(self.fpth))
             else:
                 self._show_docstring()
@@ -214,29 +272,58 @@ def open_ui(fpth: str)-> [widgets.Button,widgets.Button]:
         style={'font_weight': 'bold'})  #,'button_color':'white'
     return openfile, openfolder
 
+
+# -
+_markdown('`pasdfasfd `')
+
+# +
+import ipyregulartable as rt
+
+df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
+rt.RegularTableWidget(df)
+
+# +
+
+default_ipyagrid(df)
+# -
+
+import ipysheet
+ipysheet.from_dataframe(df)
+
+
+
+# + tags=[]
+
+
+
 class DisplayFile():
     """
     displays the contents of a file in the notebook.
     where this requires data to be loaded in this is stored
     as DisplayFile().data. Maps to the appropriate viewer using
     the file extension.
-        self.map = {
-            '.csv':self.df_prev,
-            #'.xlsx':self.xl_prev,
-            '.xlsx':self._open_file,
-            '.json':self.json_prev,
-            '.yaml':self.yaml_prev,
-            '.yml':self.yaml_prev,
-            '.png':self.img_prev,
-            '.jpg':self.img_prev,
-            '.jpeg':self.img_prev,
-            #'.obj':self.obj_prev,
-            #'.txt':self.txt_prev,
-            '.md':self.md_prev,
-            '.py':self.py_prev,
-            '.pdf':self._open_file,
-            '.docx':self._open_file,
-        }
+        def _map(self):
+            return {
+                '.csv':self.df_prev,
+                '.xlsx':self.xl_prev,
+                '.json':self.json_prev,
+                '.plotly':self.plotlyjson_prev,
+                '.plotly.json':self.plotlyjson_prev,
+                '.vg.json':self.vegajson_prev,
+                '.vl.json':self.vegalitejson_prev,
+                '.ipyui.json':self.ipyuijson_prev,
+                '.yaml':self.yaml_prev,
+                '.yml':self.yaml_prev,
+                '.png':self.img_prev,
+                '.jpg':self.img_prev,
+                '.jpeg':self.img_prev,
+                #'.obj':self.obj_prev, # add ipyvolume viewer? 
+                '.txt':self.txt_prev,
+                '.md':self.md_prev,
+                '.py':self.py_prev,
+                '.pdf':self.pdf_prev,
+                '.docx':self._open_option,
+            }
     """
     def __init__(self,
                  fpth=os.path.join(os.environ['MF_ROOT'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
@@ -274,8 +361,8 @@ class DisplayFile():
         self.ext_map = self._map
         if self.ext not in list(self.ext_map.keys()):
             self.ext_map[self.ext]=self._open_option
-        fn = self.ext_map[self.ext]
-        fn()
+        self.fn = self.ext_map[self.ext]
+        self.fn()
         
     def _open_form(self):
         self.open_file = widgets.Button(description='open file',button_style='success')
@@ -360,17 +447,17 @@ class DisplayFile():
         display(p)
 
     def txt_prev(self):
-        display(Markdown("```{}```".format(read_txt(self.fpth))))
+        display(Markdown("```{}```".format(read_txt(self.fpth, read_lines=False))))
 
     def xl_prev(self):
         """display excel. if xlsxtemplated display as Grid, otherwise as _open_option"""
-        li = from_excel(fpth)
+        li = from_excel(self.fpth)
         if li is not None:
             xlsxtemplated_display(li)
         else:
             self._open_option()
 
-# +
+# + tags=[] jupyter={"source_hidden": true}
 
 def preview_output_ui(output: Output):
     """
@@ -475,8 +562,7 @@ class PreviewOutputs():
         self.display_PreviewOutputs()
 
 
-# -
-
+# + jupyter={"source_hidden": true} tags=[]
 class DisplayFiles():
     def __init__(self, fpths, fpths_ignore=[], fpth_prefix=''):
         self.out = widgets.Output();
@@ -559,22 +645,24 @@ class DisplayFiles():
         self.display()
 
 
+# -
+
 if __name__ =='__main__':
     # NOTE FOR FUTURE:
     # the below can be used to make documentation that looks at all functions or classes
     # rather than only the module level docstring. this would be an update to the PreviewPy class
     # +
-    from inspect import getmembers, isfunction, isclass
-    from mf_modules import mydocstring_display
+    #from inspect import getmembers, isfunction, isclass
+    #from mf_modules import mydocstring_display
 
-    functions_list = [o for o in getmembers(mydocstring_display) if isfunction(o[1])]
-    class_list = [o for o in getmembers(mydocstring_display) if isclass(o[1])]
+    #functions_list = [o for o in getmembers(mydocstring_display) if isfunction(o[1])]
+    #class_list = [o for o in getmembers(mydocstring_display) if isclass(o[1])]
     #functions_list
     #class_list
     # -
 
     fdir = os.path.dirname(os.path.realpath('__file__'))
-    rel = os.path.join('..','data','eg_filetypes')
+    rel = os.path.join('..','test_filetypes')
     fdir = os.path.realpath(os.path.join(fdir,rel))
 
     fpths = recursive_glob(rootdir=fdir)
@@ -584,15 +672,6 @@ if __name__ =='__main__':
     display(Markdown('### Example0'))
     display(Markdown('''display single file'''))
     display(d0.preview_fpth())
-    display(Markdown('---'))
-    display(Markdown(''))
-    
-    # single file
-    o0 = Output(fpth=fpths[0])
-    p0 = PreviewOutput(o0)
-    display(Markdown('### Example0'))
-    display(Markdown('''display single Output'''))
-    display(p0)
     display(Markdown('---'))
     display(Markdown(''))
 
@@ -615,5 +694,25 @@ if __name__ =='__main__':
     display(Markdown('### Example4'))
     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
     display(d3)
+    
+    # single Output
+    o0 = Output(fpth=fpths[0])
+    p0 = PreviewOutput(o0)
+    display(Markdown('### Example5'))
+    display(Markdown('''display single Output'''))
+    display(p0)
+    display(Markdown('---'))
+    display(Markdown(''))
+    
+    # multiple Outputs
+    outputs = [Output(f) for f in fpths]
+    p1 = PreviewOutputs(outputs)
+    display(Markdown('### Example6'))
+    display(Markdown('''display multiple Outputs'''))
+    display(p1)
+    display(Markdown('---'))
+    display(Markdown(''))
+
+
 
 
