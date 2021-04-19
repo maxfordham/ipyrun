@@ -34,9 +34,6 @@ from pydantic.json import pydantic_encoder
 from mf_om.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
 from mf_om.document import DocumentHeader
 
-from mf_modules.pydtype_operations import flatten_list, write_json, flatten_list
-from mf_modules.file_operations import make_dir, read_json, time_meta_data, recursive_glob
-
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
 # -
 
