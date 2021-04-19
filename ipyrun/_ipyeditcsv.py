@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.11.1
 #   kernelspec:
-#     display_name: mf_base
+#     display_name: Python 3
 #     language: python
-#     name: mf_base
+#     name: python3
 # ---
 
 # +
@@ -29,157 +29,167 @@ import ipywidgets as widgets
 from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
-# from this repo
-# this is an unpleasant hack. should aim to find a better solution
-#try:
 from ipyrun.utils import make_dir, time_meta_data, del_matching
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController
-#except:
-#    from _runconfig import RunConfig
-#    from _filecontroller import FileConfigController
 
 # -
 
-class SimpleEditCsv():
-    """NOT IN USE"""
-    def __init__(self, fpth_in, fpth_out=None):
-        self.fpth_in = fpth_in
-        if fpth_out==None:
-            self.fpth_out = fpth_in
-        else:
-            self.fpth_out = fpth_out
-        self.sheet = self._sheet_from_fpth(self.fpth_in)
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
+
+
+# +
+#import pandas as pd
+#import ipysheet
+#import ipywidgets as widgets
+#BUTTON_WIDTH_MIN = '41px'
+
+# +
+
+def now():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+
+# +
+class EditSheet():
+    """
+    simple ui that allows user to edit an ipysheet. the sheet updates the property ```self.df``` (pd.DataFrame) on change
+    and  "+" and "-" controls allow for adding and removing rows. can't start with less rows that you begin with. 
+    """
+    def __init__(self, df, title=None, add_remove_rows=True, fn_on_change=None):
+        self.df = df
+        self.min_rows = len(df)
+        self.title = title
+        self.add_remove_rows = add_remove_rows
+        self.fn_on_change = fn_on_change
+        self._init_sheet()
         self.form()
+        self._add_remove_rows()
         self._init_controls()
-        self.out = widgets.Output()
-
+        
+    def _add_remove_rows(self):
+        if self.add_remove_rows:
+            self.box.children = [self.button_bar,self.sheet]
+        else:
+            self.box.children = [self.sheet]
+            
+    def _init_sheet(self):
+        self.sheet = ipysheet.from_dataframe(self.df) # initiate sheet
+        
     def form(self):
-        self.save_changes = widgets.Button(description='save changes',button_style='success')
-        self.button_bar = widgets.HBox([self.save_changes])
-        self.layout = self.sheet
-
+        self.add_row = widgets.Button(icon='fa-plus',tooltip='add row',button_style='success', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+        self.remove_row = widgets.Button(icon='fa-minus',tooltip='remove row',button_style='danger', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+        self.updated_time = widgets.HTML(now())
+        self.button_bar = widgets.HBox([self.add_row,self.remove_row,self.updated_time])
+        self.box = widgets.VBox([self.button_bar,self.sheet])
+        
     def _init_controls(self):
-        self.save_changes.on_click(self._save_changes)
-
-    def _sheet_from_fpth(self, fpth):
-        df=del_matching(pd.read_csv(fpth),'Unnamed')
-        sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
-        return sheet
-
-    def _save_changes(self, sender):
-        self.data_out = to_dataframe(self.sheet)
-        self.data_out.to_csv(self.fpth_out)
-        display(Markdown('changes saved to: {0}'.format(self.fpth_out)))
-        with self.out:
-            clear_output()
-            dateTimeObj = datetime.now()
-            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
-            display(Markdown('{0} changes saved to: {1}'.format(timestampStr,self.fpth_out)))
+        #self.save_changes.on_click(self._save_changes)
+        self.add_row.on_click(self._add_row)
+        self.remove_row.on_click(self._remove_row)
+        self._init_observe()
+        
+    def _init_observe(self):
+        for cell in self.sheet.cells:
+            cell.observe(self._onchange, 'value')
+            
+    def _update_row_headers(self):
+        self.sheet.row_headers = [str(r) for r in list(range(0,self.sheet.rows))]       
+        
+    def _add_cells(self):
+        for n in range(0,len(self.sheet.cells)):
+            self.sheet.cells[n].value.append(None) # important to do it in-place otherwise creates a copy and breaks link to displayed ui
+            
+    def _add_row(self, sender):
+        self.sheet.rows += 1
+        self._update_row_headers()
+        self._add_cells()
+        self._onchange('change')
         self.display()
-
+        
+    def _remove_cells(self):
+        for n in range(0,len(self.sheet.cells)):
+            end = self.sheet.cells[n].value
+            #self.sheet.cells[n].row_end -= 1
+            self.sheet.cells[n].value.pop(len(end)-1) # important to do it in-place otherwise creates a copy and breaks link to displayed ui
+            
+    def _remove_row(self, sender):
+        new = self.sheet.rows -1
+        if new >= self.min_rows:
+            self.sheet.rows -= 1
+            self._update_row_headers()
+            self._remove_cells()
+            self._onchange('change')
+            self.display()
+        
+    def _onchange(self, change):
+        print('change')
+        self.df = to_dataframe(self.sheet)
+        self.updated_time.value = now()
+        if self.fn_on_change is not None:
+            self.fn_on_change()
+        
     def display(self):
-        display(self.button_bar, self.out, self.layout)
+        display(self.box)
 
     def _ipython_display_(self):
         self.display()
 
+def debugsheet(sheet):
+    
+    def debugcells(cell):
+        print('cell.value = {}'.format(str(cell.value)))  
+        print('cell.row_start = {}'.format(str(cell.row_start)))
+        print('cell.row_end = {}'.format(str(cell.row_end)))
+        print('cell.row_end - col.row_start + 1 = {}'.format(str(cell.row_end - cell.row_start + 1)))
+        print('len(cell.value) = {}'.format(len(cell.value)))
+        
+    print('sheet.rows = {}'.format(str(sheet.rows)))    
+    [debugcells(cell) for cell in sheet.cells];
+    
+if __name__ =='__main__':
+    df = pd.DataFrame.from_dict({'a':[0,1,2],'b':[1,2,3]})
+    e = EditSheet(df, add_remove_rows=True)
+    display(e)
 
-class ShowHideEditCsv():
+
+# +
+class EditCsv(EditSheet):
     """a simple csv editor that allows the user to add and remove rows from the table"""
     def __init__(self, fpth_in, fpth_out=None, title=None):
         self.fpth_in = fpth_in
         if fpth_out is None:
             self.fpth_out = fpth_in
+            
         else:
             self.fpth_out = fpth_out
         if title is None:
-            self.title = 'edit: {0}'.format(self.fpth_out)
-        else:
-            self.title = title
-        self.sheet = self._sheet_from_fpth(self.fpth_in)
-        self.form()
-        self._init_controls()
-        self.out = widgets.Output()
-
-    def form(self):
-        self.save_changes = widgets.Button(description='save changes',button_style='success')
-        self.add_row = widgets.Button(description='add row',button_style='info')
-        self.remove_row = widgets.Button(description='remove row',button_style='danger')
-        self.button_bar = widgets.HBox([self.save_changes,self.add_row,self.remove_row])
-        self.layout = self.sheet
-        self.box = widgets.VBox([self.button_bar,self.layout])
-        self.acc = widgets.Accordion(children=[self.box])
-        self.acc.set_title(0,self.title)
-        self.acc.selected_index = None
-
-    def _init_controls(self):
-        self.save_changes.on_click(self._save_changes)
-        self.add_row.on_click(self._add_row)
-        self.remove_row.on_click(self._remove_row)
-
-    def _sheet_from_fpth(self, fpth):
-        df=del_matching(pd.read_csv(fpth),'Unnamed')
-        sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
-        return sheet
-
-    def _save_changes(self, sender):
-        self.data_out = to_dataframe(self.sheet)
-        self.data_out.to_csv(self.fpth_out)
-        display(Markdown('changes saved to: {0}'.format(self.fpth_out)))
-        with self.out:
-            clear_output()
-            dateTimeObj = datetime.now()
-            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
-            display(Markdown('{0} changes saved to: {1}'.format(timestampStr,self.fpth_out)))
-        self.display()
-
-    def _add_row(self, sender):
-        df = to_dataframe(self.sheet)
-        df = df.append(pd.DataFrame({c:[''] for c in list(df)}), ignore_index=True)
-        self.sheet = from_dataframe(df)
-        self.layout = self.sheet
-        self.box.children = [widgets.VBox([self.button_bar,self.layout])]
-        self.display()
-
-    def _remove_row(self, sender):
-        df = to_dataframe(self.sheet)
-        ind = df.index.tolist()[:-1] # get a list of indexes drpping the last one
-        df = df.loc[ind]
-        self.sheet = from_dataframe(df)
-        self.layout = self.sheet
-        self.box.children = [widgets.VBox([self.button_bar,self.layout])]
-        self.display()
-
-    def display(self):
-        display(self.acc)
-
-    def _ipython_display_(self):
-        self.display()
-
-
-# +
-#a.box
-
-# +
+            title = 'edit: {0}'.format(self.fpth_out)
+        df = pd.read_csv(self.fpth_in)
+        super().__init__(df)
+        self._update_form()
+        self._update_controls()
+        
+    def _update_form(self):
+        self.save = widgets.Button(icon='fa-save',tooltip='add row',button_style='success', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+        self.button_bar.children = [self.save,self.add_row,self.remove_row]
+        
+    def _update_controls(self):
+        self.save.on_click(self._save)
+        
+    def _save(self):
+        self.df.to_csv(self.fpth_out)
+        
 if __name__ =='__main__':
-
-    # FORM ONLY EXAMPLE
-    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.realpath(os.path.join(NBFDIR,r'..\data\eg_filetypes\eg_csv.csv'))
-
-    #fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
-    a = ShowHideEditCsv(fpth)
-    display(Markdown('### Example0'))
-    display(Markdown('''ShowHideEditCsv'''))
-    display(a)
-    display(Markdown('---'))
-    display(Markdown(''))
+    fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_csv.csv'))
+    csv = EditCsv(fpth)
+    display(csv)
 
 
-# -
-
-class EditCsv(FileConfigController):
+# +
+#  CURRENTLY BROKEN! 
+class EditRunAppCsv(FileConfigController):
     """
     for use when csv is the argument to a script
     """
@@ -252,12 +262,12 @@ class EditCsv(FileConfigController):
         self.display_sheet()
         self.update_display()
         self.display()
-
-if __name__ =='__main__':
-
-    b = EditCsv(fpth)
-    display(Markdown('### Example1'))
-    display(Markdown('''EditCsv'''))
-    display(b)
-    display(Markdown('---'))
-    display(Markdown(''))
+        
+if __name__ == '__main__':
+    fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_csv.csv'))
+    #b = EditRunAppCsv(fpth)
+    #display(Markdown('### Example1'))
+    #display(Markdown('''EditCsv'''))
+    #display(b)
+    #display(Markdown('---'))
+    #display(Markdown(''))
