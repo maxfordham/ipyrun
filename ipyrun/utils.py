@@ -4,6 +4,8 @@ this module contains utility functions. these are copied from the main mf librar
 """
 
 import os 
+import sys
+import codecs
 import subprocess
 import glob
 import pandas as pd
@@ -12,9 +14,10 @@ import json
 import yaml
 import time 
 from datetime import datetime
+import fnmatch
 
 #  mf packages
-import applauncher_wrapper as al
+import mf_file_utilities.applauncher_wrapper as al
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -95,10 +98,10 @@ def recursive_glob(rootdir='.', pattern='*', recursive=True):
         **rootdir (string): the directory that you would like to recursively search. 
             recursive means it will automatically look in all folders within this directory
         **pattern (string): the filename pattern that you are looking for.
-		**recursive (bool): define if you want to search recursively (in sub-folders) or not. 
-		
-	Returns:
-		matches(list): list of filedirectories that match the pattern
+        **recursive (bool): define if you want to search recursively (in sub-folders) or not. 
+        
+    Returns:
+        matches(list): list of filedirectories that match the pattern
     Example:
         rootdir='J:\J'+'J9999'
         pattern='????????_????_?*_?*_?*_?*_?*_?*'
@@ -254,4 +257,53 @@ def read_yaml(fpth, encoding='utf8'):
     return data
 #  ------------------------------------------------------------------------------------------------
 
+def write_json(data, fpth='data.json', sort_keys=True, indent=4, print_fpth=False, openFile=False):
+    '''
+    write output to json file
+    Args:
+        data
+        ** sort_keys = True
+        ** indent=4
+        ** fpth='data.json'
+        ** print_fpth=True
+        ** openFile=False
+        
+    Code:
+        out=json.dumps(data, sort_keys=sort_keys, indent=indent)
+        f = open(fpth,"w")
+        f.write(out)
+        f.close()
+        if print_fpth ==True:
+            print(fpth)
+        if openFile==True:
+            open_file(fpth)
+        return fpth
+    '''
+    out=json.dumps(data, sort_keys=sort_keys, indent=indent)
+    f = open(fpth,"w")
+    f.write(out)
+    f.close()
+    if print_fpth ==True:
+        print(fpth)
+    if openFile==True:
+        open_file(fpth)
+    return fpth
+
+def write_yaml(data, fpth='data.yaml', sort_keys=True, indent=4, print_fpth=True, openFile=False):
+    '''
+    write output to json file
+    Args:
+        data
+        ** sort_keys = True
+        ** fpth='data.json'
+        ** print_fpth=True
+        ** openFile=False
+    '''
+    with open(fpth, 'w') as outfile:
+        yaml.dump(data, outfile, sort_keys=sort_keys, default_flow_style=False)
+    if print_fpth ==True:
+        print(fpth)
+    if openFile==True:
+        open_file(fpth)
+    return fpth
 
