@@ -1,0 +1,17 @@
+name: ipyrun
+# channels priority
+# see https://bioconda.github.io/
+# conda-forge has highest prioriy
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python>=3.7
+  - numpy
+  - pandas
+  - altair
+  - jupyterlab
+  - voila
+  - pillow
+  - nodejs
+  - ipywidgets
