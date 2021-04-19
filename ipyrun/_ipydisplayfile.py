@@ -35,9 +35,9 @@ from xlsxtemplater import from_excel
 from ipyrun.mydocstring_display import display_module_docstring
 from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
 from ipyrun._runconfig import Output, Outputs
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
 
-BUTTON_WIDTH = '41px'
-BUTTON_HEIGHT = '25px'
+
 
 # +
 def mdboldstr(string, di):
@@ -82,7 +82,6 @@ def display_button_styles():
         display(widgets.HBox([b,t]))
 
 
-
 # +
 def get_ext(fpth):
     """get file extension including compound json files"""
@@ -112,6 +111,8 @@ def VegaLite(spec):
     bundle = {}
     bundle['application/vnd.vegalite.v4+json'] = spec
     display(bundle, raw=True);
+
+# +
 
 
 #  consider replacing this with beakerx
@@ -159,6 +160,12 @@ def default_ipyagrid(df,**kwargs):
     g = Grid(**_kwargs)
     return g
 
+df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
+default_ipyagrid(df)
+
+# +
+
+
 
 
 def _markdown(value='_Markdown_',
@@ -203,7 +210,7 @@ class PreviewPy():
         self.title = widgets.HTML('placeholder')
         self.show_fpth = _markdown('``` {} ```'.format(self.fpth))          
         self.show_me_the_code = widgets.ToggleButton(
-                              layout=widgets.Layout(width=BUTTON_WIDTH)
+                              layout=widgets.Layout(width=BUTTON_WIDTH_MIN)
         )
         self.headerbox = widgets.VBox([widgets.HBox([self.show_me_the_code, self.title]), self.show_fpth])
                                
@@ -260,13 +267,13 @@ def open_ui(fpth: str)-> [widgets.Button,widgets.Button]:
         openfolder
     """
     openfile = widgets.Button(
-        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),
+        layout=widgets.Layout(width=BUTTON_WIDTH_MIN, height=BUTTON_HEIGHT_MIN),
         icon='fa-file',
         tooltip='open file: {0}'.format(fpth),
         style={'font_weight': 'bold'})   #,'button_color':'white'
     openfolder = widgets.Button(
         #description='+', 
-        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),#,height='20px'
+        layout=widgets.Layout(width=BUTTON_WIDTH_MIN, height=BUTTON_HEIGHT_MIN),#,height='20px'
         icon='fa-folder',
         tooltip='open folder: {0}'.format(os.path.dirname(fpth)),
         style={'font_weight': 'bold'})  #,'button_color':'white'
@@ -482,7 +489,7 @@ def preview_output_ui(output: Output):
     openpreview = widgets.ToggleButton(
         #description='+', 
         icon='plus', 
-        layout=widgets.Layout(width=BUTTON_WIDTH, height=BUTTON_HEIGHT),
+        layout=widgets.Layout(width=BUTTON_WIDTH_MIN, height=BUTTON_HEIGHT_MIN),
         tooltip='preview file',
         style={'font_weight': 'bold','button_color':'white'})   
     openfile, openfolder = open_ui(output.fpth)  
