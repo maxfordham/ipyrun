@@ -138,7 +138,7 @@ def display_doc_imgs(li):
     [display(Image(l)) for l in li];
     
 def display_module_docstring(fpth):
-    d = module_docstring(fpth,function_name)
+    d = module_docstring(fpth)
     display(Markdown(d))
 
 def display_function_docstring(fpth,function_name):
