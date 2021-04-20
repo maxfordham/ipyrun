@@ -30,17 +30,12 @@ from datetime import datetime
 from pydantic.dataclasses import dataclass
 from pydantic.json import pydantic_encoder
 
-#from mf_modules.job_dirs import JobDirs, ScheduleDirs, make_dirs_from_fdir_keys
-from mf_om.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
-from mf_om.document import DocumentHeader
+from mfom.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
+from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
+from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_EXAMPLE, FPTH_SCRIPT_EXAMPLE
 # -
-
-FDIR_ROOT_EXAMPLE = os.path.join('..','examples','J0000')
-FDIR_EXAMPLE = os.path.join(FDIR_ROOT_EXAMPLE,'Automation','ExampleApp')
-FPTH_SCRIPT_EXAMPLE = os.path.join('..','examples','scripts','expansion_vessel_sizing.py')
-
 
 # + tags=[]
 def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.json'):
@@ -54,7 +49,7 @@ def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.j
 @dataclass
 class BaseParams:
     fdir: str = FDIR_EXAMPLE
-    fdir_appdata: str = os.path.join(fdir,'appdata')
+    fdir_appdata: str = 'None'
     fpth_script: str = FPTH_SCRIPT_EXAMPLE
     script_name: str = 'script_name'
     process_name: str = 'None'
