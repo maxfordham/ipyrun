@@ -1,5 +1,15 @@
+pip install ipyaggrid mydocstring 
+
 jupyter labextension install \
   @jupyter-widgets/jupyterlab-manager \
   jupyterlab-topbar-extension \
   jupyterlab-system-monitor \
   jupyterlab-topbar-text \ 
+  @jupyter-voila/jupyterlab-preview \
+  ipysheet \
+  ipytree \
+  @krassowski/jupyterlab_go_to_definition \
+  jupyterlab-spreadsheet \
+  jupyterlab-plotly \
+  plotlywidget \
+  ipyaggrid

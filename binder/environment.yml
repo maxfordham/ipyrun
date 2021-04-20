@@ -9,9 +9,27 @@ dependencies:
   - python>=3.7
   - numpy
   - pandas
-  - altair
   - jupyterlab
-  - voila
-  - pillow
-  - nodejs
+  - xeus-python
   - ipywidgets
+  - ipysheet
+  - ipyfilechooser
+  - voila
+  - plotly
+  - halo
+  - jupytext
+  - markdown
+  - nodejs
+  - altair
+  - pydantic
+  - dacite
+  - xmltodict
+  - pyyaml
+  - pillow
+  - pip
+  - click
+  - openpyxl
+  - xlsxwriter 
+  #- xlsxtemplater 
+  #- mf_file_utilities 
+  - mfom
