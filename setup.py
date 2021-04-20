@@ -9,11 +9,10 @@ with open('README.md') as readme_file:
 
 with open('requirements.txt') as requirements_file:
     requirements = requirements_file.readlines()
-requirements = [r.split('==')[0] for r in reqs] #  flexible requirements
+requirements = [r.split('==')[0] for r in requirements] #  flexible requirements
 
-setup_requirements = [ ]
-
-test_requirements = [ ]
+#setup_requirements = [ ]
+#test_requirements = [ ]
 
 setup(
     author="John Gunstone",
