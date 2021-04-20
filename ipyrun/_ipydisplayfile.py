@@ -38,6 +38,44 @@ from ipyrun._runconfig import Output, Outputs
 from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
 
 
+# +
+#  NOT IN USE - need a way to display pdf's!
+#  https://github.com/voila-dashboards/voila/issues/659
+
+def served_pdf():
+    import ipywidgets as widgets
+    value=r'<iframe width="500" height="600" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" frameborder="1" allowfullscreen></iframe>'
+    myhtml =widgets.HTML(
+        value=value,
+        placeholder='Some HTML',
+        description='Some HTML',
+    )
+    display(myhtml)
+    
+def local_pdf():
+    import ipywidgets as widgets
+    value=r'<iframe width="500" height="600" src="../test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
+    myhtml =widgets.HTML(
+        value=value,
+        placeholder='Some HTML',
+        description='Some HTML',
+    )
+    display(myhtml)
+    
+def fromfile_pdf():
+    import ipywidgets as widgets
+    value=r'<iframe width="500" height="600" src="file:///mnt/c/engDev/git_mf/ipyrun/test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
+    myhtml =widgets.HTML(
+        value=value,
+        placeholder='Some HTML',
+        description='Some HTML',
+    )
+    display(myhtml)
+
+#served_pdf()
+#local_pdf()
+#fromfile_pdf()
+
 
 # +
 def mdboldstr(string, di):
@@ -160,8 +198,9 @@ def default_ipyagrid(df,**kwargs):
     g = Grid(**_kwargs)
     return g
 
-df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
-default_ipyagrid(df)
+if __name__ == "__main__":
+    df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
+    default_ipyagrid(df)
 
 # +
 
@@ -278,31 +317,7 @@ def open_ui(fpth: str)-> [widgets.Button,widgets.Button]:
         tooltip='open folder: {0}'.format(os.path.dirname(fpth)),
         style={'font_weight': 'bold'})  #,'button_color':'white'
     return openfile, openfolder
-
-
-# -
-_markdown('`pasdfasfd `')
-
-# +
-import ipyregulartable as rt
-
-df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
-rt.RegularTableWidget(df)
-
-# +
-
-default_ipyagrid(df)
-# -
-
-import ipysheet
-ipysheet.from_dataframe(df)
-
-
-
 # + tags=[]
-
-
-
 class DisplayFile():
     """
     displays the contents of a file in the notebook.
@@ -464,7 +479,7 @@ class DisplayFile():
         else:
             self._open_option()
 
-# + tags=[] jupyter={"source_hidden": true}
+# + tags=[]
 
 def preview_output_ui(output: Output):
     """
@@ -569,7 +584,7 @@ class PreviewOutputs():
         self.display_PreviewOutputs()
 
 
-# + jupyter={"source_hidden": true} tags=[]
+# + tags=[]
 class DisplayFiles():
     def __init__(self, fpths, fpths_ignore=[], fpth_prefix=''):
         self.out = widgets.Output();
@@ -601,7 +616,6 @@ class DisplayFiles():
         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
         self._init_previews()
         self._init_form()
-
         self._init_controls()
 
     def _init_previews(self):
@@ -719,7 +733,5 @@ if __name__ =='__main__':
     display(p1)
     display(Markdown('---'))
     display(Markdown(''))
-
-
 
 
