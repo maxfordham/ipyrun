@@ -1,0 +1,17 @@
+Markdown==3.3.4
+pandas==1.2.4
+ipyfilechooser==0.4.3
+xlsxtemplater==0.1.5
+halo==0.0.31
+ipywidgets==7.6.3
+dacite==1.6.0
+ipysheet==0.4.4
+ipyregulartable==0.2.0
+plotly==4.14.3
+ipyaggrid==0.2.1
+mf_file_utilities==0.0.2
+pydantic==1.8.1
+mfom==0.1.1+1.gd4469b2.dirty
+dataclasses==0.8
+ipython==7.22.0
+PyYAML==5.4.1
