@@ -30,6 +30,6 @@ dependencies:
   - click
   - openpyxl
   - xlsxwriter 
-  #- xlsxtemplater 
-  #- mf_file_utilities 
+  - xlsxtemplater 
+  - mf_file_utilities 
   - mfom
