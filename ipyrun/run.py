@@ -13,7 +13,7 @@
 #     name: mf_base
 # ---
 
-from ipyrun._runconfig import RunConfig, AppConfig
+
 
 # +
 import os
@@ -43,35 +43,21 @@ from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
 # core mf_modules
-#from mf_modules.file_operations import make_dir
-#from mf_modules.pandas_operations import del_matching
-#from mf_modules.mydocstring_display import display_module_docstring
-#from mf_modules.jupyter_formatting import display_python_file
-#from mf_modules.pydtype_operations import read_json, write_json
 from mf_om.directories import JobDirs
 
-from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
-
-
 # from this repo
-# this is an unpleasant hack. should aim to find a better solution
-#try:
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._ipyeditcsv import EditCsv
 from ipyrun._ipyeditjson import EditJson
 from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
-#except:
-#    from _runconfig import RunConfig, AppConfig
-#    from _ipyeditcsv import EditCsv
-#    from _ipyeditjson import EditJson
-#    from _ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
+from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE
+
 
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
 # -
-
-
 
 # +
 class RunForm():
@@ -79,9 +65,8 @@ class RunForm():
     simple user input form for running scripts.
     the buttons are not connected to actions in this class.
     """
-    minwidth='50px'
-    medwidth='90px'
-    
+    minwidth=BUTTON_WIDTH_MIN
+    medwidth=BUTTON_WIDTH_MEDIUM
     
     def __init__(self):
         """
@@ -178,24 +163,6 @@ class RunForm():
 if __name__ == '__main__':
     display(RunForm())
 # -
-if __name__ == '__main__':
-    config_app={
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':r'C:\engDev\git_mf\ipypdt\example\J6667\Automation\Schedule',#NBFDIR,
-        'process_name':'process_name',
-        'script_outputs': [
-            {
-                    'fpth':r'..\reports\JupyterReportDemo.pdf',
-                    'description': "a pdf report from word"
-            },
-        ]
-    }
-    #config_job = JobDirs(fdirRoot='.')
-    config_app = from_dict(data=config_app,data_class=AppConfig)
-    rc = RunConfig(config_app)#,config_job=config_job,lkup_outputs_from_script=False
-    from pprint import pprint
-    pprint(rc.config)
-
 
 # +
 class RunApp(RunForm, RunConfig):
@@ -219,16 +186,14 @@ class RunApp(RunForm, RunConfig):
 
         Example:
             ```
+            from ipyrun._runconfig import AppConfig
             config={
                 'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
                 'fdir':NBFDIR,
                 }
-
+            config = AppConfig(**config)
             r = RunApp(config)
-            from ipyrun._ipyeditjson import
 
-            ui = EditListOfDicts(li)
-            ui
             ```
         """
         self.display_paths= False
@@ -382,27 +347,6 @@ class RunApp(RunForm, RunConfig):
                 display(Markdown('there a no output files listed. you likely still need to "run" the script'))
             else:
                 display(PreviewOutputs(self.config_app.script_outputs))
-            """OLD
-            fpths = self.config_app.fpths_outputs
-
-            if 'display_ignore' in self.config:
-                display_ignore = self.config['display_ignore']
-            else:
-                display_ignore = []
-
-            if 'display_prefix' in self.config:
-                display_prefix = self.config['display_prefix']
-            else:
-                display_prefix = ''
-
-            if len(fpths)==0:
-                display(Markdown('select the file(s) that you would like to display from the "outputs" list above '))
-            else:
-                for f in fpths:
-                    if not os.path.isfile(f) and not os.path.isdir(f):
-                        fpths.remove(f)
-                display(DisplayFiles(fpths, fpths_ignore=display_ignore, fpth_prefix=display_prefix))
-            """
 
     def _show_log(self, sender):
         with self.out:
@@ -437,7 +381,7 @@ def init_RunApp(app_def:RunAppDefinition) -> Type[RunApp]:
 
 if __name__ == '__main__':
     config={
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fpth_script':FPTH_SCRIPT_EXAMPLE,
         'fdir':NBFDIR,
         'ftyp':'csv',
         'script_outputs': [

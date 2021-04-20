@@ -25,28 +25,10 @@ requirements:
     
   run:
     - python
-    - numpy
-    - pandas
-    - click
-    - dataclasses
-    - typing
-    - dacite
-    - pydantic
-    - xmltodict
-    - plotly
-    - xlsxwriter
-    - markdown
-    - ipython
-    - ipysheet
-    - ipyfilechooser
-    - ipyaggrid
-    - halo
-    - mffileutilites # mf package
-    - xlsxtemplater # mf package
     # dependencies are defined in setup.py
-    # {% for dep in data['install_requires'] %}
-    # - {{ dep.lower() }}
-    # {% endfor %}
+    {% for dep in data['install_requires'] %}
+    - {{ dep.lower() }}
+    {% endfor %}
 
 about:
   home: https://github.com/gunstonej/ipyrun

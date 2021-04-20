@@ -32,23 +32,13 @@ import ipysheet
 from ipyrun.utils import make_dir, time_meta_data, del_matching
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController
-
 # -
 
 from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
 
 
-# +
-#import pandas as pd
-#import ipysheet
-#import ipywidgets as widgets
-#BUTTON_WIDTH_MIN = '41px'
-
-# +
-
 def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
 
 
 # +
@@ -57,7 +47,7 @@ class EditSheet():
     simple ui that allows user to edit an ipysheet. the sheet updates the property ```self.df``` (pd.DataFrame) on change
     and  "+" and "-" controls allow for adding and removing rows. can't start with less rows that you begin with. 
     """
-    def __init__(self, df, title=None, add_remove_rows=True, fn_on_change=None):
+    def __init__(self, df, title=None, add_remove_rows=True):
         self.df = df
         self.min_rows = len(df)
         self.title = title
@@ -85,7 +75,6 @@ class EditSheet():
         self.box = widgets.VBox([self.button_bar,self.sheet])
         
     def _init_controls(self):
-        #self.save_changes.on_click(self._save_changes)
         self.add_row.on_click(self._add_row)
         self.remove_row.on_click(self._remove_row)
         self._init_observe()
@@ -124,11 +113,8 @@ class EditSheet():
             self.display()
         
     def _onchange(self, change):
-        print('change')
         self.df = to_dataframe(self.sheet)
-        self.updated_time.value = now()
-        if self.fn_on_change is not None:
-            self.fn_on_change()
+        self.updated_time.value = now() # this can be watched for changes by other widgets... 
         
     def display(self):
         display(self.box)
@@ -178,11 +164,13 @@ class EditCsv(EditSheet):
     def _update_controls(self):
         self.save.on_click(self._save)
         
-    def _save(self):
+    def _save(self, onclick):
         self.df.to_csv(self.fpth_out)
         
 if __name__ =='__main__':
-    fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_csv.csv'))
+    df = pd.DataFrame.from_dict({'a':[0,1,2],'b':[1,2,3]})
+    fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_short_csv.csv'))
+    df.to_csv(fpth, index=None)
     csv = EditCsv(fpth)
     display(csv)
 
@@ -205,7 +193,8 @@ class EditRunAppCsv(FileConfigController):
 
     def _sheet_from_fpth(self, fpth):
         df=del_matching(pd.read_csv(fpth),'Unnamed')
-        sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
+        #sheet = ipysheet.sheet(ipysheet.from_dataframe(df)) # initiate sheet
+        sheet = EditSheet(df,add_remove_rows=False)
         return sheet
 
     def display_sheet(self):
@@ -224,7 +213,6 @@ class EditRunAppCsv(FileConfigController):
         self.display_sheet()
         self.update_display()
         self.display()
-
 
     def _save_changes(self, sender):
         """save changes to working inputs file"""
@@ -264,10 +252,17 @@ class EditRunAppCsv(FileConfigController):
         self.display()
         
 if __name__ == '__main__':
-    fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_csv.csv'))
-    #b = EditRunAppCsv(fpth)
-    #display(Markdown('### Example1'))
-    #display(Markdown('''EditCsv'''))
-    #display(b)
-    #display(Markdown('---'))
-    #display(Markdown(''))
+    from ipyrun.constants import FDIR_PACKAGE
+    config = {
+        'fdir':os.path.join(FDIR_PACKAGE,'test_appdir'),
+        'fpth_script':os.path.join(FDIR_PACKAGE,'test_scripts','expansion_vessel_sizing.py'),
+        'ftyp_inputs':'csv'
+    }
+    config = AppConfig(**config)
+    from ipyrun._runconfig import AppConfig
+    b = EditRunAppCsv(config)
+    display(Markdown('### Example1'))
+    display(Markdown('''EditCsv'''))
+    display(b)
+    display(Markdown('---'))
+    display(Markdown(''))

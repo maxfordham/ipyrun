@@ -34,7 +34,7 @@ from mfom.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
 from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
-from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_EXAMPLE, FPTH_SCRIPT_EXAMPLE
+from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE
 # -
 
 # + tags=[]
@@ -48,7 +48,7 @@ def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.j
 # base ------------------------------
 @dataclass
 class BaseParams:
-    fdir: str = FDIR_EXAMPLE
+    fdir: str = FDIR_APP_EXAMPLE
     fdir_appdata: str = 'None'
     fpth_script: str = FPTH_SCRIPT_EXAMPLE
     script_name: str = 'script_name'
@@ -337,7 +337,7 @@ def make_dirs_AppConfig(Ac: AppConfig):
 
 if __name__ =='__main__':
 
-    Ac = AppConfig(fdir=FDIR_EXAMPLE,
+    Ac = AppConfig(fdir=FDIR_APP_EXAMPLE,
                    process_name='pretty_name',
                    #pretty_name='boo',
                    fpth_script=FPTH_SCRIPT_EXAMPLE, 
@@ -504,7 +504,7 @@ if __name__ =='__main__':
     fpth_script=os.path.join('..','examples','scripts','expansion_vessel_sizing.py')
     
     config_app = ExtendAppConfig(
-        fdir=FDIR_EXAMPLE,
+        fdir=FDIR_APP_EXAMPLE,
         fpth_script=FPTH_SCRIPT_EXAMPLE,
         create_execute_file=True,
         process_name='GrilleSchedule',
@@ -521,7 +521,7 @@ if __name__ =='__main__':
 
     config = {
         'fpth_script':FPTH_SCRIPT_EXAMPLE,
-        'fdir':FDIR_EXAMPLE,
+        'fdir':FDIR_APP_EXAMPLE,
         'script_outputs': [
             {
                 'fpth':FPTH_SCRIPT_EXAMPLE,

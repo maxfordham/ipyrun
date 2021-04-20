@@ -1,5 +1,7 @@
 # conda-bld
 
+__note__. bash commands are assumed to be called from the root of this repo.
+
 ## mount conda channel
 
 - mount the network location

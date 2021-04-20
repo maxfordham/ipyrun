@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.11.1
 #   kernelspec:
-#     display_name: mf_base
+#     display_name: Python 3
 #     language: python
-#     name: mf_base
+#     name: python3
 # ---
 
 # +
@@ -29,8 +29,8 @@ import ipywidgets as widgets
 import ipysheet
 from ipysheet import from_dataframe, to_dataframe
 from ipyfilechooser import FileChooser
-# -
 
+# +
 # from this repo
 # this is an unpleasant hack. should aim to find a better solution
 # try:
@@ -38,10 +38,17 @@ from ipyrun.utils import make_dir, read_json, write_json
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
 from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
+from ipyrun._ipyeditcsv import EditSheet
 #except:
 #    from ._runconfig import RunConfig, AppConfig
 #    from ._filecontroller import FileConfigController, SelectEditSaveMfJson
 #    from ._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
+
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
+
+
+
+# -
 
 
 def _markdown(value='_Markdown_',
@@ -56,7 +63,7 @@ def _markdown(value='_Markdown_',
     return widgets.HTML(**_kwargs)
 
 
-# +
+# + tags=[]
 class EditDictData():
     """
     contains form layout specs and mapping dict used for associating input
@@ -204,6 +211,8 @@ class EditDictData():
 
 
 
+# -
+
 class EditDict(EditDictData):
     '''
     a class that is passed a dict and then guesses the most appropriate
@@ -279,11 +288,11 @@ class EditDict(EditDictData):
         self.widget_simple = widgets.HBox([self.widget_only,_markdown(self.di['label'])],layout=self.MF_FORM_ITEM_LAYOUT)
         self.widget_row = widgets.HBox([_markdown(self.di['name']),self.widget_simple],layout=self.MF_FORM_ITEM_LAYOUT1)
         if 'fpth_help' in self.di.keys():
-            self.guide = widgets.ToggleButton(icon='fa-question-circle',
-                                              description='help',
+            self.guide = widgets.ToggleButton(icon='question-circle',
+                                              #description='help',
                                               tooltip='gives guidance',
                                               style={'font_weight':'bold'},
-                                              layout=widgets.Layout(width='5%'))
+                                              layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
             self.guide.observe(self._guide, 'value')
             layout = widgets.HBox([self.widget_row ,self.guide],layout=self.MF_FORM_ITEM_LAYOUT2)
         elif self.widget_name == "FileChooser":
@@ -401,6 +410,13 @@ class EditDict(EditDictData):
             print(di_types)
             print(report)
         return widget_name, report
+    
+    def _show_hide_button_styling(self):
+        self.widget_only.layout=widgets.Layout(width=BUTTON_WIDTH_MIN)
+        if self.widget_only.value:
+            self.widget_only.icon = 'arrow-up'
+        else:
+            self.widget_only.icon = 'arrow-down'
 
     # -------------------------------------------------------------------------
     # code that allows for embedded list of dicts -----------------------------
@@ -408,12 +424,15 @@ class EditDict(EditDictData):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
         self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
+        self._show_hide_button_styling()
         self._recursive_controls()
 
     def _recursive_controls(self):
         self.widget_only.observe(self._call_GuessWidget, 'value')
+        
 
     def _call_GuessWidget(self, sender):
+        self._show_hide_button_styling()
         self.nested_g = EditListOfDicts(self.di['value'])
         self.di['value'] = self.nested_g.li
         with self.out:
@@ -421,38 +440,43 @@ class EditDict(EditDictData):
                 display(self.nested_g)
             else:
                 clear_output()
+                
     # --------------------------------------------------------------------------
     # code that allows for embedded ipysheets ----------------------------------
     def _ipysheet(self):
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
-        self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
-        self.save_ipysheet = widgets.Button(description='save')
+        self._show_hide_button_styling()
         self._ipysheet_controls()
 
     def _ipysheet_controls(self):
         self.widget_only.observe(self.call_ipysheet, 'value')
-        self.save_ipysheet.on_click(self._save_ipysheet)
+        
+    def _watch_sheet(self,onchange):
+        self.di['value'] = self.sheet.df.to_json()
 
     def call_ipysheet(self, sender):
+        self._show_hide_button_styling()
         tmp = pd.read_json(self.di['value'])
-        self.sheet = ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
+        #self.sheet = ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
+        self.sheet = EditSheet(tmp)
+        self.sheet.updated_time.observe(self._watch_sheet, 'value')
         with self.out:
             if self.widget_only.value:
-                display(self.save_ipysheet)
+                #display(self.save_ipysheet)
                 display(self.sheet)
             else:
                 clear_output()
 
-    def _save_ipysheet(self, change):
-        tmp = to_dataframe(self.sheet)
-        self.di['value'] = tmp.to_json()
-        with self.out:
-            clear_output()
-            dateTimeObj = datetime.now()
-            timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
-            display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
-        self.display()
+    #def _save_ipysheet(self, change):
+    #    tmp = to_dataframe(self.sheet)
+    #    self.di['value'] = tmp.to_json()
+    #    with self.out:
+    #        clear_output()
+    #        dateTimeObj = datetime.now()
+    #        timestampStr = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S:")
+    #        display(Markdown('{0} changes to sheet saved. hit save in main dialog to save to file'.format(timestampStr)))
+    #    self.display()
     # --------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------
@@ -518,6 +542,30 @@ class EditDict(EditDictData):
 
     def _ipython_display_(self):
         self.display()
+
+if __name__ == "__main__":
+    di =     {
+        "fpth_help": "../test_filetypes/eg_png.png",
+        "label": "its a delicious foo cake",
+        "name": "reous foo ous foo st",
+        "value": 9.0
+    }
+    #di1['value'] = di
+    e = EditDict(di)
+    display(e)
+
+if __name__ == "__main__":
+    df = pd.DataFrame.from_dict({'a':[0,1,2],'b':[1,2,3]})
+    di =     {
+        "fpth_help": "../test_filetypes/eg_png.png",
+        "label": "its a delicious foo cake",
+        "name": "reous foo ous foo st",
+        "value": df.to_json(),
+        'widget':'ipysheet'
+    }
+    #di1['value'] = di
+    e = EditDict(di)
+    display(e)
 
 
 # +
@@ -662,9 +710,7 @@ class EditListOfDicts():
 if __name__ =='__main__':
 
     # FORM ONLY EXAMPLE
-    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(NBFDIR,r'appdata\inputs\test.json')
-    fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
+    fpth = os.path.join(FDIR_PACKAGE,'ipyrun','appdata','inputs','inputs-test.json') #FDIR_APP_EXAMPLE   
     li = read_json(fpth)
     g = EditListOfDicts(li)
     display(Markdown('### Example0'))
@@ -729,8 +775,7 @@ class SimpleEditJson(EditListOfDicts):
 
 if __name__ =='__main__':
     # Example1
-    FDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
+    fpth = os.path.join(FDIR_PACKAGE,'ipyrun','appdata','inputs','inputs-file_chooser_test.json')
     simpleeditjson = SimpleEditJson(fpth)
     # display
     display(Markdown('### Example1'))
@@ -823,30 +868,25 @@ class EditJson(EditListOfDicts, FileConfigController):
 
         
 if __name__ =='__main__':
-    # Example2
-    # EDIT JSON FILE with custom config and file management
-    config={
-        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':'.',
-        'script_outputs': [
-            {
-            'fpth': r'..\reports\JupyterReportDemo.pdf',
-            'description': "a pdf report from word"
-            }
-            ]
-        }
-    from dacite import from_dict
-    config = from_dict(data=config,data_class=AppConfig) 
-    editjson = EditJson(config)
-    # display
-    display(Markdown('### Example2'))
-    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
-    display(editjson)
+    
+    from ipyrun.constants import FDIR_PACKAGE
+    config = {
+        'fdir':os.path.join(FDIR_PACKAGE,'test_appdir'),
+        'fpth_script':os.path.join(FDIR_PACKAGE,'test_scripts','gbxml_reader.py'),
+        'ftyp_inputs':'json'
+    }
+    config = AppConfig(**config)
+    from ipyrun._runconfig import AppConfig
+    b = EditJson(config)
+    display(Markdown('### Example1: EditJson'))
+    display(b)
     display(Markdown('---'))
     display(Markdown(''))
-
+    
 
 # -
+
+
 
 # not in use
 class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
@@ -931,11 +971,13 @@ class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
         self._display()
 
 if __name__ =='__main__':
+    # NEED TO UPDATE EXAMPLES!
 
     # FORM ONLY EXAMPLE
-    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = os.path.join(NBFDIR,r'appdata\inputs\test.json')
+
+    fpth = os.path.join(FDIR_PACKAGE,r'appdata\inputs\test.json')
     fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
+    fpth = os.path.join(FDIR_PACKAGE,'examples','notebooks','appdata','inputs','inputs-expansion_vessel_sizing.json')
     li = read_json(fpth)
     g = EditListOfDicts(li)
     display(Markdown('### Example0'))
@@ -944,17 +986,57 @@ if __name__ =='__main__':
     display(Markdown('---'))
     display(Markdown(''))
 
-
+if __name__ =='__main__':
     # Example1
     FDIR = os.path.dirname(os.path.realpath('__file__'))
     fpth = os.path.join(FDIR,r'appdata/inputs/inputs-file_chooser_test.json')
-    simpleeditjson = SimpleEditJson(fpth)
+    #simpleeditjson = SimpleEditJson(fpth)
     # display
     display(Markdown('### Example1'))
     display(Markdown('''Simple Edit Json'''))
-    display(simpleeditjson)
+    #display(simpleeditjson)
     display(Markdown('---'))
     display(Markdown(''))
+
+if __name__ =='__main__':
+    # Example2
+    # EDIT JSON FILE with custom config and file management
+    config={
+        'fpth_script':os.path.join(os.environ['mf_root'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
+        'fdir':'.',
+        'script_outputs': [
+            {
+            'fdir':'..\reports',
+            'fnm': r'JupyterReportDemo.pdf',
+            'description': "a pdf report from word"
+            }
+            ]
+        }
+    editjson = EditJson(config)
+    # display
+    display(Markdown('### Example2'))
+    display(Markdown('''EDIT JSON FILE with custom config and file management'''))
+    display(editjson)
+    display(Markdown('---'))
+    display(Markdown(''))
+
+if __name__ =='__main__':
+    # Example4
+    # EDIT JSON with DatePicker and DerivedText widgets
+    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
+    fpth = os.path.join(FDIR_PACKAGE,'examples','scripts','template_inputs','inputs-create_model_run_file.json')
+    li = read_json(fpth)
+    g = EditListOfDicts(li)
+
+    display(Markdown('### Example4'))
+    display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
+    display(Markdown('''EDIT JSON with DatePicker and DerivedText widgetss'''))
+    display(g)
+    display(Markdown('---'))
+    display(Markdown(''))
+
+if __name__ =='__main__':
+    # THE BELOW ARE MOSTLY FOR DELETING
 
     # Example2
     # EDIT JSON FILE with custom config and file management
@@ -988,21 +1070,6 @@ if __name__ =='__main__':
     display(Markdown('### Example3'))
     display(Markdown('''EDIT NESTED JSON FILE with custom config and file management'''))
     display(editnestedjson)
-    display(Markdown('---'))
-    display(Markdown(''))
-
-
-    # Example4
-    # EDIT JSON with DatePicker and DerivedText widgets
-    NBFDIR = os.path.dirname(os.path.realpath('__file__'))
-    fpth = r'C:\engDev\git_mf\ipyrun\examples\scripts\template_inputs\inputs-create_model_run_file.json'
-    li = read_json(fpth)
-    g = EditListOfDicts(li)
-
-    display(Markdown('### Example4'))
-    display(Markdown('''Edit list of dicts iwth date picker and derived input'''))
-    display(Markdown('''EDIT JSON with DatePicker and DerivedText widgetss'''))
-    display(g)
     display(Markdown('---'))
     display(Markdown(''))
 
@@ -1046,3 +1113,5 @@ if __name__ =='__main__':
     display(editmfjson)
     display(Markdown('---'))
     display(Markdown(''))
+
+
