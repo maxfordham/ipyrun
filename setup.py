@@ -4,13 +4,12 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
-requirements = [ ]
+with open('requirements.txt') as requirements_file:
+    requirements = requirements_file.readlines()
+requirements = [r.split('==')[0] for r in reqs] #  flexible requirements
 
 setup_requirements = [ ]
 
@@ -34,14 +33,15 @@ setup(
     description="A generic user interface for running scripts. Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and data files are generated as outputs when the script is run. A timestamped record of script execution is maintained. An ipywdiget user interface allows users to edit script input data and view outputs of script execution.",
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
+    long_description_content_type="text/markdown",
     include_package_data=True,
     keywords='ipyrun',
     name='ipyrun',
     packages=find_packages(include=['ipyrun', 'ipyrun.*']),
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements,
+    #setup_requires=setup_requirements,
+    #test_suite='tests',
+    #tests_require=test_requirements,
     url='https://github.com/gunstonej/ipyrun',
     version='0.1.0',
     zip_safe=False,
