@@ -10,7 +10,7 @@ dependencies:
   - python>=3.7
   - numpy
   - pandas
-  - jupyterlab==3.0.14
+  - jupyterlab=3.0.14
   - xeus-python
   - ipywidgets
   - ipysheet
