@@ -1,12 +1,9 @@
 pip install ipyaggrid mydocstring 
   
-set NODE_OPTIONS=--max-old-space-size=4096
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-jupyter labextension install @jupyter-voila/jupyterlab-preview
-jupyter labextension install ipysheet
+jupyter labextension install @jupyter-widgets/jupyterlab-manager 
 jupyter labextension install jupyterlab-plotly
 jupyter labextension install plotlywidget
 jupyter labextension install ipyaggrid
-jupyter labextension install jupyterlab-spreadsheet
-set NODE_OPTIONS=
+jupyter labextension install ipysheet
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
 jupyter lab build
