@@ -4,12 +4,19 @@
 
 from setuptools import setup, find_packages
 
+#  from mf_modules.pydtype_operations import diff
+def diff(li1, li2): 
+    '''find the difference between 2 lists'''
+    return [i for i in li1 + li2 if i not in li1 or i not in li2]  
+
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
 with open('requirements.txt') as requirements_file:
     requirements = requirements_file.readlines()
 requirements = [r.split('==')[0] for r in requirements] #  flexible requirements
+piponly = ['ipyaggrid']
+requirements = diff(requirements, piponly)
 
 #setup_requirements = [ ]
 #test_requirements = [ ]

@@ -5,6 +5,7 @@ name: ipyrun
 channels:
   - defaults
   - conda-forge
+  - http://10.10.30.125:8000/conda-bld
 dependencies:
   - python>=3.7
   - numpy
