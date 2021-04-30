@@ -52,7 +52,6 @@ class EditSheet():
         self.min_rows = len(df)
         self.title = title
         self.add_remove_rows = add_remove_rows
-        self.fn_on_change = fn_on_change
         self._init_sheet()
         self.form()
         self._add_remove_rows()

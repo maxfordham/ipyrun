@@ -35,7 +35,7 @@ from xlsxtemplater import from_excel
 from ipyrun.mydocstring_display import display_module_docstring
 from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_file, recursive_glob, time_meta_data, read_json, read_yaml, read_txt
 from ipyrun._runconfig import Output, Outputs
-from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 
 
 # +
@@ -348,7 +348,7 @@ class DisplayFile():
             }
     """
     def __init__(self,
-                 fpth=os.path.join(os.environ['MF_ROOT'],r'ipyrun\data\eg_filetypes\eg_plotly.plotly'),
+                 fpth=os.path.join(FDIR_PACKAGE,'test_filetypes','eg_plotly.plotly'),
                  description=None,
                 ):
         self.fpth = fpth
