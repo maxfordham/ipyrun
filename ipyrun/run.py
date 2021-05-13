@@ -8,12 +8,10 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.11.1
 #   kernelspec:
-#     display_name: mf_base
+#     display_name: Python 3
 #     language: python
-#     name: mf_base
+#     name: python3
 # ---
-
-
 
 # +
 import os
@@ -51,13 +49,12 @@ from ipyrun._ipyeditcsv import EditCsv
 from ipyrun._ipyeditjson import EditJson
 from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
-from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE
-
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE_CSV, FPTH_RUNAPP_HELP
+from ipyrun.mydocstring_display import display_module_docstring
 
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
-# -
 
 # +
 class RunForm():
@@ -162,14 +159,13 @@ class RunForm():
         
 if __name__ == '__main__':
     display(RunForm())
-# -
 
 # +
 class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface
     """
-    def __init__(self,config_app:Type[AppConfig] = AppConfig()):
+    def __init__(self,config_app:Type[AppConfig] = AppConfig(), app_config_revert_to_file=True):
         """
         class that builds a user interface for:
         - editing inputs,
@@ -197,14 +193,13 @@ class RunApp(RunForm, RunConfig):
             ```
         """
         self.display_paths= False
-        self._init_RunApp(config_app)
+        self._init_RunApp(config_app, app_config_revert_to_file=app_config_revert_to_file)
         
-
-    def _init_RunApp(self,config_app):
+    def _init_RunApp(self,config_app, app_config_revert_to_file=True):
         self.config_app = config_app
         self.out = widgets.Output()
         self.errors = []
-        self._init_RunConfig(config_app) #,config_job=config_app.config_job
+        self._init_RunConfig(config_app, revert_to_file=app_config_revert_to_file) #,config_job=config_app.config_job
         self.form()
         self.outputsfpth.options = self.config_app.fpths_outputs#[]#
         self.show_me_the_code = widgets.Button(description='show source code',
@@ -227,9 +222,12 @@ class RunApp(RunForm, RunConfig):
     # ANTICIPATED THAT THE USER TO INHERIT AND EDIT THESE FUNCTIONS ---------
         
     def pre_execute_func(self):
+        """this function is executed before the process runs. does nothing by default. user to extend. 
+        e.g. create fpth_execute """
         pass
 
     def post_execute_func(self):
+        """this function is executed after the process runs. does nothing by default. user to extend. e.g. create fpth_execute """
         pass
 
     def execute(self):
@@ -252,7 +250,7 @@ class RunApp(RunForm, RunConfig):
     def _help(self, sender):
         with self.out:
             clear_output()
-            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunApp.png')
+            fpth = FPTH_RUNAPP_HELP
             display(Image(fpth))
 
     def _reset(self, sender):
@@ -364,7 +362,6 @@ class RunApp(RunForm, RunConfig):
     def _ipython_display_(self):
         self.display()
 
-
 @dataclass 
 class RunAppDefinition:
     """input fields and types required for 1 RunApp from a list of RunApps"""
@@ -379,47 +376,62 @@ def init_RunApp(app_def:RunAppDefinition) -> Type[RunApp]:
 
 # -
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    from ipyrun.utils import read_json, write_json, di_from_li_of_di
+    from ipyrun._runconfig import Output
+
+    class RunAppExpansionVessel(RunApp):
+
+        def __init__(self, config_app,app_config_revert_to_file=False):
+            super().__init__(config_app,app_config_revert_to_file=app_config_revert_to_file)
+
+        def pre_execute_func(self):
+            li = read_json(self.config_app.fpth_inputs)
+            di = di_from_li_of_di(li, 'name', 'value')
+            di['fpth_output'] = os.path.join(self.config_app.fdir,self.config_app.process_name + '-output.csv')
+            write_json(di,fpth=self.config_app.fpth_execute)
+            self.config_app.script_outputs = [Output(di['fpth_output'])]
+            print(self.config_app.fpth_execute)
+
+        def execute(self):
+            subprocess.check_output(['python','-O', self.config_app.fpth_script, self.config_app.fpth_execute])
+
     config={
         'fpth_script':FPTH_SCRIPT_EXAMPLE,
-        'fdir':NBFDIR,
-        'ftyp':'csv',
-        'script_outputs': [
-            {
-                    'fpth': r'..\reports\JupyterReportDemo.pdf',
-                    'description': "a pdf report from word"
-            },
-        ]
+        'fdir':FDIR_APP_EXAMPLE,
+        'create_execute_file':True
     }
-    #config_app = RunAppInput(
-    #    config_app=from_dict(data=config,data_class=AppConfig),
-    #    config_job=JobDirs()
-    #)
-    config_app=from_dict(data=config,data_class=AppConfig)
-    rjson = RunApp(config_app)#config, config_job=JobDirs(fdirRoot='.')
+    config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
+    rjson = RunAppExpansionVessel(config_app)#config, config_job=JobDirs(fdirRoot='.')
     display(rjson)
 
-
-# +
-# Example2 --------------------------
-class RunAppEditCsv(RunApp):
-
-    def __init__(self, config_app):
-        super().__init__(config_app)
-
-    def _edit_inputs(self, sender):
-        with self.out:
-            clear_output()
-            display(EditCsv(self.config_app))
-            
 if __name__ == '__main__':
+    from ipyrun._ipyeditcsv import EditRunAppCsv # TODO: i think there is an issue with "EditRunAppCsv" that needs fixing
+    # Example2 --------------------------
+    class RunAppEditCsvLineGraph(RunApp):
 
-    config_app=AppConfig(
-            fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-            fdir='.',
+        def __init__(self, config_app):
+            super().__init__(config_app)
+
+        def _edit_inputs(self, sender):
+            with self.out:
+                clear_output()
+                display(EditRunAppCsv(self.config_app))
+
+        def execute(self):
+            fpth_csv = os.path.join(self.config_app.fdir, self.config_app.process_name + '-output.csv')
+            fpth_plotly = os.path.join(self.config_app.fdir, self.config_app.process_name + '-output.plotly.json')
+            subprocess.check_output(['python','-O', self.config_app.fpth_script, self.config_app.fpth_inputs, fpth_csv, fpth_plotly])
+            self.config_app.script_outputs = [Output(fpth_csv),Output(fpth_plotly)]
+
+
+    config_app_line_graph=AppConfig(
+            fpth_script=FPTH_SCRIPT_EXAMPLE_CSV,
+            fdir=FDIR_APP_EXAMPLE,
             ftyp_inputs='csv'
         )
-    rcsv = RunAppEditCsv(config_app)
+    
+    rcsv = RunAppEditCsvLineGraph(config_app)
     display(rcsv)
 
 
@@ -528,71 +540,48 @@ class RunApps():
         self.display()
 # -
 
+
+
 if __name__ == '__main__':
-    # Example3 --------------------------
-    config_app=AppConfig(
-        fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        fdir='.',
-        ftyp_inputs='csv'
-    )
-    app_def = RunAppDefinition(
-        config_app=config_app,
-        app=RunAppEditCsv
-    )
 
-    defaultrunapp={
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': [
-                {
-                'fpth':r'..\reports\JupyterReportDemo.pdf',
-                'description': "a pdf report from word"
-                }
-            ]
+    config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
+    appdef = RunAppDefinition(config_app=config_app_expansion_vessel)
+    appdefs = []
+    
+    for n in range(0,3):
+        config={
+            'fpth_script':FPTH_SCRIPT_EXAMPLE,
+            'fdir':FDIR_APP_EXAMPLE,
+            'create_execute_file':True,
+            'process_name':'expansion_vessel-{}'.format(str(n))
         }
-    config_app=from_dict(data=defaultrunapp,data_class=AppConfig)
-    app1_def = RunAppDefinition(
-        config_app=config_app,
-    )
-
-    runapps = RunApps([app_def,app1_def])
-
+        config_app = from_dict(data=config, data_class=AppConfig)
+        appdef = RunAppDefinition(config_app=config_app, app=RunAppExpansionVessel)
+        appdefs.append(appdef)
+    
+    for n in range(0,2):
+        config_app_line_graph=AppConfig(
+                fpth_script=FPTH_SCRIPT_EXAMPLE_CSV,
+                fdir=FDIR_APP_EXAMPLE,
+                ftyp_inputs='csv',
+                process_name='line_graph-{}'.format(str(n))
+            )
+        appdef = RunAppDefinition(config_app=config_app_line_graph, app=RunAppEditCsvLineGraph)
+        appdefs.append(appdef)
+    
+    config={
+        'fpth_script':FPTH_SCRIPT_EXAMPLE,
+        'fdir':FDIR_APP_EXAMPLE,
+        'create_execute_file':True
+    }
+    config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
     display(Markdown('### Example3'))
     display(Markdown('''
-    demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
-    RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:
-
-    ```
-    # Example3 --------------------------
-    config_app=AppConfig(
-        fpth_script=os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\eplus_pipework_params.py'),
-        fdir='.',
-        ftyp_inputs='csv'
-    )
-    app_def = RunAppDefinition(
-        config_app=config_app,
-        app=RunAppEditCsv
-    )
-
-    defaultrunapp={
-        'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py'),
-        'fdir':NBFDIR,
-        'script_outputs': [
-                {
-                'fpth':r'..\reports\JupyterReportDemo.pdf',
-                'description': "a pdf report from word"
-                }
-            ]
-        }
-    config_app=from_dict(data=defaultrunapp,data_class=AppConfig)
-    app1_def = RunAppDefinition(
-        config_app=config_app,
-    )
-
-    runapps = RunApps([app_def,app1_def])
-
-    ```
+demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
+RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:
     '''))
+    runapps = RunApps(appdefs)
+
     display(runapps)
     display(Markdown('---'))
     display(Markdown(''))
