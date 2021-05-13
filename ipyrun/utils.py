@@ -307,3 +307,23 @@ def write_yaml(data, fpth='data.yaml', sort_keys=True, indent=4, print_fpth=True
         open_file(fpth)
     return fpth
 
+def di_from_li_of_di(li_of_di,key,value):
+    '''
+    returns first matching dict from list of dicts
+
+    Code:
+        {l[key]: l[value] for l in li_of_di}
+
+    Example:
+    
+        li_of_di = [
+         { "name": "Tom", "age": 10 },
+         { "name": "Tom", "age": 5 },
+         { "name": "Pam", "age": 7 },
+         { "name": "Dick", "age": 12 }
+         ]
+         
+         di_from_li_of_di(li_of_di,"name","Tom")
+         >>> {'name': 'Tom', 'age': 10}
+    '''
+    return {l[key]: l[value] for l in li_of_di}
