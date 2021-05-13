@@ -6,7 +6,6 @@ halo==0.0.31
 ipywidgets==7.6.3
 dacite==1.6.0
 ipysheet==0.4.4
-ipyregulartable==0.2.0
 plotly==4.14.3
 ipyaggrid==0.2.1
 mf_file_utilities==0.0.2
