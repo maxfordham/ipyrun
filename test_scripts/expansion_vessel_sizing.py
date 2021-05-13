@@ -42,7 +42,7 @@ Calculates sizes and/or pressure ratings for heating system, including the expan
         BS7074 - page?
 
 Image:
-    %MF_ROOT%\engDevSetup\dev\icons\icon_png\expansion_vessel.jpg
+    images/expansion_vessel_sizing.jpg
 """
 
 import os
@@ -155,7 +155,7 @@ def ev_sizing(water_volume_m3=15,
     df = pd.DataFrame.from_dict(di,orient='index').rename(columns={0:'value'})
     return df.reset_index()
 
-def main(inputs, outputs):
+def main(di_inputs):
 
     #out = header.copy()
     #out['sheet_name'] = 'ev_sizing'
@@ -163,73 +163,33 @@ def main(inputs, outputs):
     ## out['xlsx_params'] = params_readme(df)
     #fpth = 'ev_sizing.xlsx'
     #to_excel(out, fpth, open=True)
+    fpth_output = di_inputs['fpth_output']
+    di_inputs.pop('fpth_output')
+    df = ev_sizing(**di_inputs)
+    df.to_csv(fpth_output)
 
-    df = ev_sizing(**inputs)
-    df.to_csv(outputs['0'])
-
-    return df
-
-script_outputs = [
-    {
-        'fdir':'.', # relative to the location of the App / Notebook file
-        'fnm': r'expansion_vessel_sizing.csv',
-        'description': "a simple calc for sizing expansion vessels. could be expanded to size many vessels."
-    }
-]
+    return fpth_output
 
 if __name__ == '__main__':
-
-    if __debug__ == True:
-        # you can hard-code some tests for fpth_config and fpth_inputs below.
+    
+    if __debug__:
+        print('debug == {}'.format(__debug__))
         import sys
-        import os
-        fpth_config = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\config\config-expansion_vessel_sizing.json'#sys.argv[1]
-        fpth_inputs = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'# sys.argv[2]
+        from ipyrun.utils import read_json
+        from ipyrun.constants import FDIR_APP_EXAMPLE
+        fpth_execute = os.path.join(FDIR_APP_EXAMPLE,'appdata','execute','execute-expansion_vessel_sizing.json')
+        di_inputs = read_json(fpth_execute)
+        fpth_output = main(di_inputs)
         print('fpth_script: {0}'.format(sys.argv[0]))
-        print('fpth_config: {0}'.format(fpth_config))
-        print('fpth_inputs: {0}'.format(fpth_inputs))
-        from mf_modules.pydtype_operations import read_json
-        from mf_modules.file_operations import make_dir
-
-        # get config and input data
-        # config
-        config = read_json(fpth_config)
-        os.chdir(config['fdir']) # change the working dir to the app that is executing the script
-        outputs = config['fpths_outputs']
-        [make_dir(fdir) for fdir in config['fdir_outputs']]
-        # inputs
-        inputs = read_json(fpth_inputs)
-
-        # this is the only bit that will change between scripts
-        calc_inputs = {}
-        [calc_inputs.update({l['name']:l['value']}) for l in inputs];
-        main(calc_inputs,outputs)
-        print('done')
-
-
+        print('fpth_execute: {0}'.format(fpth_execute))
+        print('fpth_output: {0}'.format(fpth_output))
     else:
-        # this is the bit that will be executed by the script
         import sys
-        import os
-        fpth_config = sys.argv[1]
-        fpth_inputs = sys.argv[2]
+        from ipyrun.utils import read_json
+        fpth_execute = sys.argv[1]
+        di_inputs = read_json(fpth_execute)
+        fpth_output = main(di_inputs)
         print('fpth_script: {0}'.format(sys.argv[0]))
-        print('fpth_config: {0}'.format(fpth_config))
-        print('fpth_inputs: {0}'.format(fpth_inputs))
-        from mf_modules.pydtype_operations import read_json
-        from mf_modules.file_operations import make_dir
+        print('fpth_execute: {0}'.format(fpth_execute))
+        print('fpth_output: {0}'.format(fpth_output))
 
-        # get config and input data
-        # config
-        config = read_json(fpth_config)
-        os.chdir(config['fdir']) # change the working dir to the app that is executing the script
-        outputs = config['fpths_outputs']
-        [make_dir(fdir) for fdir in config['fdir_outputs']]
-        # inputs
-        inputs = read_json(fpth_inputs)
-
-        # this is the only bit that will change between scripts
-        calc_inputs = {}
-        [calc_inputs.update({l['name']:l['value']}) for l in inputs];
-        df = main(calc_inputs,outputs)
-        print('done')
