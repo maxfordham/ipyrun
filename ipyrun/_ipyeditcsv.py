@@ -41,13 +41,12 @@ def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-# +
 class EditSheet():
     """
     simple ui that allows user to edit an ipysheet. the sheet updates the property ```self.df``` (pd.DataFrame) on change
     and  "+" and "-" controls allow for adding and removing rows. can't start with less rows that you begin with. 
     """
-    def __init__(self, df, title=None, add_remove_rows=True):
+    def __init__(self, df, title='', add_remove_rows=True):
         self.df = df
         self.min_rows = len(df)
         self.title = title
@@ -59,9 +58,9 @@ class EditSheet():
         
     def _add_remove_rows(self):
         if self.add_remove_rows:
-            self.box.children = [self.button_bar,self.sheet]
+            self.button_bar.children = [self.add_row,self.remove_row]
         else:
-            self.box.children = [self.sheet]
+            self.button_bar.children = []
             
     def _init_sheet(self):
         self.sheet = ipysheet.from_dataframe(self.df) # initiate sheet
@@ -70,8 +69,10 @@ class EditSheet():
         self.add_row = widgets.Button(icon='fa-plus',tooltip='add row',button_style='success', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
         self.remove_row = widgets.Button(icon='fa-minus',tooltip='remove row',button_style='danger', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
         self.updated_time = widgets.HTML(now())
-        self.button_bar = widgets.HBox([self.add_row,self.remove_row,self.updated_time])
-        self.box = widgets.VBox([self.button_bar,self.sheet])
+        self.html_title = widgets.HTML('<b>{}</b>'.format(self.title))
+        self.button_bar = widgets.HBox([])
+        self.bar = widgets.HBox([self.button_bar, self.html_title, self.updated_time], layout=widgets.Layout(display='flex',flex_flow='row',justify_content='space-between'))
+        self.box = widgets.VBox([self.bar, self.sheet])
         
     def _init_controls(self):
         self.add_row.on_click(self._add_row)
@@ -121,6 +122,8 @@ class EditSheet():
     def _ipython_display_(self):
         self.display()
 
+
+# +
 def debugsheet(sheet):
     
     def debugcells(cell):
@@ -135,30 +138,35 @@ def debugsheet(sheet):
     
 if __name__ =='__main__':
     df = pd.DataFrame.from_dict({'a':[0,1,2],'b':[1,2,3]})
-    e = EditSheet(df, add_remove_rows=True)
+    e = EditSheet(df, add_remove_rows=True, title='title')
     display(e)
 
 
 # +
 class EditCsv(EditSheet):
     """a simple csv editor that allows the user to add and remove rows from the table"""
-    def __init__(self, fpth_in, fpth_out=None, title=None):
+    def __init__(self, fpth_in, fpth_out=None, title=None, add_remove_rows=True):
         self.fpth_in = fpth_in
         if fpth_out is None:
             self.fpth_out = fpth_in
-            
         else:
             self.fpth_out = fpth_out
         if title is None:
             title = 'edit: {0}'.format(self.fpth_out)
         df = pd.read_csv(self.fpth_in)
-        super().__init__(df)
-        self._update_form()
+        self._save_form()
+        super().__init__(df,title=title,add_remove_rows=add_remove_rows)
         self._update_controls()
         
-    def _update_form(self):
+    def _add_remove_rows(self):
+        if self.add_remove_rows:
+            self.button_bar.children = [self.save, self.add_row,self.remove_row]
+        else:
+            self.button_bar.children = [self.save]
+        
+    def _save_form(self):
         self.save = widgets.Button(icon='fa-save',tooltip='add row',button_style='success', layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
-        self.button_bar.children = [self.save,self.add_row,self.remove_row]
+        #self.button_bar.children = [self.save,self.add_row,self.remove_row]
         
     def _update_controls(self):
         self.save.on_click(self._save)
@@ -170,7 +178,7 @@ if __name__ =='__main__':
     df = pd.DataFrame.from_dict({'a':[0,1,2],'b':[1,2,3]})
     fpth = os.path.realpath(os.path.join(FDIR,'..','test_filetypes','eg_short_csv.csv'))
     df.to_csv(fpth, index=None)
-    csv = EditCsv(fpth)
+    csv = EditCsv(fpth,add_remove_rows=False)
     display(csv)
 
 
@@ -180,7 +188,6 @@ class EditRunAppCsv(FileConfigController):
     """
     for use when csv is the argument to a script
     """
-
     def __init__(self,config):
         #self.config = config
         self.out = widgets.Output()
