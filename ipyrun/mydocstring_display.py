@@ -51,7 +51,9 @@ def list_items_after(li,after='Image'):
         index = [n for n in range(0,len(li_)) if li_[n]]
         return li[index[0]:index[len(index)-1]+1]
 
-def docstring_img_list(doc):
+def docstring_img_list(doc, fpth=None):
+    """creates list of fpths for images. 
+    if fpth != None, assumes images are relative to script files"""
 
     def get_imgs(li):
         li1=[]
@@ -62,15 +64,6 @@ def docstring_img_list(doc):
                 li1.append(li[n].strip())
         li1 = list(filter(None, li1))
         return li1
-
-    def replace_env_var(s):
-        char='%'
-        ind = [n for n in range(0,len(list(s))) if list(s)[n]==char]
-        var = ''.join(list(s)[ind[0]:ind[1]+1])
-        return s.replace(var,os.environ[var.replace(char,'')])
-
-    def replace_env_vars(li):
-        return [replace_env_var(l) for l in li]
     
     try:
         li = list_items_after(doc.split('\n'),after='Image')
@@ -79,10 +72,11 @@ def docstring_img_list(doc):
     if li == None:
         return li
     li = get_imgs(li)
-    try:
-        li = replace_env_vars(li)
-    except:
-        pass
+    li = [l.split('/') for l in li] #  so can work on windows and linux
+    if fpth is not None:
+        li = [os.path.join(os.path.dirname(fpth),*l) for l in li]
+    else:
+        li = [os.path.join(*l) for l in li]
     return li
 
 def function_docstring(fpth,function_name):
@@ -96,7 +90,7 @@ def function_docstring(fpth,function_name):
         d: markdown string
     """
     d = subprocess.check_output(['mydocstring', fpth, function_name, '--markdown'])
-    li = docstring_img_list(d.decode('utf-8'))
+    li = docstring_img_list(d.decode('utf-8'),fpth=fpth)
     if li != None:
         display_doc_imgs(li)
     d = d.decode('utf-8')
@@ -112,7 +106,7 @@ def module_docstring(fpth):
         [str]: markdown string
     """
     doc = read_module_docstring(fpth)
-    li = docstring_img_list(doc)
+    li = docstring_img_list(doc,fpth=fpth)
     if li != None:
         display_doc_imgs(li)
     fpth = os.path.realpath(fpth)
@@ -124,14 +118,9 @@ def module_docstring(fpth):
     
     return d
 
-#def display_module_docstring(doc):
-#    li = docstring_img_list(doc)
-#    display_doc_imgs(li)
-#    print(doc)
-
 def docstringimgs_from_path(fpth):
     doc = read_module_docstring(fpth)
-    li = docstring_img_list(doc)
+    li = docstring_img_list(doc,fpth=fpth)
     display_doc_imgs(li)
 
 def display_doc_imgs(li):
