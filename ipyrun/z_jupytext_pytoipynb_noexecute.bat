@@ -21,7 +21,7 @@ if %UserInput%=="all" (
 	call jupytext --set-formats ipynb,py _ipyeditcsv.py
 	call jupytext --set-formats ipynb,py _ipyeditjson.py
 	call jupytext --set-formats ipynb,py _runconfig.py
-	call jupytext --set-formats ipynb,py ipyrun.py
+	call jupytext --set-formats ipynb,py run.py
 	call jupytext --set-formats ipynb,py ipyrun_archived.py
 	call jupytext --set-formats ipynb,py ipyrun_overheating.py
 ) else (

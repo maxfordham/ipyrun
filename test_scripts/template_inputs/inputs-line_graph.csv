@@ -1,0 +1,6 @@
+name,value,label
+m,2,gradient
+c,2,intercept
+x_range_min,-5,lower x limit
+x_range_max,6,upper x limit
+title,5,line equation
