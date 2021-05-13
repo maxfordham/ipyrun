@@ -431,7 +431,7 @@ if __name__ == '__main__':
             ftyp_inputs='csv'
         )
     
-    rcsv = RunAppEditCsvLineGraph(config_app)
+    rcsv = RunAppEditCsvLineGraph(config_app_line_graph)
     display(rcsv)
 
 
