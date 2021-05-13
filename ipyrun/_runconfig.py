@@ -35,7 +35,6 @@ from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
 from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE
-# -
 
 # + tags=[]
 def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.json'):
@@ -213,36 +212,6 @@ class Log(BaseParams):
         self.fnm_log = 'log-' + self.process_name + '.csv'
         self.fpth_log = os.path.join(self.fdir_log, self.fnm_log)
         
-"""
-# outputs -------------------------------
-@dataclass
-class Output:
-    #defines location of an output file
-    fdir_rel: str = ''
-    fnm: str ='fnm.json'
-    description: str = 'description of output'
-    display_preview: bool = True
-
-@dataclass
-class Outputs(BaseParams):
-    #defines location of output files. note. fpths_outputs built from script_outputs
-    fdir_outputs: str = os.path.join(BaseParams.fdir,'outputs')
-    fdirs_outputs: List[str] = field(default_factory=list)
-    script_outputs: List[Output] = field(default_factory=list) #  lambda:[Output(fdir_rel='')]  #  Dict[str:Output] = field(default_factory=dict)?
-    fpths_outputs: List[str] = field(default_factory=list)
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.fdir_outputs = os.path.join(self.fdir,'outputs')
-        self.fdirs_outputs = _fdirs_from_script_outputs_dict(self)
-        self.fpths_outputs = _fpths_from_script_outputs_dict(self)
-
-def _fdirs_from_script_outputs_dict(outputs: Outputs):
-    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel)) for s in outputs.script_outputs] #  .items()
-
-def _fpths_from_script_outputs_dict(outputs: Outputs):
-    return [os.path.realpath(os.path.join(outputs.fdir_outputs,s.fdir_rel,s.fnm)) for s in outputs.script_outputs] #  .items()
-"""
 
 # outputs -------------------------------
         
@@ -323,11 +292,6 @@ class AppConfig(Config, Inputs, Log, Outputs):
     def __post_init__(self):
         super().__post_init__()
         self.config_type = str(type(self))
-    #config_job: Type[JobDirs] = field(default_factory=JobDirs)
-    #config_job: Optional[JobDirs] #= field(default_factory=JobDirs)
-    #pass
-    #jobno: int = 4321
-
 
 def make_dirs_AppConfig(Ac: AppConfig):
     """
@@ -382,7 +346,7 @@ class RunConfig():
     def __init__(self,
                  config_app: AppConfig,
                  #config_app_type: Type[AppConfig]=AppConfig,
-                 revert_to_file:bool=True,
+                 revert_to_file:bool=False,
                  #config_overrides={},
                  #config_job: Type[JobDirs]=JobDirs(),
                  #lkup_outputs_from_script: bool=True,
@@ -405,7 +369,7 @@ class RunConfig():
         if self.config_app.lkup_outputs_from_script:
             self.script_outputs_template = _script_outputs_template(self.config_app)
             self.config_app.script_outputs = self.script_outputs_template
-        self._inherit_AppConfig()
+        self._inherit_AppConfig() # TODO: remove this
 
     def _update_config(self, config_app):
         """

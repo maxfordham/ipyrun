@@ -37,7 +37,6 @@ from ipyrun.utils import del_matching, md_fromfile, display_python_file, open_fi
 from ipyrun._runconfig import Output, Outputs
 from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 
-
 # +
 #  NOT IN USE - need a way to display pdf's!
 #  https://github.com/voila-dashboards/voila/issues/659
