@@ -48,6 +48,8 @@ from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 
 
 
+
+
 # -
 
 
@@ -882,12 +884,9 @@ if __name__ =='__main__':
     display(b)
     display(Markdown('---'))
     display(Markdown(''))
-    
+
 
 # -
-
-
-
 # not in use
 class EditMfJson(SelectEditSaveMfJson, EditListOfDicts):
     """
@@ -975,8 +974,6 @@ if __name__ =='__main__':
 
     # FORM ONLY EXAMPLE
 
-    fpth = os.path.join(FDIR_PACKAGE,r'appdata\inputs\test.json')
-    fpth = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'
     fpth = os.path.join(FDIR_PACKAGE,'examples','notebooks','appdata','inputs','inputs-expansion_vessel_sizing.json')
     li = read_json(fpth)
     g = EditListOfDicts(li)
@@ -985,6 +982,7 @@ if __name__ =='__main__':
     display(g)
     display(Markdown('---'))
     display(Markdown(''))
+
 
 if __name__ =='__main__':
     # Example1
