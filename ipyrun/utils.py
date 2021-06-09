@@ -68,7 +68,7 @@ def display_python_file(fpth):
     """
     with open(fpth, 'r') as myfile:
         data = myfile.read()
-    return Markdown("\n ```Python \n" + data + " \n ```")
+    return Markdown("\n ```Python\n" + data + "\n```")
 
 #  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data, make_dir
 def open_file(filename):
@@ -169,9 +169,9 @@ def time_meta_data(fpth,
         di['time_of_most_recent_access'] = string_of_time(meta.st_atime)
         di['time_of_most_recent_content_modification'] = string_of_time(meta.st_mtime)
     else:
-        di['time_of_file_creation'] = datetime.utcfromtimestamp(meta.st_ctime)
-        di['time_of_most_recent_access'] = datetime.utcfromtimestamp(meta.st_atime)
-        di['time_of_most_recent_content_modification'] = datetime.utcfromtimestamp(meta.st_mtime)
+        di['time_of_file_creation'] = datetime.fromtimestamp(time.mktime(time.localtime(meta.st_ctime)))
+        di['time_of_most_recent_access'] = datetime.fromtimestamp(time.mktime(time.localtime(meta.st_atime)))
+        di['time_of_most_recent_content_modification'] =datetime.fromtimestamp(time.mktime(time.localtime(meta.st_mtime)))
 
     if as_DataFrame:
         return pd.DataFrame.from_dict(di, orient='index').T
