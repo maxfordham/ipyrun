@@ -15,6 +15,7 @@ dependencies:
   - ipywidgets
   - ipysheet
   - ipyfilechooser
+  - ipyrun
   - voila
   - plotly
   - halo
