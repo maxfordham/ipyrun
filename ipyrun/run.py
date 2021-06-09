@@ -13,6 +13,16 @@
 #     name: python3
 # ---
 
+# %load_ext dotenv
+# %dotenv ../.vscode/dev.env -o
+
+# for dev only. delete in production.
+import sys
+#sys.path.append('/mnt/c/engDev/git_mf/ipypdt')
+#sys.path.append('/mnt/c/engDev/git_mf/mfom')
+#sys.path.append('/mnt/c/engDev/git_mf/ipyword')
+#sys.path.append('/mnt/c/engDev/git_mf/ipyrun')
+
 # +
 import os
 NBFDIR = os.path.dirname(os.path.realpath('__file__'))
@@ -25,7 +35,6 @@ import importlib.util
 import copy
 from halo import HaloNotebook
 import traceback
-import sys
 
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -41,7 +50,7 @@ from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
 # core mf_modules
-from mf_om.directories import JobDirs
+from mfom.directories import JobDirs
 
 # from this repo
 from ipyrun._runconfig import RunConfig, AppConfig
@@ -49,12 +58,13 @@ from ipyrun._ipyeditcsv import EditCsv
 from ipyrun._ipyeditjson import EditJson
 from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
 from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
-from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE_CSV, FPTH_RUNAPP_HELP
+from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE_CSV, FPTH_RUNAPP_HELP, FPTH_RUNAPPS_HELP
 from ipyrun.mydocstring_display import display_module_docstring
 
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
+
 
 # +
 class RunForm():
@@ -71,10 +81,10 @@ class RunForm():
         """
         self.config = {'fpth_script':'script fpth','fpth_inputs':'script config','process_name':'process_name'}
         self.display_paths= False
-        self.form()
+        self._form()
         
 
-    def form(self):
+    def _form(self):
         self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
                                 tooltip='removes temporary output view',
                                 style={'font_weight':'bold'},
@@ -200,7 +210,7 @@ class RunApp(RunForm, RunConfig):
         self.out = widgets.Output()
         self.errors = []
         self._init_RunConfig(config_app, revert_to_file=app_config_revert_to_file) #,config_job=config_app.config_job
-        self.form()
+        self._form()
         self.outputsfpth.options = self.config_app.fpths_outputs#[]#
         self.show_me_the_code = widgets.Button(description='show source code',
                       tooltip='shows the raw python code in the preview window below',
@@ -367,11 +377,12 @@ class RunAppDefinition:
     """input fields and types required for 1 RunApp from a list of RunApps"""
     config_app: AppConfig = field(default_factory=AppConfig) 
     app: Type[RunApp] = RunApp
+    app_config_revert_to_file: bool = True
         
         
 def init_RunApp(app_def:RunAppDefinition) -> Type[RunApp]:
     """generates a RunApp from a RunAppDefinition"""
-    return app_def.app(app_def.config_app)   
+    return app_def.app(app_def.config_app, app_config_revert_to_file=app_def.app_config_revert_to_file)   
 
 
 # -
@@ -382,7 +393,7 @@ if __name__ == "__main__":
 
     class RunAppExpansionVessel(RunApp):
 
-        def __init__(self, config_app,app_config_revert_to_file=False):
+        def __init__(self, config_app, app_config_revert_to_file=False):
             super().__init__(config_app,app_config_revert_to_file=app_config_revert_to_file)
 
         def pre_execute_func(self):
@@ -394,7 +405,7 @@ if __name__ == "__main__":
             print(self.config_app.fpth_execute)
 
         def execute(self):
-            subprocess.check_output(['python','-O', self.config_app.fpth_script, self.config_app.fpth_execute])
+            subprocess.run(['python','-O', self.config_app.fpth_script, self.config_app.fpth_execute])
 
     config={
         'fpth_script':FPTH_SCRIPT_EXAMPLE,
@@ -402,7 +413,7 @@ if __name__ == "__main__":
         'create_execute_file':True
     }
     config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
-    rjson = RunAppExpansionVessel(config_app)#config, config_job=JobDirs(fdirRoot='.')
+    rjson = RunAppExpansionVessel(config_app_expansion_vessel)#config, config_job=JobDirs(fdirRoot='.')
     display(rjson)
 
 if __name__ == '__main__':
@@ -410,8 +421,8 @@ if __name__ == '__main__':
     # Example2 --------------------------
     class RunAppEditCsvLineGraph(RunApp):
 
-        def __init__(self, config_app):
-            super().__init__(config_app)
+        def __init__(self, config_app, app_config_revert_to_file=False):
+            super().__init__(config_app,app_config_revert_to_file=app_config_revert_to_file)
 
         def _edit_inputs(self, sender):
             with self.out:
@@ -436,6 +447,113 @@ if __name__ == '__main__':
 
 
 # +
+class RunAppsForm():
+    """
+    simple user input form for running scripts.
+    the buttons are not connected to actions in this class.
+    """
+    minwidth=BUTTON_WIDTH_MIN
+    medwidth=BUTTON_WIDTH_MEDIUM
+    
+    def __init__(self):
+        """
+        to inputs required. this class is intended to be inherited by RunApp
+        """
+        self.out = widgets.Output()
+        self._form()
+        self._init_controls()
+        
+
+    def _form(self):
+        self.check = widgets.Checkbox(
+                        value=False,
+                        disabled=False,
+                        indent=False,
+                        layout=widgets.Layout(max_width='30px',height='30px', padding='3px')
+                        )
+        self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
+                                tooltip='removes temporary output view',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.minwidth))
+        self.help = widgets.Button(icon='fa-question-circle',
+                                tooltip='describes the functionality of elements in the RunApp interface',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.minwidth))
+        self.run_batch = widgets.Button(description=' run',
+                                icon = 'fa-play',
+                                tooltip='execute the script based on the user inputs',
+                                button_style='success',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
+        self.preview_outputs = widgets.Button(description=' outputs',
+                                icon='fa-search',
+                                tooltip='show a preview of the output files generated when the script runs',
+                                button_style='info',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.medwidth))
+
+        self.form = widgets.HBox([self.check, self.reset, self.help,  self.run_batch, self.preview_outputs],
+                        layout=widgets.Layout(width='100%',align_items='stretch'))
+        
+    def _init_controls(self):
+        self.help.on_click(self._help)
+        self.reset.on_click(self._reset)
+        
+    def _reset(self, sender):
+        with self.out:
+            clear_output()
+
+    def _help(self, sender):
+
+        with self.out:
+            clear_output()
+            display(Image(FPTH_RUNAPPS_HELP))
+    
+    def display(self):
+        display(self.form)
+        display(self.out)
+
+    def _ipython_display_(self):
+        self.display()
+        
+        
+class RunAppsFormAddRemove(RunAppsForm):
+    
+    def __init__(self):
+        super().__init__()
+        self._add_remove_form()
+        self._update_form()
+        
+    def _add_remove_form(self):
+        self.remove = widgets.Button(
+                                #description='delete run',
+                                tooltip='delete a run',
+                                icon='fa-minus',
+                                button_style='danger',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.minwidth))
+        self.add = widgets.Button(
+                                #description='add run',
+                                tooltip='add new run, based on another run',
+                                button_style='primary',
+                                icon='fa-plus',
+                                style={'font_weight':'bold'},
+                                layout=widgets.Layout(width=self.minwidth))
+    def _update_form(self):
+        self.form.children = [self.check, self.reset, self.help, self.add, self.remove, self.run_batch, self.preview_outputs]
+    
+        
+if __name__ == '__main__':
+    display(RunAppsForm())
+    display(RunAppsFormAddRemove())
+    display(RunForm())
+# -
+
+
+
+
+
+# +
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that
 # as a first estimate. we could also then keep an ongoing record of time-taken to run a script within
@@ -445,9 +563,9 @@ if __name__ == '__main__':
 # fpth = r'C:\engDev\git_mf\MF_Toolbox\dev\mf_modules\progress_bar.py'
 # # %run $fpth
 
-class RunApps():
+class RunApps(RunAppsForm):
 
-    def __init__(self,apps_inputs: List[RunAppDefinition]):
+    def __init__(self, apps_inputs: List[RunAppDefinition]):
         """
         Args:
             configs (list): list of RunApp input configs.
@@ -478,35 +596,15 @@ class RunApps():
                 # assume the config got passed without the associated app
                 newconfigs.append({'app': RunApp, 'config': config})
         return newconfigs
-
-    def _form(self):
-
-        self.reset = widgets.Button(icon='fa-eye-slash',#'fa-repeat'
-                                tooltip='removes temporary output view',
-                                style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='5%'))
-        self.help = widgets.Button(icon='fa-question-circle',
-                                tooltip='describes the functionality of elements in the RunApp interface',
-                                style={'font_weight':'bold'},
-                                layout=widgets.Layout(width='5%'))
-        self.run_batch = widgets.Button(description='run batch',
-                                tooltip='execute checked processes below',
-                                button_style='success',
-                                style={'font_weight':'bold'})
-        self.form = widgets.HBox([self.reset, self.help, self.run_batch],
-                        layout=widgets.Layout(width='100%',align_items='stretch'))
+    
 
     def _init_controls(self):
+        self.check.observe(self._check)
         self.help.on_click(self._help)
         self.reset.on_click(self._reset)
         self.run_batch.on_click(self._run_batch)
-
-    def _help(self, sender):
-
-        with self.out:
-            clear_output()
-            fpth = os.path.join(os.environ['MF_ROOT'],r'ipyrun\docs\images\RunBatch.png')
-            display(Image(fpth))
+        self.preview_outputs.on_click(self._preview_outputs)
+        
 
     def _reset(self, sender):
         with self.out:
@@ -530,6 +628,31 @@ class RunApps():
                     display(Markdown('running: {0}'.format(l.config['process_name'])))
                     l._run_script('sender')
                     l._log() # 'sender'
+                    
+    def _check(self, onchange):
+        #print('asdfasdf')
+        for l in self.li:
+            if self.check.value:
+                l.check.value = True
+            else:
+                l.check.value = False
+
+    
+    @property
+    def script_outputs(self):
+        script_outputs = []
+        for l in self.li:
+            script_outputs.extend(l.config_app.script_outputs)
+        return script_outputs
+                    
+    def _preview_outputs(self, sender):
+        with self.out:
+            clear_output()
+            if len(self.script_outputs) == 0:
+                display(Markdown('there a no output files listed. you likely still need to "run" the script'))
+            else:
+                display(PreviewOutputs(self.script_outputs))
+
 
     def display(self):
         display(self.form)
@@ -539,9 +662,6 @@ class RunApps():
     def _ipython_display_(self):
         self.display()
 # -
-
-
-
 if __name__ == '__main__':
 
     config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
@@ -580,7 +700,7 @@ if __name__ == '__main__':
 demonstrates how multiple RunApp's can be ran as a batch. if not explicitly defined, the app assumes the default
 RunApp is used.<br> it is also possible to explictly pass a RunApp variant, and it will still be executed within the batch:
     '''))
-    runapps = RunApps(appdefs)
+    runapps = RunApps(appdefs, )
 
     display(runapps)
     display(Markdown('---'))
@@ -656,7 +776,6 @@ class RunAppsTemplated(): #  NEEDS UPDATING
         #self._fdir_inputs = self.configapp(di)._fdir_inputs(folder_name=folder_name)
         #self.processes = self._update_processes(self._fdir_inputs)
         self.runconfig = self.configapp(self.di)
-        
         self.processes = self._update_processes(self.runconfig.fdir_inputs)
         
         self.li = []
@@ -876,20 +995,24 @@ class RunAppsTemplated(): #  NEEDS UPDATING
 if __name__ == '__main__':
     display(Markdown('### Example5'))
     display(Markdown('''
-    Demonstrates how multiple RunApp's can be ran as a batch, with templating. If not explicitly defined, the app assumes the default
-    RunApp is used. But, if definied, a variant of RunApp can be used for the whole batch. New runs can be added, based on other runs or based on the template. Runs can also be deleted.
+Demonstrates how multiple RunApp's can be ran as a batch, with templating. If not explicitly defined, the app assumes the default
+RunApp is used. But, if definied, a variant of RunApp can be used for the whole batch. New runs can be added, based on other runs or based on the template. Runs can also be deleted.
     '''))
 
     di={
         'fdir':r'..\examples',
         'fpth_script':os.path.join(os.environ['MF_ROOT'],r'MF_Toolbox\dev\mf_scripts\docx_to_pdf.py')
     }
+    di={
+        'fpth_script':FPTH_SCRIPT_EXAMPLE,
+        'fdir':FDIR_APP_EXAMPLE,
+    }
+    #config_job = JobDirs(fdirJobsRoot='.')
+    #config_app = from_dict(dataclass=AppConfig,data=di)
+    config_app = AppConfig(**di)
+    rc = RunConfig(config_app)#, config_job=config_job)
     
-    config_job=JobDirs(fdirRoot='.')
-    config_app = from_dict(dataclass=AppConfig,data=di)
-    rc = RunConfig(config_app,config_job=config_job,lkup_outputs_from_script=False)#, config_job=config_job)
-    
-    runappstemplated = RunAppsTemplated(di)
+    runappstemplated = RunAppsTemplated(config_app)
     display(runappstemplated)
     display(Markdown('---'))
     display(Markdown(''))
