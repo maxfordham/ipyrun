@@ -152,7 +152,7 @@ def VegaLite(spec):
 # +
 
 
-#  consider replacing this with beakerx
+#  consider replacing this with ipydatagrid
 def default_ipyagrid(df,**kwargs):
 
     """

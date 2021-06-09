@@ -18,7 +18,7 @@
 import os
 FDIR = os.path.dirname(os.path.realpath('__file__'))
 import pandas as pd
-from IPython.display import Markdown, clear_output
+from IPython.display import Markdown, clear_output, display
 from markdown import markdown
 from datetime import datetime
 import time

@@ -298,6 +298,11 @@ def make_dirs_AppConfig(Ac: AppConfig):
     makes all of the "fdirs" directories in an AppConfig object
     """
     make_dirs_from_fdir_keys(asdict(Ac))
+    try:
+        make_dirs_from_fdir_keys(asdict(Ac.config_job))
+    except:
+        print('didnt make config_job')
+        pass
 
 if __name__ =='__main__':
 
@@ -444,14 +449,14 @@ if __name__ =='__main__':
             
     @dataclass
     class JobDirs(Job):#,BaseModel
-        fdirRoot: str = 'J:\\'
-        fdirJob: str = 'fdirJob'#os.path.join(fdirRoot, str(Job.jobNumber))
+        fdirJobsRoot: str = 'J:\\'
+        fdirJob: str = 'fdirJob'#os.path.join(fdirJobsRoot, str(Job.jobNumber))
         fdirSchedule: str = ''
         fdirRevit: str = os.path.join(fdirJob, 'Cad', 'Revit')
         fdirAutomation: str = os.path.join(fdirJob, 'Automation')
 
         def __post_init__(self):
-            self.fdirJob = os.path.join(self.fdirRoot, self.jobNumber)
+            self.fdirJob = os.path.join(self.fdirJobsRoot, self.jobNumber)
             self.fdirSchedule = os.path.join(self.fdirJob, 'Schedule')
             self.fdirRevit = os.path.join(self.fdirJob, 'Cad', 'Revit')
             self.fdirAutomation = os.path.join(self.fdirJob, 'Automation')
@@ -473,7 +478,7 @@ if __name__ =='__main__':
         create_execute_file=True,
         process_name='GrilleSchedule',
         config_job=JobDirs(
-            fdirRoot=fdir,
+            fdirJobsRoot=fdir,
             jobNumber='J0000',
         )
     )
@@ -494,14 +499,14 @@ if __name__ =='__main__':
         ]
     }
     from pprint import pprint
-    #config_job=JobDirs(fdirRoot='.')
+    #config_job=JobDirs(fdirJobsRoot='.')
 
     print('AppConfig: vanilla')
     print('--------------------')
     config_app = AppConfig(**config)
     rc = RunConfig(config_app)#, config_job=config_job)#,lkup_outputs_from_script=False
     rc.config_to_json()
-    from mf_modules.file_operations import open_file
+    from ipyrun.utils import open_file
     open_file(rc.config_app.fpth_config)
     pprint(rc.config)
     print('')
