@@ -22,8 +22,7 @@ requirements = diff(requirements, piponly)
 #setup_requirements = [ ]
 #test_requirements = [ ]
 
-setup(
-    author="John Gunstone",
+setup(author="John Gunstone",
     author_email='gunstone.john@gmail.com',
     python_requires='>=3.5',
     classifiers=[
@@ -38,7 +37,6 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     description="A generic user interface for running scripts. Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and data files are generated as outputs when the script is run. A timestamped record of script execution is maintained. An ipywdiget user interface allows users to edit script input data and view outputs of script execution.",
-    install_requires=requirements,
     license="MIT license",
     long_description=readme,
     long_description_content_type="text/markdown",
