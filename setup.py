@@ -3,6 +3,7 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
+import versioneer
 
 #  from mf_modules.pydtype_operations import diff
 def diff(li1, li2): 
@@ -45,10 +46,14 @@ setup(
     keywords='ipyrun',
     name='ipyrun',
     packages=find_packages(include=['ipyrun', 'ipyrun.*']),
+    install_requires=requirements,
+    #entry_points={'console_scripts': ['mfom=ipyrun.cli:main']},
+    #package_dir={'ipyrun':'ipyrun'},
+    #include_package_data=True,
     #setup_requires=setup_requirements,
     #test_suite='tests',
     #tests_require=test_requirements,
     url='https://github.com/gunstonej/ipyrun',
-    version='0.1.0',
-    zip_safe=False,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
 )
