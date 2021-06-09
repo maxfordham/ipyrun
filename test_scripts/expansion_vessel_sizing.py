@@ -184,7 +184,9 @@ if __name__ == '__main__':
         print('fpth_execute: {0}'.format(fpth_execute))
         print('fpth_output: {0}'.format(fpth_output))
     else:
+        print('debug == {}'.format(__debug__))
         import sys
+        #sys.path.append('/mnt/c/engDev/git_mf/ipyrun')  # TODO: delete this. dev hack only.
         from ipyrun.utils import read_json
         fpth_execute = sys.argv[1]
         di_inputs = read_json(fpth_execute)
