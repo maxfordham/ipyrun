@@ -65,7 +65,12 @@ def get_mfuser_initials():
     user = getpass.getuser()
     return user[0]+user[2]
 
-
+@dataclass
+class RunFormTestInput:
+    fpth_script: str = 'fpth_script'
+    fpth_inputs: str = 'fpth_inputs' 
+    process_name: str = 'process_name' 
+    pretty_name: str = 'pretty_name'
 # +
 class RunForm():
     """
@@ -79,7 +84,7 @@ class RunForm():
         """
         to inputs required. this class is intended to be inherited by RunApp
         """
-        self.config = {'fpth_script':'script fpth','fpth_inputs':'script config','process_name':'process_name'}
+        self.config_app = RunFormTestInput(**{'fpth_script':'script fpth','fpth_inputs':'script config','process_name':'process_name','pretty_name':'pretty_name'})
         self.display_paths= False
         self._form()
         
@@ -124,12 +129,12 @@ class RunForm():
                                 icon='fa-scroll',
                                 style={'font_weight':'bold'},
                                 layout=widgets.Layout(width=self.medwidth))
-        self.scriptfpth = widgets.Text(value=self.config['fpth_script'],
+        self.scriptfpth = widgets.Text(value=self.config_app.fpth_script,
                                 description='script',
                                 layout=widgets.Layout(indent=False,
                                                       width='auto',
                                                       height='30px'), disabled=True)
-        self.inputsfpth = widgets.Text(value=self.config['fpth_inputs'],
+        self.inputsfpth = widgets.Text(value=self.config_app.fpth_inputs,
                                 description='inputs',
                                 layout=widgets.Layout(indent=False,
                                                       width='auto',
@@ -149,6 +154,13 @@ class RunForm():
         self.form = widgets.HBox([self.reset, self.help, self.show_docstring, self.edit_inputs, self.run_script, self.preview_outputs, self.show_log],
                     layout=widgets.Layout(width='100%',align_items='stretch'))
         self.make_acc()
+
+    @property
+    def acc_name(self):
+        if self.config_app.pretty_name == 'None':
+            return self.config_app.process_name
+        else:
+            return self.config_app.pretty_name
         
     def make_acc(self):
         self.paths = widgets.VBox([self.inputsfpth,self.scriptfpth,self.outputsfpth],
@@ -158,7 +170,7 @@ class RunForm():
         else:
             self.acc_children = widgets.VBox([widgets.Box([self.form])])
         self.acc = widgets.Accordion(children=[self.acc_children],selected_index=None,layout=widgets.Layout(width='100%'))
-        self.acc.set_title(0,self.config['process_name'])
+        self.acc.set_title(0,self.acc_name)
         self.layout = widgets.HBox([self.check,self.acc],layout=widgets.Layout(margin='0px',padding='0px',border='0px'))
     
     def display(self):
@@ -583,7 +595,6 @@ class RunApps(RunAppsForm):
         for app_def in self.app_defs:
             app = init_RunApp(app_def)
             self.li.append(app)
-
 
                
     def _init_controls(self):
