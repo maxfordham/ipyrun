@@ -574,7 +574,6 @@ class RunApps(RunAppsForm):
         """
         self.out = widgets.Output()
         self._init_RunApps(apps_inputs)
-        #self.processes = self._update_configs()
 
     def _init_RunApps(self, apps_inputs):
         self.apps_inputs = apps_inputs
@@ -584,20 +583,7 @@ class RunApps(RunAppsForm):
         for app_def in self.apps_inputs:
             app = init_RunApp(app_def)
             self.li.append(app)
-            
-            
-    def _update_configs(self):
-        newconfigs = []
-        for app in self.app_defs:
-            if list(config.keys()) == ['app','config']:
-                # app to use already explicitly specified
-                newconfigs.append(config)
-            else:
-                # assume the config got passed without the associated app
-                newconfigs.append({'app': RunApp, 'config': config})
-        return newconfigs
-    
-
+               
     def _init_controls(self):
         self.check.observe(self._check)
         self.help.on_click(self._help)
