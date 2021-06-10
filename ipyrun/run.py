@@ -565,7 +565,7 @@ if __name__ == '__main__':
 
 class RunApps(RunAppsForm):
 
-    def __init__(self, apps_inputs: List[RunAppDefinition]):
+    def __init__(self, app_defs: List[RunAppDefinition]):
         """
         Args:
             configs (list): list of RunApp input configs.
@@ -573,16 +573,18 @@ class RunApps(RunAppsForm):
                 the list
         """
         self.out = widgets.Output()
-        self._init_RunApps(apps_inputs)
+        self._init_RunApps(app_defs)
 
-    def _init_RunApps(self, apps_inputs):
-        self.apps_inputs = apps_inputs
+    def _init_RunApps(self, app_defs):
+        self.app_defs = app_defs
         self.li = []
         self._form()
         self._init_controls()
-        for app_def in self.apps_inputs:
+        for app_def in self.app_defs:
             app = init_RunApp(app_def)
             self.li.append(app)
+
+
                
     def _init_controls(self):
         self.check.observe(self._check)
