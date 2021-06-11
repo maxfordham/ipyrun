@@ -47,10 +47,9 @@ setup(author="John Gunstone",
     install_requires=requirements,
     #entry_points={'console_scripts': ['mfom=ipyrun.cli:main']},
     package_dir={'ipyrun':'ipyrun'},
-    include_package_data=True,
     #test_suite='tests',
     #tests_require=test_requirements,
     url='https://github.com/gunstonej/ipyrun',
     version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    cmdclass=versioneer.get_cmdclass()
 )
