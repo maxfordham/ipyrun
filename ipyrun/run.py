@@ -16,6 +16,7 @@
 # %load_ext dotenv
 # %dotenv ../.vscode/dev.env -o
 
+# ^ not working for some reason... hence hack below
 # for dev only. delete in production.
 import sys
 #sys.path.append('/mnt/c/engDev/git_mf/ipypdt')
@@ -187,7 +188,7 @@ class RunApp(RunForm, RunConfig):
     """
     app for managing the execution of python scripts using an ipywidgets user interface
     """
-    def __init__(self,config_app:Type[AppConfig] = AppConfig(), app_config_revert_to_file=True):
+    def __init__(self, config_app:Type[AppConfig] = AppConfig(), app_config_revert_to_file=True):
         """
         class that builds a user interface for:
         - editing inputs,
@@ -302,7 +303,6 @@ class RunApp(RunForm, RunConfig):
         self.config_to_json()
         self.archive_inputs()
         self._log()
-
 
     def _run_script(self, sender):
         self.pre_execute_func()
@@ -559,12 +559,6 @@ if __name__ == '__main__':
     display(RunAppsForm())
     display(RunAppsFormAddRemove())
     display(RunForm())
-# -
-
-
-
-
-
 # +
 # IT WOULD BE GOOD TO ADD A PROGRESS BAR
 # i think this would require us to time how long it takes for a script to execute and use that
@@ -575,28 +569,59 @@ if __name__ == '__main__':
 # fpth = r'C:\engDev\git_mf\MF_Toolbox\dev\mf_modules\progress_bar.py'
 # # %run $fpth
 
+def add_process(cls, app_def):
+    """add a process to a RunApps object. separate function so it can be 
+    easily called by a function outside the RunApps class."""
+    cls.app_defs.append(app_def)
+    cls.li.append(init_RunApp(app_def)) 
+    cls.li[-1].config_to_json()
+    cls._update_apps_layout()
+    
+def remove_process(cls, process_name):
+    """remove process from a RunApps object. separate function so it can be 
+    easily called by a function outside the RunApps class."""
+    index = cls.process_names.index(process_name)
+    del cls.app_defs[index]
+    del cls.li[index]
+    cls._update_apps_layout()
+    
 class RunApps(RunAppsForm):
-
+    """
+    core RunApps object. houses multiple RunApp objects and allows for batch execution and 
+    review of the outpus produced by the batch
+    """
     def __init__(self, app_defs: List[RunAppDefinition]):
         """
         Args:
-            configs (list): list of RunApp input configs.
-                can explicitly specify a different RunApp to be used when passing
-                the list
+            app_defs (List[RunAppDefinition]): list of RunAppDefinition's.
+                Note. a RunAppDefinition is an object that contains the definition of 
+                both the app and the config object that is passed to the app. 
         """
         self.out = widgets.Output()
         self._init_RunApps(app_defs)
 
     def _init_RunApps(self, app_defs):
-        self.app_defs = app_defs
-        self.li = []
         self._form()
+        self.apps_layout = widgets.VBox()
         self._init_controls()
-        for app_def in self.app_defs:
-            app = init_RunApp(app_def)
-            self.li.append(app)
+        self._init_processes()
+        self._update_processes(app_defs)
+        
+    def _init_processes(self):
+        self.app_defs = []
+        self.li = []
+            
+    def _update_processes(self, app_defs):
+        for app_def in app_defs:
+            add_process(self, app_def)
+            
+    @property
+    def process_names(self):
+        return [app.config_app.process_name for app in self.app_defs]   
 
-               
+    def _update_apps_layout(self):
+        self.apps_layout.children = [widgets.VBox([l.layout, l.out]) for l in self.li]
+
     def _init_controls(self):
         self.check.observe(self._check)
         self.help.on_click(self._help)
@@ -604,7 +629,6 @@ class RunApps(RunAppsForm):
         self.run_batch.on_click(self._run_batch)
         self.preview_outputs.on_click(self._preview_outputs)
         
-
     def _reset(self, sender):
         with self.out:
             clear_output()
@@ -618,7 +642,6 @@ class RunApps(RunAppsForm):
             ttl = ttl + 1
             if l.check.value:
                 cnt = cnt + 1
-
         with self.out:
             clear_output()
             display(Markdown('{0} out of {1} scripts selected to be run'.format(cnt,ttl)))
@@ -626,16 +649,14 @@ class RunApps(RunAppsForm):
                 if l.check.value:
                     display(Markdown('running: {0}'.format(l.config['process_name'])))
                     l._run_script('sender')
-                    l._log() # 'sender'
+                    l._log() 
                     
     def _check(self, onchange):
-        #print('asdfasdf')
         for l in self.li:
             if self.check.value:
                 l.check.value = True
             else:
                 l.check.value = False
-
     
     @property
     def script_outputs(self):
@@ -651,12 +672,11 @@ class RunApps(RunAppsForm):
                 display(Markdown('there a no output files listed. you likely still need to "run" the script'))
             else:
                 display(PreviewOutputs(self.script_outputs))
-
-
+        
     def display(self):
         display(self.form)
         display(self.out)
-        [display(l) for l in self.li];
+        display(self.apps_layout)
 
     def _ipython_display_(self):
         self.display()
