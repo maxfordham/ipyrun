@@ -1,6 +1,6 @@
 pushd %~dp0
 @echo off 
-call conda activate mf_base
+call conda activate mf_main
 
 echo -----------------------------------------
 echo Jupytext: Convert py files to ipynb files

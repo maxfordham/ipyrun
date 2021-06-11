@@ -1,6 +1,6 @@
 pushd %~dp0
 @echo off 
-call conda activate mf_base
+call conda activate mf_main
 
 echo -----------------------------------------
 echo Jupytext: Convert py files to ipynb files
@@ -21,7 +21,7 @@ if %UserInput%=="all" (
 	call jupytext --set-formats ipynb,py --execute _ipyeditcsv.py
 	call jupytext --set-formats ipynb,py --execute _ipyeditjson.py
 	call jupytext --set-formats ipynb,py --execute _runconfig.py
-	call jupytext --set-formats ipynb,py --execute ipyrun.py
+	call jupytext --set-formats ipynb,py --execute run.py
 	call jupytext --set-formats ipynb,py --execute ipyrun_archived.py
 	call jupytext --set-formats ipynb,py --execute ipyrun_overheating.py
 ) else (
