@@ -32,24 +32,12 @@ from ipyfilechooser import FileChooser
 
 # +
 # from this repo
-# this is an unpleasant hack. should aim to find a better solution
-# try:
 from ipyrun.utils import make_dir, read_json, write_json
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
-from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
+from ipyrun._ipydisplayfile import DisplayFile, default_ipyagrid
 from ipyrun._ipyeditcsv import EditSheet
-#except:
-#    from ._runconfig import RunConfig, AppConfig
-#    from ._filecontroller import FileConfigController, SelectEditSaveMfJson
-#    from ._ipydisplayfile import DisplayFile, DisplayFiles, default_ipyagrid
-
 from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
-
-
-
-
-
 # -
 
 
@@ -332,8 +320,9 @@ class EditDict(EditDictData):
         with self.out:
             if self.guide.value:
                 if self.di['fpth_help']==list:
-                    d = DisplayFiles(self.di['fpth_help'])
+                    d = DisplayFile(self.di['fpth_help'][0])
                     #display(Image(os.path.join(os.environ['mf_root'],r'engDevSetup\dev\icons\icon_png\help-icon.png')));
+                    print('TODO: ADD PREVIEW OUTPUT HERE')
                     display(d)
                 else:
                     d = DisplayFile(self.di['fpth_help'])

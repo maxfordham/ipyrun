@@ -749,10 +749,10 @@ if __name__ =='__main__':
     # -
 
     fdir = os.path.dirname(os.path.realpath('__file__'))
-    rel = os.path.join('..','test_filetypes')
-    fdir = os.path.realpath(os.path.join(fdir,rel))
+    rel_fdir = os.path.join('..','test_filetypes')
 
-    fpths = recursive_glob(rootdir=fdir)
+    fpths = recursive_glob(rootdir=rel_fdir)
+    #fpths = [os.path.join(rel,  fpth for fpth in fpths ]
 
     # single file
     d0 = DisplayFile(fpths[0])
@@ -779,3 +779,5 @@ if __name__ =='__main__':
     display(p1)
     display(Markdown('---'))
     display(Markdown(''))
+
+

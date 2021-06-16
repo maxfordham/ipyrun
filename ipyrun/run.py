@@ -57,7 +57,7 @@ from mfom.directories import JobDirs
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._ipyeditcsv import EditCsv
 from ipyrun._ipyeditjson import EditJson
-from ipyrun._ipydisplayfile import DisplayFile, DisplayFiles, PreviewOutputs
+from ipyrun._ipydisplayfile import DisplayFile, PreviewOutputs 
 from ipyrun.utils import make_dir, del_matching, display_python_file, make_dir, read_json, write_json
 from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_WIDTH_MEDIUM, FDIR_ROOT_EXAMPLE, FPTH_SCRIPT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE_CSV, FPTH_RUNAPP_HELP, FPTH_RUNAPPS_HELP
 from ipyrun.mydocstring_display import display_module_docstring
