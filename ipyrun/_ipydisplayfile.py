@@ -25,9 +25,9 @@ import ipywidgets as widgets
 from markdown import markdown
 import plotly.io as pio
 import copy
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from dacite import from_dict
-from typing import List
+from typing import List, Dict, Callable, Type
 
 #  from mf library
 from xlsxtemplater import from_excel
@@ -42,7 +42,6 @@ from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 #  https://github.com/voila-dashboards/voila/issues/659
 
 def served_pdf():
-    import ipywidgets as widgets
     value=r'<iframe width="500" height="600" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" frameborder="1" allowfullscreen></iframe>'
     myhtml =widgets.HTML(
         value=value,
@@ -52,7 +51,6 @@ def served_pdf():
     display(myhtml)
     
 def local_pdf():
-    import ipywidgets as widgets
     value=r'<iframe width="500" height="600" src="../test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
     myhtml =widgets.HTML(
         value=value,
@@ -62,7 +60,6 @@ def local_pdf():
     display(myhtml)
     
 def fromfile_pdf():
-    import ipywidgets as widgets
     value=r'<iframe width="500" height="600" src="file:///mnt/c/engDev/git_mf/ipyrun/test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
     myhtml =widgets.HTML(
         value=value,
@@ -120,15 +117,15 @@ def display_button_styles():
 
 
 # +
-def get_ext(fpth):
+def get_ext(fpth, get_compound=True):
     """get file extension including compound json files"""
     ext = os.path.splitext(fpth)[1].lower()
     _ext = ''
-    if ext =='.json':
+    if get_compound:
         li_fstr = os.path.splitext(fpth)[0].lower().split('.')
-        
         if len(li_fstr) > 1:
-            _ext = '.'+li_fstr[-1]
+            _ext = '.' + li_fstr[-1]
+
     return _ext + ext
 
 def Vega(spec):
@@ -153,7 +150,7 @@ def VegaLite(spec):
 
 
 #  consider replacing this with ipydatagrid
-def default_ipyagrid(df,**kwargs):
+def default_ipyagrid(df, **kwargs):
 
     """
     returns a default ipyagrid class
@@ -162,7 +159,6 @@ def default_ipyagrid(df,**kwargs):
         https://dgothrek.gitlab.io/ipyaggrid/
 
     Code:
-        from ipyaggrid import Grid
         grid_options = {
             #'columnDefs' : column_defs,
             'enableSorting': True,
@@ -171,11 +167,15 @@ def default_ipyagrid(df,**kwargs):
             'enableRangeSelection': True,
             'enableCellTextSelection':True
         }
-        g = Grid(grid_data=df,
-                grid_options=grid_options,
-                quick_filter=True,
-                theme='ag-theme-balham')
-        return g
+        _kwargs = {
+            'grid_data':df,
+            'grid_options':grid_options,
+            'show_toggle_edit':False,
+            'quick_filter':True,
+            'theme':'ag-theme-balham',
+        }
+        _kwargs.update(kwargs)  # user overides
+        g = Grid(**_kwargs)
     """
     #https://dgothrek.gitlab.io/ipyaggrid/
     grid_options = {
@@ -315,75 +315,179 @@ def open_ui(fpth: str)-> [widgets.Button,widgets.Button]:
         icon='fa-folder',
         tooltip='open folder: {0}'.format(os.path.dirname(fpth)),
         style={'font_weight': 'bold'})  #,'button_color':'white'
+
     return openfile, openfolder
+
+
+
+def pdf_prev(fpth):
+    display(IFrame(fpth, width=1000, height=600))
+
+def csv_prev(fpth):
+    """
+    previes dataframe using the awesome ipyagrid
+
+    Reference:
+        https://dgothrek.gitlab.io/ipyaggrid/
+    """
+    data = del_matching(pd.read_csv(fpth),'Unnamed')
+    try:
+        g = default_ipyagrid(data)
+        display(g)
+    except:
+        display(data.style)
+
+def vegajson_prev(fpth):
+    """display a plotly json file"""
+    display(Vega(read_json(fpth)))
+
+def vegalitejson_prev(fpth):
+    """display a plotly json file"""
+    display(VegaLite(read_json(fpth)))
+
+def plotlyjson_prev(fpth):
+    """display a plotly json file"""
+    display(pio.read_json(fpth))
+
+def ipyuijson_prev(fpth):
+    print('add here!')
+
+def json_prev(fpth):
+    display(JSON(read_json(fpth)))
+
+def yaml_prev(fpth):
+    data = read_yaml(fpth)
+    display(JSON(data))
+
+def img_prev(fpth):
+    display(Image(fpth))
+
+def md_prev(fpth):
+    display(Markdown("`IMAGES WON'T DISPLAY UNLESS THE MARKDOWN FILE IS IN THE SAME FOLDER AS THIS JUPYTER NOTEBOOK`"))
+    md_fromfile(fpth)
+
+def py_prev(fpth):
+    """
+    pass the fpth of a python file and get a
+    rendered view of the code.
+    """
+    p = PreviewPy(fpth)
+    display(p)
+
+def txt_prev(fpth):
+    display(Markdown("```{}```".format(read_txt(fpth, read_lines=False))))
+
+def xl_prev(fpth):
+    """display excel. if xlsxtemplated display as Grid, otherwise as _open_option"""
+    li = from_excel(fpth)
+    if li is not None:
+        xlsxtemplated_display(li)
+        return True
+    else:
+        return False
+        #self._open_option()
+
 # + tags=[]
 class DisplayFile():
     """
     displays the contents of a file in the notebook.
-    where this requires data to be loaded in this is stored
-    as DisplayFile().data. Maps to the appropriate viewer using
-    the file extension.
-        def _map(self):
-            return {
-                '.csv':self.df_prev,
-                '.xlsx':self.xl_prev,
-                '.json':self.json_prev,
-                '.plotly':self.plotlyjson_prev,
-                '.plotly.json':self.plotlyjson_prev,
-                '.vg.json':self.vegajson_prev,
-                '.vl.json':self.vegalitejson_prev,
-                '.ipyui.json':self.ipyuijson_prev,
-                '.yaml':self.yaml_prev,
-                '.yml':self.yaml_prev,
-                '.png':self.img_prev,
-                '.jpg':self.img_prev,
-                '.jpeg':self.img_prev,
-                #'.obj':self.obj_prev, # add ipyvolume viewer? 
-                '.txt':self.txt_prev,
-                '.md':self.md_prev,
-                '.py':self.py_prev,
-                '.pdf':self.pdf_prev,
-                '.docx':self._open_option,
-            }
     """
+    default_renderers = {
+            '.csv': csv_prev,
+            '.json': json_prev,
+            '.plotly': plotlyjson_prev,
+            '.plotly.json': plotlyjson_prev,
+            '.vg.json': vegajson_prev,
+            '.vl.json': vegalitejson_prev,
+            '.ipyui.json': ipyuijson_prev,
+            '.yaml': yaml_prev,
+            '.yml': yaml_prev,
+            '.png': img_prev,
+            '.jpg': img_prev,
+            '.jpeg': img_prev,
+            #'.obj': obj_prev, # add ipyvolume viewer? 
+            '.txt': txt_prev,
+            '.md': md_prev,
+            '.py': py_prev,
+            '.pdf': pdf_prev,
+        }
     def __init__(self,
-                 fpth=os.path.join(FDIR_PACKAGE,'test_filetypes','eg_plotly.plotly'),
-                 description=None,
+                 fpth: str,
+                 user_file_renderers: Dict[str, Callable] = None,
                 ):
+        """
+        comes with the following default renderers:
+            default_renderers = {
+                    '.csv': csv_prev,
+                    '.json': json_prev,
+                    '.plotly': plotlyjson_prev,
+                    '.plotly.json': plotlyjson_prev,
+                    '.vg.json': vegajson_prev,
+                    '.vl.json': vegalitejson_prev,
+                    '.ipyui.json': ipyuijson_prev,
+                    '.yaml': yaml_prev,
+                    '.yml': yaml_prev,
+                    '.png': img_prev,
+                    '.jpg': img_prev,
+                    '.jpeg': img_prev,
+                    #'.obj': obj_prev, # add ipyvolume viewer? 
+                    '.txt': txt_prev,
+                    '.md': md_prev,
+                    '.py': py_prev,
+                    '.pdf': pdf_prev,
+                }
+        user_file_renderers can be passed to class provided they have the correct
+        dict format:
+            user_file_renderers = {'.ext': myrenderer}
+        notice that the class allows for "compound" filetypes, especially useful for .json files
+        if you want to display the data in a specific way. 
+        
+        Args:
+            fpth (str): filepath to display
+            user_file_renderers: Dict[str, Callable] = None : user defined file renderers to extend
+                the class
+                
+        Usage:
+            fpth = 'default_config.yaml'
+            DisplayFile(fpth).preview_fpth()
+        
+        How to extend:
+            if you want to update the class definition for a compound filetype that you have created, 
+            you can do so using functools as follows:
+            ```
+                DisplayFile('default_config.test.yaml').preview_fpth()  # '.test.yaml' ext doesn't exist so renderer defaults to .yaml
+                
+                import functools
+                user_file_renderers = {'.test.yaml': txt_prev}
+                DisplayFile = functools.partial(DisplayFile, user_file_renderers=user_file_renderers)
+                DisplayFile('default_config.test.yaml').preview_fpth()  # display yaml file as txt_prev renderer
+            ```
+        """
         self.fpth = fpth
         self.fdir = os.path.dirname(fpth)
         self.ext = get_ext(fpth)
+        if user_file_renderers is None:
+            self.user_file_renderers = {}
+        else:
+            self.user_file_renderers = user_file_renderers
+        self.check_compound_ftype()
+
+            
+    def check_compound_ftype(self):
+        if self.ext.count(".") > 1:  # check if compound filetype
+            if not self.ext in self._map.keys():  # if specific compound renderer doesn't exist revert back to standard
+                self.ext = '.' + self.ext.split('.')[-1]
 
     @property
     def _map(self):
-        return {
-            '.csv':self.df_prev,
-            '.xlsx':self.xl_prev,
-            '.json':self.json_prev,
-            '.plotly':self.plotlyjson_prev,
-            '.plotly.json':self.plotlyjson_prev,
-            '.vg.json':self.vegajson_prev,
-            '.vl.json':self.vegalitejson_prev,
-            '.ipyui.json':self.ipyuijson_prev,
-            '.yaml':self.yaml_prev,
-            '.yml':self.yaml_prev,
-            '.png':self.img_prev,
-            '.jpg':self.img_prev,
-            '.jpeg':self.img_prev,
-            #'.obj':self.obj_prev, # add ipyvolume viewer? 
-            '.txt':self.txt_prev,
-            '.md':self.md_prev,
-            '.py':self.py_prev,
-            '.pdf':self.pdf_prev,
-            '.docx':self._open_option,
-        }
+        return {**self.default_renderers, **self.user_file_renderers, **{'.xlsx': self._xl_prev, '.docx': self._open_option}}
 
     def preview_fpth(self):
         self.ext_map = self._map
         if self.ext not in list(self.ext_map.keys()):
             self.ext_map[self.ext]=self._open_option
         self.fn = self.ext_map[self.ext]
-        self.fn()
+        self.fn(self.fpth)
         
     def _open_form(self):
         self.open_file = widgets.Button(description='open file',button_style='success')
@@ -396,7 +500,7 @@ class DisplayFile():
         self.open_file.on_click(self._open_file)
         self.open_folder.on_click(self._open_folder)
 
-    def _open_option(self):
+    def _open_option(self, sender):
         self._open_form()
         self._init_controls()
         display(self.open_form)
@@ -413,74 +517,15 @@ class DisplayFile():
         time.sleep(5)
         self.text.value = markdown('`{0}`'.format(self.fdir))
 
-    def pdf_prev(self):
-        display(IFrame(self.fpth, width=1000, height=600))
-
-    def df_prev(self):
-        """
-        previes dataframe using the awesome ipyagrid
-
-        Reference:
-            https://dgothrek.gitlab.io/ipyaggrid/
-        """
-        self.data = del_matching(pd.read_csv(self.fpth),'Unnamed')
-        try:
-            g = default_ipyagrid(self.data)
-            display(g)
-        except:
-            display(self.data.style)
-
-    def vegajson_prev(self):
-        """display a plotly json file"""
-        display(Vega(read_json(self.fpth)))
-
-    def vegalitejson_prev(self):
-        """display a plotly json file"""
-        display(VegaLite(read_json(self.fpth)))
-
-    def plotlyjson_prev(self):
-        """display a plotly json file"""
-        display(pio.read_json(self.fpth))
-
-    def ipyuijson_prev(self):
-        print('add here!')
-
-    def json_prev(self):
-        display(JSON(read_json(self.fpth)))
-
-    def yaml_prev(self):
-        self.data = read_yaml(self.fpth)
-        display(JSON(self.data))
-
-    def img_prev(self):
-        display(Image(self.fpth))
-
-    def md_prev(self):
-        display(Markdown("`IMAGES WON'T DISPLAY UNLESS THE MARKDOWN FILE IS IN THE SAME FOLDER AS THIS JUPYTER NOTEBOOK`"))
-        md_fromfile(self.fpth)
-
-    def py_prev(self):
-        """
-        pass the fpth of a python file and get a
-        rendered view of the code.
-        """
-        p = PreviewPy(self.fpth)
-        display(p)
-
-    def txt_prev(self):
-        display(Markdown("```{}```".format(read_txt(self.fpth, read_lines=False))))
-
-    def xl_prev(self):
-        """display excel. if xlsxtemplated display as Grid, otherwise as _open_option"""
-        li = from_excel(self.fpth)
-        if li is not None:
-            xlsxtemplated_display(li)
-        else:
+    def _xl_prev(self, fpth):
+        xt = xl_prev(fpth)
+        if not xt:
             self._open_option()
+
 
 # + tags=[]
 
-def preview_output_ui(output: Output):
+def preview_output_ui(output: Output, display_class: Type =DisplayFile):
     """
     function that builds all of the PreviewOutput ui components and outputs form
     as well as individual components of the form such that they can be given controls
@@ -519,7 +564,7 @@ def preview_output_ui(output: Output):
     item0 = widgets.HBox([openpreview, openfile, openfolder, name],layout=widgets.Layout(width='40%'))
     item1 = widgets.HBox([author,note, time],layout=widgets.Layout(width='60%',justify_content='space-between'))
     displayheader = widgets.HBox([item0, item1],layout=widgets.Layout(width='100%',justify_content='space-between'))
-    displaypreview = DisplayFile(output.fpth, description=output.description)#.preview_fpth()
+    displaypreview = display_class(output.fpth)
     out = widgets.Output()
     displayui = widgets.VBox([displayheader, out])
     
@@ -530,8 +575,9 @@ class PreviewOutput():
     """
     class that creates a ipywidgets based ui for previewing a file in the browser
     """
-    def __init__(self, output: Output, auto_open=False):
+    def __init__(self, output: Output, auto_open: bool=False, display_class: Type =DisplayFile):
         self.output = output  # from_dict(data=asdict(output),data_class=OutputPlus)
+        self.display_class = display_class
         self._buildui()
         self._init_controls()
         if auto_open:
@@ -539,7 +585,7 @@ class PreviewOutput():
             #self._openpreview(None)
         
     def _buildui(self):
-        self.displayui, self.out, self.displaypreview, self.displayheader, self.openpreview, self.openfile, self.openfolder, self.note = preview_output_ui(self.output)
+        self.displayui, self.out, self.displaypreview, self.displayheader, self.openpreview, self.openfile, self.openfolder, self.note = preview_output_ui(self.output, display_class=self.display_class)
         
     def _init_controls(self):
         self.openpreview.observe(self._openpreview, names='value')
@@ -566,13 +612,14 @@ class PreviewOutputs():
     """
     class that creates a ipywidgets based ui for previewing multiple files in the browser
     """
-    def __init__(self, outputs: List[Outputs],auto_open=False):
-        self.outputs = outputs #  [from_dict(data=asdict(o),data_class=OutputPlus) for o in outputs]
-        self.auto_open=auto_open
+    def __init__(self, outputs: List[Output], auto_open=False, display_class: Type =DisplayFile):
+        self.outputs = outputs
+        self.display_class = display_class
+        self.auto_open = auto_open
         self._init_form()
           
     def _init_form(self):
-        self.display_outputs = [PreviewOutput(o,auto_open=self.auto_open) for o in self.outputs]
+        self.display_outputs = [PreviewOutput(o,auto_open=self.auto_open, display_class=self.display_class) for o in self.outputs]
         self.display_uis = [ui.displayui for ui in self.display_outputs]
         self.display_previews = widgets.VBox(self.display_uis,layout=widgets.Layout(height='100%',justify_items='center'))
         
@@ -583,88 +630,108 @@ class PreviewOutputs():
         self.display_PreviewOutputs()
 
 
-# + tags=[]
-class DisplayFiles():
-    def __init__(self, fpths, fpths_ignore=[], fpth_prefix=''):
-        self.out = widgets.Output();
-        fpths_temp = copy.deepcopy(fpths)
-
-        if type(fpths_temp) != list:
-            fpths_temp = [fpths_temp]
-        else:
-            fpths_temp = fpths_temp
-
-        self.fpths = copy.deepcopy(fpths_temp)
-        for fpth in fpths_temp:
-            if '.' not in fpth:
-                self.fpths.remove(fpth)
-                self.fpths += recursive_glob(rootdir=fpth)
-
-        fpths_temp = copy.deepcopy(self.fpths)
-
-        for fpth in fpths_temp:
-            ext = os.path.splitext(fpth)[1].lower()
-            if (ext in fpths_ignore) or (ext not in DisplayFile()._map.keys()):
-                self.fpths.remove(fpth)
-            elif fpth_prefix:
-                if not os.path.basename(fpth).startswith(fpth_prefix):
-                    self.fpths.remove(fpth)
-
-        self.fpths = list(set(self.fpths))
-        self.fpths.sort()
-        self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
-        self._init_previews()
-        self._init_form()
-        self._init_controls()
-
-    def _init_previews(self):
-        self.previews = [DisplayFile(fpth) for fpth in self.fpths];
-        self.map_previews = dict(zip(self.fnms,self.previews))
-        self.map_fpths = dict(zip(self.fnms,self.fpths))
-
-    def _init_form(self):
-        self.outputsfpth = widgets.SelectMultiple(options=self.fnms,
-                                                  layout=widgets.Layout(indent=True,
-                                                              width='30%',
-                                                              height='auto'))
-        self.show_hide = widgets.ToggleButton(description='display/hide files',
-                              tooltip='shows and hides display outputs of the files selected in the SelectMultiple dropdown menu',
-                              button_style='success')
-        self.ui = widgets.VBox([self.show_hide,
-                      self.outputsfpth,
-                      self.out])
-
-    def _init_controls(self):
-        self.show_hide.observe(self._show_hide, 'value')
-        self.outputsfpth.observe(self._show_hide, 'value')
-
-    def display_previews(self):
-        #print(self.outputsfpth.value)
-        display(Markdown(''))
-        for file in self.outputsfpth.value:
-            display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
-            s = str(self.map_previews[file]._map[self.map_previews[file].ext])
-            if 'DisplayFile._open_option' not in s:
-                display(Markdown('`{0}`'.format(self.map_fpths[file])))
-            self.map_previews[file].preview_fpth()
-
-    def _show_hide(self, sender):
-        with self.out:
-            clear_output()
-            if self.show_hide.value:
-                self.display_previews()
-            else:
-                pass
-
-    def display(self):
-        display(self.ui)
-        #display(self.outputsfpth)
-        #display(self.out)
-
-    def _ipython_display_(self):
-        self.display()
-
-
+# + tags=[] active=""
+# class DisplayFiles():
+#     def __init__(self, fpths, fpths_ignore=[], fpth_prefix=''):
+#         self.out = widgets.Output();
+#         fpths_temp = copy.deepcopy(fpths)
+#
+#         if type(fpths_temp) != list:
+#             fpths_temp = [fpths_temp]
+#         else:
+#             fpths_temp = fpths_temp
+#
+#         self.fpths = copy.deepcopy(fpths_temp)
+#         for fpth in fpths_temp:
+#             if '.' not in fpth:
+#                 self.fpths.remove(fpth)
+#                 self.fpths += recursive_glob(rootdir=fpth)
+#
+#         fpths_temp = copy.deepcopy(self.fpths)
+#
+#         for fpth in fpths_temp:
+#             ext = os.path.splitext(fpth)[1].lower()
+#             if (ext in fpths_ignore) or (ext not in DisplayFile()._map.keys()):
+#                 self.fpths.remove(fpth)
+#             elif fpth_prefix:
+#                 if not os.path.basename(fpth).startswith(fpth_prefix):
+#                     self.fpths.remove(fpth)
+#
+#         self.fpths = list(set(self.fpths))
+#         self.fpths.sort()
+#         self.fnms = [os.path.basename(fpth) for fpth in self.fpths];
+#         self._init_previews()
+#         self._init_form()
+#         self._init_controls()
+#
+#     def _init_previews(self):
+#         self.previews = [DisplayFile(fpth) for fpth in self.fpths];
+#         self.map_previews = dict(zip(self.fnms,self.previews))
+#         self.map_fpths = dict(zip(self.fnms,self.fpths))
+#
+#     def _init_form(self):
+#         self.outputsfpth = widgets.SelectMultiple(options=self.fnms,
+#                                                   layout=widgets.Layout(indent=True,
+#                                                               width='30%',
+#                                                               height='auto'))
+#         self.show_hide = widgets.ToggleButton(description='display/hide files',
+#                               tooltip='shows and hides display outputs of the files selected in the SelectMultiple dropdown menu',
+#                               button_style='success')
+#         self.ui = widgets.VBox([self.show_hide,
+#                       self.outputsfpth,
+#                       self.out])
+#
+#     def _init_controls(self):
+#         self.show_hide.observe(self._show_hide, 'value')
+#         self.outputsfpth.observe(self._show_hide, 'value')
+#
+#     def display_previews(self):
+#         #print(self.outputsfpth.value)
+#         display(Markdown(''))
+#         for file in self.outputsfpth.value:
+#             display(Markdown('#### {0}'.format(os.path.splitext(os.path.basename(file))[0])))
+#             s = str(self.map_previews[file]._map[self.map_previews[file].ext])
+#             if 'DisplayFile._open_option' not in s:
+#                 display(Markdown('`{0}`'.format(self.map_fpths[file])))
+#             self.map_previews[file].preview_fpth()
+#
+#     def _show_hide(self, sender):
+#         with self.out:
+#             clear_output()
+#             if self.show_hide.value:
+#                 self.display_previews()
+#             else:
+#                 pass
+#
+#     def display(self):
+#         display(self.ui)
+#         #display(self.outputsfpth)
+#         #display(self.out)
+#
+#     def _ipython_display_(self):
+#         self.display()
+#         
+# if __name__ =='__main__':
+#     # NOT IN USE
+#     # multiple file
+#     d1 = DisplayFiles(fpths)
+#     display(Markdown('### Example1'))
+#     display(Markdown('''display single file'''))
+#     display(d1)
+#     display(Markdown('---'))
+#     display(Markdown(''))
+#
+#     fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
+#     d2= DisplayFiles(fdir_eg)
+#     display(Markdown('### Example3'))
+#     display(Markdown('''display eg directory'''))
+#     display(d2)
+#
+#     fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
+#     d3 = DisplayFiles(fdir_eg, fpths_ignore=['.png'], fpth_prefix='eg')
+#     display(Markdown('### Example4'))
+#     display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
+#     display(d3)
 # -
 
 if __name__ =='__main__':
@@ -694,26 +761,6 @@ if __name__ =='__main__':
     display(d0.preview_fpth())
     display(Markdown('---'))
     display(Markdown(''))
-
-    # multiple file
-    d1 = DisplayFiles(fpths)
-    display(Markdown('### Example1'))
-    display(Markdown('''display single file'''))
-    display(d1)
-    display(Markdown('---'))
-    display(Markdown(''))
-
-    fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
-    d2= DisplayFiles(fdir_eg)
-    display(Markdown('### Example3'))
-    display(Markdown('''display eg directory'''))
-    display(d2)
-
-    fdir_eg = os.path.realpath(os.path.join(fdir,'eg_dir'))
-    d3 = DisplayFiles(fdir_eg, fpths_ignore=['.png'], fpth_prefix='eg')
-    display(Markdown('### Example4'))
-    display(Markdown('''example, with fpths_ignore and fpth_prefix'''))
-    display(d3)
     
     # single Output
     o0 = Output(fpth=fpths[0])
@@ -732,5 +779,3 @@ if __name__ =='__main__':
     display(p1)
     display(Markdown('---'))
     display(Markdown(''))
-
-
