@@ -68,7 +68,7 @@ def display_python_file(fpth):
     """
     with open(fpth, 'r') as myfile:
         data = myfile.read()
-    return Markdown("\n ```Python\n" + data + "\n```")
+    return Markdown("\n```Python\n" + data + "\n```")
 
 #  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data, make_dir
 def open_file(filename):
