@@ -520,7 +520,7 @@ class DisplayFile():
     def _xl_prev(self, fpth):
         xt = xl_prev(fpth)
         if not xt:
-            self._open_option()
+            self._open_option('sender')
 
 
 # + tags=[]
