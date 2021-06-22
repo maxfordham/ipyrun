@@ -150,7 +150,9 @@ def _fpth_template_input(inputs: Inputs, print_errors=False) -> str:
     if len(fpths) == 0:
         fpth_default = os.path.join(inputs.fdir_inputs, 'inputs-'+inputs.process_name) + '.json'
         error = 'could not find template input: {0}'.format(os.path.join(inputs.fdir_inputs, inputs.process_name))
-        print(error)
+        if print_errors:
+            # TODO: sort out test scripts, examples and defaults
+            print(error)
         fpths.append(fpth_default)
     fpth_template_input = fpths[0]
     return fpth_template_input
@@ -163,7 +165,7 @@ def _fpth_inputs_file_from_template(inputs: Inputs, print_errors=False) -> None:
                 make_dir(os.path.dirname(inputs.fpth_inputs))
             copyfile(inputs.fpth_template_input, inputs.fpth_inputs)
 
-def _fpth_inputs_options(inputs: Inputs, print_errors=True) -> InputOptions:
+def _fpth_inputs_options(inputs: Inputs, print_errors=False) -> InputOptions:
     """finds all input options (from templates and from past runs)"""
     patterns = ['*' + inputs.process_name + '*', '*' + inputs.script_name + '*']
     patterns = list(set(patterns))
@@ -193,6 +195,7 @@ def _fpth_inputs_options(inputs: Inputs, print_errors=True) -> InputOptions:
     if cnt == 0:
         errors.append('couldnt find and input files within the templates folder or in the project folder')
     if print_errors:
+        # TODO: sort out test scripts, examples and defaults
         [print(p) for p in flatten_list(errors)]
     return from_dict(data=di,data_class=InputOptions)
 
