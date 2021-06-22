@@ -17,7 +17,7 @@ from datetime import datetime
 import fnmatch
 
 #  mf packages
-import mf_file_utilities.applauncher_wrapper as al
+from mf_file_utilities import go as mf_openfile
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ def display_python_file(fpth):
 def open_file(filename):
     """Open document with default application in Python."""
     if sys.platform == 'linux':
-        al.open_file(filename)
+        mf_openfile(filename)
         #  note. this is an MF custom App for opening folders and files
         #        from a Linux file server on the local network
     else:

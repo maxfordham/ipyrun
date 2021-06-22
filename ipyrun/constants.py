@@ -14,7 +14,6 @@ FDIR_APP_EXAMPLE = os.path.join(FDIR_ROOT_EXAMPLE,'test_appdir')
 FPTH_SCRIPT_EXAMPLE = os.path.join(FDIR_PACKAGE,'test_scripts','expansion_vessel_sizing.py')
 FPTH_SCRIPT_EXAMPLE_CSV = os.path.join(FDIR_PACKAGE,'test_scripts','line_graph.py')
 
-
 BUTTON_WIDTH_MIN = '41px'
 BUTTON_WIDTH_MEDIUM = '90px'
 BUTTON_HEIGHT_MIN = '25px'
