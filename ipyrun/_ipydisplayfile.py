@@ -594,11 +594,11 @@ class PreviewOutput():
         
     def _openpreview(self,onchange):
         if self.openpreview.value:
-            self.openpreview.icon ='minus'
+            self.openpreview.icon ='eye'
             with self.out:
                 self.displaypreview.preview_fpth()
         else:
-            self.openpreview.icon = 'plus'
+            self.openpreview.icon = 'eye-slash'
             with self.out:
                 clear_output()
                 
