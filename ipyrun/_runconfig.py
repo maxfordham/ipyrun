@@ -34,6 +34,7 @@ from mfom.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
 from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
+from ipyrun.utils import get_time_of_most_recent_content_modification
 from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE
 
 # + tags=[]
@@ -218,28 +219,31 @@ class Log(BaseParams):
 
 # outputs -------------------------------
         
-def get_time_of_most_recent_content_modification(fpth):
-    try:
-         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_most_recent_content_modification')
-    except:
-        return None
-    
 @dataclass
-class Output:
+class File:
     fpth: str
     fdir: str = ''
+    author: str = 'unknown'
+    time_of_most_recent_content_modification: datetime = None
     description: str = None
     note: str = ''
-    author: str = 'unknown'
-    document_header: Optional[DocumentHeader] = None #https://github.com/samuelcolvin/pydantic/issues/1223
-    time_of_most_recent_content_modification: datetime = None
         
     def __post_init__(self):
         # updates the inputs relative to changes in base params or class initiation
         self.fdir = os.path.dirname(self.fpth)
-        self.author = getpass.getuser()
+        self.author = getpass.getuser()  #  TODO: os.stat(path).st_uid # for author file instead? 
         self.time_of_most_recent_content_modification = get_time_of_most_recent_content_modification(self.fpth)
         
+@dataclass
+class Output(File):
+    document_header: Optional[DocumentHeader] = None #https://github.com/samuelcolvin/pydantic/issues/1223
+        
+    def __post_init__(self):
+        # updates the inputs relative to changes in base params or class initiation
+        super().__post_init__()
+        
+        
+#  TODO: retire "lkup_outputs_from_script" functionality
 @dataclass
 class Outputs(BaseParams):
     """defines location of output files. note. fpths_outputs built from script_outputs"""
