@@ -15,9 +15,7 @@ import yaml
 import time 
 from datetime import datetime
 import fnmatch
-
-#  mf packages
-from mf_file_utilities import go as mf_openfile
+from mf_file_utilities import go as open_file
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -50,6 +48,12 @@ def del_matching(df, string):
 def md_fromfile(fpth):
     """
     read an md file and display in jupyter notebook
+
+    Note:
+        the markdown content (e.g. images) needs to be pathed relative to the jupyter notebook 
+        that you're displaying from rather than the to the markdown file that you're displaying. 
+        this can be confusing! 
+        
     Args:
         fpth:
 
@@ -69,19 +73,6 @@ def display_python_file(fpth):
     with open(fpth, 'r') as myfile:
         data = myfile.read()
     return Markdown("\n```Python\n" + data + "\n```")
-
-#  from mf_modules.file_operations import open_file, recursive_glob, time_meta_data, make_dir
-def open_file(filename):
-    """Open document with default application in Python."""
-    if sys.platform == 'linux':
-        mf_openfile(filename)
-        #  note. this is an MF custom App for opening folders and files
-        #        from a Linux file server on the local network
-    else:
-        try:
-            os.startfile(filename)
-        except AttributeError:
-            subprocess.call(['open', filename])
 
 def recursive_glob(rootdir='.', pattern='*', recursive=True):
     """ 
@@ -178,6 +169,14 @@ def time_meta_data(fpth,
     else:
         return di
         
+        
+def get_time_of_most_recent_content_modification(fpth):
+    try:
+         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_most_recent_content_modification')
+    except:
+        return None
+    
+    
 def make_dir(directory):
     '''
     check if folder exists, if not, make a new folder using python
