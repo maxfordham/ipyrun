@@ -1,7 +1,7 @@
 Markdown==3.3.4
 ipysheet==0.4.4
 pandas==1.2.4
-ipyaggrid==0.2.1
+ipydatagrid
 halo==0.0.31
 mfom==0.3.0
 xlsxtemplater==0.1.5
@@ -14,3 +14,4 @@ dacite==1.6.0
 dataclasses==0.8
 ipython==7.24.1
 PyYAML==5.4.1
+mydocstring

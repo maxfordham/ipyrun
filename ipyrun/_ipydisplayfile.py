@@ -22,7 +22,7 @@ import pathlib
 import pandas as pd
 from IPython.display import display, JSON, Markdown, HTML, IFrame, clear_output, Image
 import time
-from ipyaggrid import Grid
+import ipydatagrid as ipg
 import ipywidgets as widgets
 from markdown import markdown
 import plotly.io as pio
@@ -46,6 +46,7 @@ from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 # +
 #  NOT IN USE - need a way to display pdf's!
 #  https://github.com/voila-dashboards/voila/issues/659
+#  i think this is resolved... need to make sure the path given is relative to the notebook... 
 
 def served_pdf():
     value=r'<iframe width="500" height="600" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" frameborder="1" allowfullscreen></iframe>'
@@ -101,10 +102,10 @@ def mdheader(di):
 
 def xlsxtemplated_display(li):
     """
-    displays xlsxtemplated (written using xlsxtemplater) using ipyaggrid
+    displays xlsxtemplated (written using xlsxtemplater) using ipydatagrid
     """
     for l in li:
-        l['grid'] = default_ipyagrid(l['df'])
+        l['grid'] = default_grid(l['df'])
         display(Markdown(mdheader(l)))
         display(l['grid'])
 #  string = 'JobNo'
@@ -152,13 +153,12 @@ def VegaLite(spec):
     bundle['application/vnd.vegalite.v4+json'] = spec
     display(bundle, raw=True);
 
+
 # +
-
-
-#  consider replacing this with ipydatagrid
-def default_ipyagrid(df, **kwargs):
+def default_grid(df, **kwargs):
     """
-    returns a default ipyagrid class
+    NOT IN USE - REPLACED BY ipydatagrid
+    returns a default ipyaggrid class
 
     Reference:
         https://dgothrek.gitlab.io/ipyaggrid/
@@ -182,7 +182,6 @@ def default_ipyagrid(df, **kwargs):
         _kwargs.update(kwargs)  # user overides
         g = Grid(**_kwargs)
     """
-    #https://dgothrek.gitlab.io/ipyaggrid/
     grid_options = {
         #'columnDefs' : column_defs,
         'enableSorting': True,
@@ -202,9 +201,31 @@ def default_ipyagrid(df, **kwargs):
     g = Grid(**_kwargs)
     return g
 
+def default_grid(df, **kwargs):
+    """
+    thin wrapper for ipy.DataGrid
+
+    Code:
+        _kwargs = {
+            'layout':{'width':'100%', 'height':'400px'}
+        }
+        _kwargs.update(kwargs)  # user overides
+        g = ipg.DataGrid(df, **_kwargs)
+        return g
+
+    """
+
+    _kwargs = {
+        'layout':{'width':'100%', 'height':'400px'},
+        'auto_fit_columns': True
+    }
+    _kwargs.update(kwargs)  # user overides
+    g = ipg.DataGrid(df, **_kwargs)
+    return g
+
 if __name__ == "__main__":
     df = pd.DataFrame.from_dict({'a':['a','b'],'b':['a','b']})
-    #display(default_ipyagrid(df))
+    display(default_grid(df))
 
 
 # +
@@ -298,14 +319,14 @@ def pdf_prev(fpth):
 
 def csv_prev(fpth):
     """
-    previes dataframe using the awesome ipyagrid
+    previes dataframe using the awesome ipydatagrid
 
     Reference:
-        https://dgothrek.gitlab.io/ipyaggrid/
+        ipydatagrid
     """
     data = del_matching(pd.read_csv(fpth),'Unnamed')
     try:
-        g = default_ipyagrid(data)
+        g = default_grid(data)
         display(g)
     except:
         display(data.style)
@@ -898,3 +919,7 @@ if __name__ =='__main__':
     display(p1)
     display(Markdown('---'))
     display(Markdown(''))
+
+
+
+

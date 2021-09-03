@@ -81,7 +81,7 @@ mamba create -n base_mf -c conda-forge jupyterlab voila xeus-python pandas numpy
 #  activate 
 conda activate base_mf
 #  add pip only installs
-pip install ipyaggrid mydocstring pipreqs
+pip install mydocstring pipreqs
 ```
 
 5. add jupyter lab requirements
@@ -101,7 +101,6 @@ JupyterLab v3.0.5
 
 Other labextensions (built into JupyterLab)
    app dir: /home/gunstonej/miniconda3/envs/base_mf/share/jupyter/lab
-        ipyaggrid v0.2.1 enabled OK
         jupyterlab-plotly v4.14.3 enabled OK
 
 

@@ -512,7 +512,7 @@ class RunAppsForm():
         self.reset.on_click(self._reset)
         
     def _reset(self, sender):
-        with self.out:
+        with self.out: # TODO: make it so this also shuts all of the open accordions
             clear_output()
 
     def _help(self, sender):
@@ -612,8 +612,17 @@ class RunApps(RunAppsForm):
         self.li = []
             
     def _update_processes(self, app_defs):
+        """DEPRECATE THIS"""
         for app_def in app_defs:
             add_process(self, app_def)
+            
+    def _add_processes(self, app_defs):
+        for app_def in app_defs:
+            add_process(self, app_def)
+            
+    def _remove_processes(self, process_names):
+        for process_name in process_names:
+            remove_process(self, process_name)
             
     @property
     def process_names(self):

@@ -1,4 +1,0 @@
-pip install ipyaggrid mydocstring
-jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyterlab-plotly plotlywidget ipyaggrid ipyaggrid ipysheet
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-jupyter lab build

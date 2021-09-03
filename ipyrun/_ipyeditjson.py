@@ -37,7 +37,7 @@ from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
 from ipyrun._ipydisplayfile import DisplayFile, default_ipyagrid
 from ipyrun._ipyeditcsv import EditSheet
-from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
+from ipyrun.constants import BUTTON_WIDTH_MIN, FDIR_PACKAGE #  BUTTON_HEIGHT_MIN,
 # -
 
 
@@ -321,7 +321,6 @@ class EditDict(EditDictData):
             if self.guide.value:
                 if self.di['fpth_help']==list:
                     d = DisplayFile(self.di['fpth_help'][0])
-                    #display(Image(os.path.join(os.environ['mf_root'],r'engDevSetup\dev\icons\icon_png\help-icon.png')));
                     print('TODO: ADD PREVIEW OUTPUT HERE')
                     display(d)
                 else:

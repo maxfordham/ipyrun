@@ -31,7 +31,7 @@ conda build conda.recipe
 - and convert to all platforms
 
 ```bash
-conda convert --platform all /mnt/conda-bld/linux-64/ipyrun-v0.1.7*.tar.bz2 --output-dir /mnt/conda-bld
+conda convert --platform all /mnt/conda-bld/linux-64/ipyrun-v0.1.9*.tar.bz2 --output-dir /mnt/conda-bld &&
 conda index /mnt/conda-bld
 ```
 

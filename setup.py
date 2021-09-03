@@ -16,7 +16,7 @@ with open('README.md') as readme_file:
 with open('requirements.txt') as requirements_file:
     requirements = requirements_file.readlines()
 requirements = [r.split('==')[0] for r in requirements] #  flexible requirements
-piponly = ['ipyaggrid']
+piponly = ['mydocstring']
 requirements = diff(requirements, piponly)
 
 #setup_requirements = [ ]
@@ -30,8 +30,6 @@ setup(author="John Gunstone",
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
