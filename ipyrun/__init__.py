@@ -6,7 +6,7 @@
 __author__ = """John Gunstone"""
 __email__ = 'gunstone.john@gmail.com'
 
-from mf_file_utilities._version import get_versions
+from ipyrun._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
 
