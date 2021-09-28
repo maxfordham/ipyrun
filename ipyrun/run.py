@@ -51,7 +51,7 @@ from ipysheet import from_dataframe, to_dataframe
 import ipysheet
 
 # core mf_modules
-from mfom.directories import JobDirs
+from mfom.directories import ProjectDirs
 
 # from this repo
 from ipyrun._runconfig import RunConfig, AppConfig
@@ -425,7 +425,7 @@ if __name__ == "__main__":
         'create_execute_file':True
     }
     config_app_expansion_vessel = from_dict(data=config,data_class=AppConfig)
-    rjson = RunAppExpansionVessel(config_app_expansion_vessel)#config, config_job=JobDirs(fdirRoot='.')
+    rjson = RunAppExpansionVessel(config_app_expansion_vessel)#config, config_job=ProjectDirs(fdirRoot='.')
     display(rjson)
 
 if __name__ == '__main__':
@@ -1035,7 +1035,7 @@ RunApp is used. But, if definied, a variant of RunApp can be used for the whole 
         'fpth_script':FPTH_SCRIPT_EXAMPLE,
         'fdir':FDIR_APP_EXAMPLE,
     }
-    #config_job = JobDirs(fdirJobsRoot='.')
+    #config_job = ProjectDirs(fdirProjectsRoot='.')
     #config_app = from_dict(dataclass=AppConfig,data=di)
     config_app = AppConfig(**di)
     rc = RunConfig(config_app)#, config_job=config_job)

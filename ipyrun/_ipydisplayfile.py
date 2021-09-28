@@ -85,10 +85,10 @@ def mdboldstr(string, di):
     return '__{}__: {}'.format(string,di[string])
 
 def mdnorms(di):
-    return mdboldstr('JobNo', di) + ' ........ ' + mdboldstr('Date', di) + ' ........ ' + mdboldstr('Author', di)
+    return mdboldstr('ProjectNo', di) + ' ........ ' + mdboldstr('Date', di) + ' ........ ' + mdboldstr('Author', di)
 
 def mdwildcars(di):
-    exclude = ['sheet_name', 'xlsx_params', 'xlsx_exporter', 'JobNo', 'Date', 'Author', 'df', 'grid']
+    exclude = ['sheet_name', 'xlsx_params', 'xlsx_exporter', 'ProjectNo', 'Date', 'Author', 'df', 'grid']
     others = {k:v for k,v in di.items() if k not in exclude}
     mdstr = ''
     for k, v in others.items():
@@ -108,7 +108,7 @@ def xlsxtemplated_display(li):
         l['grid'] = default_grid(l['df'])
         display(Markdown(mdheader(l)))
         display(l['grid'])
-#  string = 'JobNo'
+#  string = 'ProjectNo'
 #  mdheader(di)
 
 

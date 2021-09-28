@@ -171,7 +171,7 @@ if __name__ == '__main__':
         # help(Gbxml)
         Gbxml.show_fabric_summ
 
-        #FPTH=r'J:\J4834\JobFolder\Calcs\IES\model_runs.xlsm'
+        #FPTH=r'J:\J4834\ProjectFolder\Calcs\IES\model_runs.xlsm'
         #xl=ExcelIn(FPTH)
         #fpths=recursive_glob(rootdir=xl.setup['06a_Outputs_ModelData'],pattern='*.xml', recursive=True)
         #spcs=GbxmlParser(fpths[0], display_gbmxl=True).spcs

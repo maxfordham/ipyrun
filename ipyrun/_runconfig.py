@@ -450,23 +450,23 @@ if __name__ =='__main__':
     
     #  example - extending AppConfig
     @dataclass
-    class Job:#(BaseModel)
+    class Project:#(BaseModel)
         jobName: str = 'Digital Design'
         jobNumber: str = 'J4321'
             
     @dataclass
-    class ProjectDirs(Job):#,BaseModel
-        fdirJobsRoot: str = 'J:\\'
-        fdirJob: str = 'fdirJob'#os.path.join(fdirJobsRoot, str(Job.jobNumber))
+    class ProjectDirs(Project):#,BaseModel
+        fdirProjectsRoot: str = 'J:\\'
+        fdirProject: str = 'fdirProject'#os.path.join(fdirProjectsRoot, str(Project.jobNumber))
         fdirSchedule: str = ''
-        fdirRevit: str = os.path.join(fdirJob, 'Cad', 'Revit')
-        fdirAutomation: str = os.path.join(fdirJob, 'Automation')
+        fdirRevit: str = os.path.join(fdirProject, 'Cad', 'Revit')
+        fdirAutomation: str = os.path.join(fdirProject, 'Automation')
 
         def __post_init__(self):
-            self.fdirJob = os.path.join(self.fdirJobsRoot, self.jobNumber)
-            self.fdirSchedule = os.path.join(self.fdirJob, 'Schedule')
-            self.fdirRevit = os.path.join(self.fdirJob, 'Cad', 'Revit')
-            self.fdirAutomation = os.path.join(self.fdirJob, 'Automation')
+            self.fdirProject = os.path.join(self.fdirProjectsRoot, self.jobNumber)
+            self.fdirSchedule = os.path.join(self.fdirProject, 'Schedule')
+            self.fdirRevit = os.path.join(self.fdirProject, 'Cad', 'Revit')
+            self.fdirAutomation = os.path.join(self.fdirProject, 'Automation')
 
     @dataclass 
     class ExtendAppConfig(AppConfig):
@@ -485,7 +485,7 @@ if __name__ =='__main__':
         create_execute_file=True,
         process_name='GrilleSchedule',
         config_job=ProjectDirs(
-            fdirJobsRoot=fdir,
+            fdirProjectsRoot=fdir,
             jobNumber='J0000',
         )
     )
@@ -506,7 +506,7 @@ if __name__ =='__main__':
         ]
     }
     from pprint import pprint
-    #config_job=ProjectDirs(fdirJobsRoot='.')
+    #config_job=ProjectDirs(fdirProjectsRoot='.')
 
     print('AppConfig: vanilla')
     print('--------------------')
