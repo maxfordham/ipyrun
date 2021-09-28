@@ -30,10 +30,10 @@ from datetime import datetime
 from pydantic.dataclasses import dataclass
 from pydantic.json import pydantic_encoder
 
-from mfom.directories import ProjectDirs, make_dirs_from_fdir_keys, jobno_fromdir
+from mfom.directories import ProjectDirs
 from mfom.document import DocumentHeader
 
-from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
+from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json, make_dirs_from_fdir_keys, jobno_fromdir
 from ipyrun.utils import get_time_of_most_recent_content_modification
 from ipyrun.constants import FDIR_ROOT_EXAMPLE, FDIR_APP_EXAMPLE, FPTH_SCRIPT_EXAMPLE
 
@@ -451,19 +451,19 @@ if __name__ =='__main__':
     #  example - extending AppConfig
     @dataclass
     class Project:#(BaseModel)
-        jobName: str = 'Digital Design'
-        jobNumber: str = 'J4321'
+        projectName: str = 'Digital Design'
+        projectNumber: str = 'J4321'
             
     @dataclass
     class ProjectDirs(Project):#,BaseModel
         fdirProjectsRoot: str = 'J:\\'
-        fdirProject: str = 'fdirProject'#os.path.join(fdirProjectsRoot, str(Project.jobNumber))
+        fdirProject: str = 'fdirProject'#os.path.join(fdirProjectsRoot, str(Project.projectNumber))
         fdirSchedule: str = ''
         fdirRevit: str = os.path.join(fdirProject, 'Cad', 'Revit')
         fdirAutomation: str = os.path.join(fdirProject, 'Automation')
 
         def __post_init__(self):
-            self.fdirProject = os.path.join(self.fdirProjectsRoot, self.jobNumber)
+            self.fdirProject = os.path.join(self.fdirProjectsRoot, self.projectNumber)
             self.fdirSchedule = os.path.join(self.fdirProject, 'Schedule')
             self.fdirRevit = os.path.join(self.fdirProject, 'Cad', 'Revit')
             self.fdirAutomation = os.path.join(self.fdirProject, 'Automation')
@@ -486,7 +486,7 @@ if __name__ =='__main__':
         process_name='GrilleSchedule',
         config_job=ProjectDirs(
             fdirProjectsRoot=fdir,
-            jobNumber='J0000',
+            projectNumber='J0000',
         )
     )
     RC = RunConfig(config_app)

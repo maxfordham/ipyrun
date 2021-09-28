@@ -326,3 +326,79 @@ def di_from_li_of_di(li_of_di,key,value):
          >>> {'name': 'Tom', 'age': 10}
     '''
     return {l[key]: l[value] for l in li_of_di}
+
+
+
+# directories -------------------------------------------------
+def flatten_list(list_of_lists: list) -> list:
+    """Flatten a list of (lists of (lists of strings)) for any level
+    of nesting
+
+    Args:
+        list_of_lists: with mix of lists and other
+    Returns:
+        rt: list with no nested lists
+
+    """
+    rt = []
+    for i in list_of_lists:
+        if isinstance(i, list):
+            rt.extend(flatten_list(i))
+        else:
+            rt.append(i)
+    return rt
+
+def jobno_fromdir(fdir):
+    """
+    returns the job number from a given file directory
+
+    Args:
+        fdir (filepath): file-directory
+    Returns:
+        job associated to file-directory
+    Code:
+        re.findall("[J][0-9][0-9][0-9][0-9]", txt)
+    """
+    matches = re.findall("[J][0-9][0-9][0-9][0-9]", fdir)
+    if len(matches) == 0:
+        job_no = "J4321"
+    else:
+        job_no = matches[0]
+    return job_no
+
+def find_fdir_keys(di):
+    """searches dict for key that contains string 'fdir'. ignores J:\\
+    can handle lists for fdir* values"""
+    li = list(di.keys())
+    li = flatten_list([di[l] for l in li if l[0:4] == "fdir"]) 
+    li = [l for l in li if l != "J:\\"]
+    li = [l for l in li if l != "None"]
+    return li
+
+
+def make_dirs_from_fdir_keys(di: dict):
+    """
+    creates a folder structure based on a ProjectDirs object. 
+    simply, the script turns the ProjectDirs object into a dict and 
+    searches for keys that begin with "fdir" (includes nested elements)
+    and creates those dirs using Pathlib. 
+
+    Args:
+        projectdirs: ProjectDirs, data object defining project setup with standard dirs
+
+    Returns:
+        li: list of directories that should now exist
+
+    Code:
+        p.mkdir(parents=True, exist_ok=True)
+    """
+    li = find_fdir_keys(di)
+    li_made = []
+    for p in li:
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+            li_made.append(p)
+        except:
+            s = str(p)
+            print(f"failed to make dir: {s}")
+    return li_made
