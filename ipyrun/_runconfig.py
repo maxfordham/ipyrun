@@ -30,7 +30,7 @@ from datetime import datetime
 from pydantic.dataclasses import dataclass
 from pydantic.json import pydantic_encoder
 
-from mfom.directories import JobDirs, make_dirs_from_fdir_keys, jobno_fromdir
+from mfom.directories import ProjectDirs, make_dirs_from_fdir_keys, jobno_fromdir
 from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json
@@ -292,8 +292,8 @@ class AppConfig(Config, Inputs, Log, Outputs):
     All other params are overwritten on initiation of an AppConfig obj using the __post_init__
     ---------------------------------
     """
-    config_job: JobDirs = None # field(default_factory=JobDirs)
-    config_ui: Any = None # field(default_factory=JobDirs)
+    config_job: ProjectDirs = None # field(default_factory=ProjectDirs)
+    config_ui: Any = None # field(default_factory=ProjectDirs)
     config_type: str = None
     
     def __post_init__(self):
@@ -319,7 +319,7 @@ if __name__ =='__main__':
                    fpth_script=FPTH_SCRIPT_EXAMPLE, 
                    #script_outputs=[Output(fpth='asdf',description='asd')],
                    create_execute_file=True,
-                   #config_job=JobDirs()
+                   #config_job=ProjectDirs()
                   )
     from pprint import pprint
     make_dirs_AppConfig(Ac)
@@ -360,7 +360,7 @@ class RunConfig():
                  #config_app_type: Type[AppConfig]=AppConfig,
                  revert_to_file:bool=False,
                  #config_overrides={},
-                 #config_job: Type[JobDirs]=JobDirs(),
+                 #config_job: Type[ProjectDirs]=ProjectDirs(),
                  #lkup_outputs_from_script: bool=True,
                  ):
         """
@@ -372,7 +372,7 @@ class RunConfig():
         """
         self._init_RunConfig(config_app, revert_to_file=revert_to_file)# lkup_outputs_from_script=lkup_outputs_from_script) #config_job=config_job,
 
-    def _init_RunConfig(self,config_app, revert_to_file=True):# lkup_outputs_from_script=True): #config_job=JobDirs(),
+    def _init_RunConfig(self,config_app, revert_to_file=True):# lkup_outputs_from_script=True): #config_job=ProjectDirs(),
         self.revert_to_file = revert_to_file
         self.errors = []
         self._update_config(config_app)
@@ -455,7 +455,7 @@ if __name__ =='__main__':
         jobNumber: str = 'J4321'
             
     @dataclass
-    class JobDirs(Job):#,BaseModel
+    class ProjectDirs(Job):#,BaseModel
         fdirJobsRoot: str = 'J:\\'
         fdirJob: str = 'fdirJob'#os.path.join(fdirJobsRoot, str(Job.jobNumber))
         fdirSchedule: str = ''
@@ -470,7 +470,7 @@ if __name__ =='__main__':
 
     @dataclass 
     class ExtendAppConfig(AppConfig):
-        config_job: JobDirs
+        config_job: ProjectDirs
 
         def __post_init__(self):
             # updates the inputs relative to changes in base params or class initiation
@@ -484,7 +484,7 @@ if __name__ =='__main__':
         fpth_script=FPTH_SCRIPT_EXAMPLE,
         create_execute_file=True,
         process_name='GrilleSchedule',
-        config_job=JobDirs(
+        config_job=ProjectDirs(
             fdirJobsRoot=fdir,
             jobNumber='J0000',
         )
@@ -506,7 +506,7 @@ if __name__ =='__main__':
         ]
     }
     from pprint import pprint
-    #config_job=JobDirs(fdirJobsRoot='.')
+    #config_job=ProjectDirs(fdirJobsRoot='.')
 
     print('AppConfig: vanilla')
     print('--------------------')
