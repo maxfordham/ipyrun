@@ -35,7 +35,7 @@ from ipyfilechooser import FileChooser
 from ipyrun.utils import make_dir, read_json, write_json
 from ipyrun._runconfig import RunConfig, AppConfig
 from ipyrun._filecontroller import FileConfigController, SelectEditSaveMfJson
-from ipyrun._ipydisplayfile import DisplayFile, default_ipyagrid
+from ipyrun._ipydisplayfile import DisplayFile, default_grid
 from ipyrun._ipyeditcsv import EditSheet
 from ipyrun.constants import BUTTON_WIDTH_MIN, FDIR_PACKAGE #  BUTTON_HEIGHT_MIN,
 # -
@@ -472,6 +472,7 @@ class EditDict(EditDictData):
     # --------------------------------------------------------------------------
     # code that allows for embedded ipysheets ----------------------------------
     def _ipyagrid(self):
+        # TODO: replace ipyagrid with ipydatagrid
         self.kwargs = {k:v for (k,v) in self.kwargs.items() if k != 'value'}
         self.kwargs['icon'] = 'arrow-down'
         self.widget_only = widgets.ToggleButton(**self.kwargs)
@@ -479,13 +480,15 @@ class EditDict(EditDictData):
         self._ipyagrid_controls()
 
     def _ipyagrid_controls(self):
+        # TODO: replace ipyagrid with ipydatagrid
         self.widget_only.observe(self.call_ipyagrid, 'value')
         self.save_ipyagrid.on_click(self._save_ipyagrid)
 
     def call_ipyagrid(self, sender):
+        # TODO: replace ipyagrid with ipydatagrid
         tmp = pd.read_json(self.di['value'])
         editable = self.di['editable'] if 'editable' in self.di else True
-        self.grid = default_ipyagrid(tmp,show_toggle_edit=editable)
+        self.grid = default_grid(tmp,show_toggle_edit=editable)
         #ipysheet.sheet(ipysheet.from_dataframe(tmp)) # initiate sheet
         with self.out:
             if self.widget_only.value:
@@ -496,6 +499,7 @@ class EditDict(EditDictData):
                 clear_output()
 
     def _save_ipyagrid(self, change):
+        # TODO: replace ipyagrid with ipydatagrid
         tmp = self.grid.grid_data_out['grid']
         self.di['value'] = tmp.to_json()
         with self.out:
