@@ -6,9 +6,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -16,6 +16,7 @@
 # %run __init__.py
 
 # +
+import pathlib
 import os
 import subprocess
 import pathlib
@@ -48,37 +49,36 @@ from ipyrun.constants import BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN, FDIR_PACKAGE
 #  https://github.com/voila-dashboards/voila/issues/659
 #  i think this is resolved... need to make sure the path given is relative to the notebook... 
 
-def served_pdf():
-    value=r'<iframe width="500" height="600" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" frameborder="1" allowfullscreen></iframe>'
-    myhtml =widgets.HTML(
-        value=value,
-        placeholder='Some HTML',
-        description='Some HTML',
-    )
-    display(myhtml)
+# def served_pdf():
+#     value=r'<iframe width="500" height="600" src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" frameborder="1" allowfullscreen></iframe>'
+#     myhtml =widgets.HTML(
+#         value=value,
+#         placeholder='Some HTML',
+#         description='Some HTML',
+#     )
+#     display(myhtml)
     
-def local_pdf():
-    value=r'<iframe width="500" height="600" src="../test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
-    myhtml =widgets.HTML(
-        value=value,
-        placeholder='Some HTML',
-        description='Some HTML',
-    )
-    display(myhtml)
+# def local_pdf():
+#     value=r'<iframe width="500" height="600" src="../test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
+#     myhtml =widgets.HTML(
+#         value=value,
+#         placeholder='Some HTML',
+#         description='Some HTML',
+#     )
+#     display(myhtml)
     
-def fromfile_pdf():
-    value=r'<iframe width="500" height="600" src="file:///mnt/c/engDev/git_mf/ipyrun/test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
-    myhtml =widgets.HTML(
-        value=value,
-        placeholder='Some HTML',
-        description='Some HTML',
-    )
-    display(myhtml)
+# def fromfile_pdf():
+#     value=r'<iframe width="500" height="600" src="file:///mnt/c/engDev/git_mf/ipyrun/test_filetypes/eg_pdf.pdf" frameborder="1" allowfullscreen></iframe>'
+#     myhtml =widgets.HTML(
+#         value=value,
+#         placeholder='Some HTML',
+#         description='Some HTML',
+#     )
+#     display(myhtml)
 
 #served_pdf()
 #local_pdf()
 #fromfile_pdf()
-
 
 # +
 def mdboldstr(string, di):
@@ -123,17 +123,11 @@ def display_button_styles():
         display(widgets.HBox([b,t]))
 
 
-# +
-def get_ext(fpth, get_compound=True):
-    """get file extension including compound json files"""
-    ext = os.path.splitext(fpth)[1].lower()
-    _ext = ''
-    if get_compound:
-        li_fstr = os.path.splitext(fpth)[0].lower().split('.')
-        if len(li_fstr) > 1:
-            _ext = '.' + li_fstr[-1]
 
-    return _ext + ext
+# +
+def get_ext(fpth):
+    """get file extension including compound json files"""
+    return ''.join(pathlib.Path(fpth).suffixes)
 
 def Vega(spec):
     """
@@ -153,53 +147,6 @@ def VegaLite(spec):
     bundle['application/vnd.vegalite.v4+json'] = spec
     display(bundle, raw=True);
 
-
-# +
-def default_grid(df, **kwargs):
-    """
-    NOT IN USE - REPLACED BY ipydatagrid
-    returns a default ipyaggrid class
-
-    Reference:
-        https://dgothrek.gitlab.io/ipyaggrid/
-
-    Code:
-        grid_options = {
-            #'columnDefs' : column_defs,
-            'enableSorting': True,
-            'enableFilter': True,
-            'enableColResize': True,
-            'enableRangeSelection': True,
-            'enableCellTextSelection':True
-        }
-        _kwargs = {
-            'grid_data':df,
-            'grid_options':grid_options,
-            'show_toggle_edit':False,
-            'quick_filter':True,
-            'theme':'ag-theme-balham',
-        }
-        _kwargs.update(kwargs)  # user overides
-        g = Grid(**_kwargs)
-    """
-    grid_options = {
-        #'columnDefs' : column_defs,
-        'enableSorting': True,
-        'enableFilter': True,
-        'enableColResize': True,
-        'enableRangeSelection': True,
-        'enableCellTextSelection':True
-    }
-    _kwargs = {
-        'grid_data':df,
-        'grid_options':grid_options,
-        'show_toggle_edit':False,
-        'quick_filter':True,
-        'theme':'ag-theme-balham',
-    }
-    _kwargs.update(kwargs)  # user overides
-    g = Grid(**_kwargs)
-    return g
 
 def default_grid(df, **kwargs):
     """
@@ -292,7 +239,6 @@ class PreviewPy():
         self._update_title()
         with self.out:
             clear_output()
-            #display(self.show_me_the_code)
             display_module_docstring(self.fpth)
 
     def _show_me_the_code(self, sender):
@@ -386,7 +332,7 @@ def xl_prev(fpth):
 #self.author = getpass.getuser()
 #self.time_of_most_recent_content_modification = get_time_of_most_recent_content_modification(self.fpth)
 
-def open_ui(fpth: str)-> [widgets.Button, widgets.Button, widgets.ToggleButton, widgets.HTML]:
+def open_ui(fpth: str):
     """
     creates open file and open folder buttons
     fpth used for building tooltip
