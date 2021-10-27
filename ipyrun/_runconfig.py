@@ -30,7 +30,7 @@ from datetime import datetime
 from pydantic.dataclasses import dataclass
 from pydantic.json import pydantic_encoder
 
-from mfom.directories import ProjectDirs
+from mfom.directories import ProjectDirs, make_project_dirs
 from mfom.document import DocumentHeader
 
 from ipyrun.utils import flatten_list, make_dir, recursive_glob, time_meta_data, write_json, read_json, make_dirs_from_fdir_keys, jobno_fromdir
@@ -50,7 +50,7 @@ def pydantic_dataclass_to_file(data: Type[dataclass], fpth='pydantic_dataclass.j
 class BaseParams:
     fdir: str = FDIR_APP_EXAMPLE
     fdir_appdata: str = 'None'
-    fpth_script: str = FPTH_SCRIPT_EXAMPLE
+    fpth_script: str = FPTH_SCRIPT_EXAMPLE  
     script_name: str = 'script_name'
     process_name: str = 'None'
     pretty_name: str = 'None'
@@ -300,13 +300,17 @@ class AppConfig(Config, Inputs, Log, Outputs):
         super().__post_init__()
         self.config_type = str(type(self))
 
-def make_dirs_AppConfig(Ac: AppConfig):
+def make_dirs_AppConfig(ac: AppConfig):
     """
     makes all of the "fdirs" directories in an AppConfig object
     """
-    make_dirs_from_fdir_keys(asdict(Ac))
+    make_dirs_from_fdir_keys(asdict(ac))
+    
     try:
-        make_dirs_from_fdir_keys(asdict(Ac.config_job))
+        if issubclass(type(ac.config_job), BaseModel):  # TODO: update AppConfig to be a BaseModel rather than @dataclass
+            make_project_dirs(ac.config_job)
+        else:
+            make_dirs_from_fdir_keys(asdict(ac.config_job))
     except:
         print('didnt make config_job')
         pass
@@ -442,7 +446,6 @@ class RunConfig():
     def fpths_outputs(self): 
         print('DEPRECATED: use self.config_app.fpths_outputs instead')
         return [s['fpth'] for s in self.script_outputs]
-
 
 # -
 
