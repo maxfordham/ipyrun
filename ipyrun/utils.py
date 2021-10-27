@@ -4,7 +4,9 @@ this module contains utility functions. these are copied from the main mf librar
 """
 
 import os 
+import pathlib
 import sys
+import re
 import codecs
 import subprocess
 import glob
@@ -396,6 +398,8 @@ def make_dirs_from_fdir_keys(di: dict):
     li_made = []
     for p in li:
         try:
+            if type(p) == str:
+                p = pathlib.Path(p)
             p.mkdir(parents=True, exist_ok=True)
             li_made.append(p)
         except:
