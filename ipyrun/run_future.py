@@ -366,7 +366,6 @@ run_script = ScriptHandler(
 
 cmd = ['python','-O', run_script.fpth_script, run_script.fpth_inputs, *run_script.fpths_outputs]
 
-
 run_actions = RunActions(
     help_run_show=(lambda: display(DisplayFile(str(run_script.fpth_script)))),
     inputs_show=(lambda: display(EditCsv(run_script.fpth_inputs))),
