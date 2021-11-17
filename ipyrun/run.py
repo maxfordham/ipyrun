@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.11.4
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -22,7 +22,7 @@ import sys
 #sys.path.append('/mnt/c/engDev/git_mf/ipypdt')
 #sys.path.append('/mnt/c/engDev/git_mf/mfom')
 #sys.path.append('/mnt/c/engDev/git_mf/ipyword')
-#sys.path.append('/mnt/c/engDev/git_mf/ipyrun')
+sys.path.append('/mnt/c/engDev/git_mf/ipyrun')
 
 # +
 import os
@@ -86,7 +86,7 @@ class RunForm():
         to inputs required. this class is intended to be inherited by RunApp
         """
         self.config_app = RunFormTestInput(**{'fpth_script':'script fpth','fpth_inputs':'script config','process_name':'process_name','pretty_name':'pretty_name'})
-        self.display_paths= False
+        self.display_paths= True
         self._form()
         
 
@@ -182,6 +182,7 @@ class RunForm():
         
 if __name__ == '__main__':
     display(RunForm())
+
 
 # +
 class RunApp(RunForm, RunConfig):
@@ -428,6 +429,8 @@ if __name__ == "__main__":
     rjson = RunAppExpansionVessel(config_app_expansion_vessel)#config, config_job=ProjectDirs(fdirRoot='.')
     display(rjson)
 
+config_app_expansion_vessel.fpth_log
+
 if __name__ == '__main__':
     from ipyrun._ipyeditcsv import EditRunAppCsv # TODO: i think there is an issue with "EditRunAppCsv" that needs fixing
     # Example2 --------------------------
@@ -475,7 +478,6 @@ class RunAppsForm():
         self._form()
         self._init_controls()
         
-
     def _form(self):
         self.check = widgets.Checkbox(
                         value=False,
