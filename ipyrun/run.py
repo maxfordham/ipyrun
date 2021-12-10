@@ -429,8 +429,6 @@ if __name__ == "__main__":
     rjson = RunAppExpansionVessel(config_app_expansion_vessel)#config, config_job=ProjectDirs(fdirRoot='.')
     display(rjson)
 
-config_app_expansion_vessel.fpth_log
-
 if __name__ == '__main__':
     from ipyrun._ipyeditcsv import EditRunAppCsv # TODO: i think there is an issue with "EditRunAppCsv" that needs fixing
     # Example2 --------------------------
@@ -518,7 +516,6 @@ class RunAppsForm():
             clear_output()
 
     def _help(self, sender):
-
         with self.out:
             clear_output()
             display(Image(FPTH_RUNAPPS_HELP))

@@ -112,6 +112,8 @@ def recursive_glob(rootdir='.', pattern='*', recursive=True):
             
     return matches
 
+def string_of_time(t):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t))
 
 def time_meta_data(fpth,
                    as_DataFrame: bool = True,
@@ -147,9 +149,6 @@ def time_meta_data(fpth,
         add optionally extract other meta-data available from os.stat
         this should be *args inputs
     '''
-
-    def string_of_time(t):
-        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t))
 
     di = {}
     try:

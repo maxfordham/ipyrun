@@ -10,6 +10,10 @@ BUTTON_WIDTH_MIN = '41px'
 BUTTON_WIDTH_MEDIUM = '90px'
 BUTTON_HEIGHT_MIN = '25px'
 
+FPTH_MXF_ICON = PATH_PACKAGE / 'images' / 'mxf-icon.png'
+FPTH_USER_ICON = PATH_PACKAGE / 'images' / 'user-icon.png'
+FPTH_TEMPLATE_PROCESSES = PATH_PACKAGE / 'processes-schedule.csv'
+
 def load_test_constants():
     """only in use for debugging within the package. not used in production code.
 

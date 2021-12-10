@@ -1,0 +1,27 @@
+guid,process_name,exists,fromTemplate,pretty_name
+74a53cb8-8195-4381-abf8-1c50d813a5e9,TestingandCommissioningSchedule,False,True,Testing and Commissioning Schedule
+589d32d6-d95f-4819-a852-70e1dc35dc8f,SeasonalCommissioningSchedule,False,True,Seasonal Commissioning Schedule
+a1312465-aa63-42aa-8d9a-4fc9ac834dcd,StaffTrainingandDemonstrationSchedule,False,True,Staff Training and Demonstration Schedule
+91a48079-d75a-44a1-bbe0-7b6ece2a7407,BuildersWorkSchedule,False,True,Builder's Work Schedule
+b2adf934-39ab-42ab-affc-d1afd9c013c9,ValvesPipelineAncillariesSchedule,False,True,Valves & Pipeline Ancillaries Schedule
+a77b4e5f-9e20-48e6-91f5-20cc2f114371,ManholeandGullySchedule,False,True,Manhole and Gully Schedule
+5aff10d9-4f9d-481e-a441-707dc5274c67,CableTypesSchedule,False,True,Cable Types Schedule
+99cb779e-3726-447d-86c6-a4bcce56b0a0,FanCoilUnitSchedule,False,True,Fan Coil Unit Schedule
+af77d54d-d94d-46d1-87c5-8a728b540680,CoolingEquipmentSchedule,False,True,Cooling Equipment Schedule
+49be17da-a99a-434b-9fd3-526405857f52,HeatingEquipmentSchedule,False,True,Heating Equipment Schedule
+7a9ce691-b7b4-4a3e-bc65-ee6fed1acc2f,RadiatorSchedule,False,True,Radiator Schedule
+8172bb80-41e6-4a0f-a1fb-f4bf274714d1,VentilationEquipmentSchedule,False,True,Ventilation Equipment Schedule
+bf5aa1eb-1136-4947-8c17-4197b4cde3e1,AirHandlingUnitSchedule,False,True,Air Handling Unit Schedule
+6f9faaa6-1453-4b31-baba-1e717cd1501e,FanSchedule,False,True,Fan Schedule
+86a2d0c9-cf6c-401f-951a-cb38c89d8824,GrilleSchedule,False,True,Grille Schedule
+e5663138-254a-4471-b271-c596c6902b44,DistributionEquipmentSchedule,False,True,Distribution Equipment Schedule
+1ef010f0-8ae7-41c8-91db-b2c9c2374ee6,PanelBoardSchedule,False,True,Panel Board Schedule
+26432d0a-b361-495e-8e97-2f6c273390ca,DistributionBoardSchedule,False,True,Distribution Board Schedule
+b7750063-d760-4ef2-8eb4-0ffd992cb65d,SmallPowerElectricalAccessoriesSchedule,False,True,Small Power Electrical Accessories Schedule
+e8b1ca71-98d1-41a9-9f74-460790bdc809,LightFittingSchedule,False,True,Light Fitting Schedule
+f8541ac4-1df7-4c41-b963-5082749bc412,CCTVEquipmentSchedule,False,True,CCTV Equipment Schedule
+590fc9b1-1389-46e7-95d0-7228da916208,LightningProtectionandEarthingSchedule,False,True,Lightning Protection and Earthing Schedule
+7bcc1cc4-cb28-4deb-acda-612f22c4115b,MeteringEquipmentSchedule,False,True,Metering Equipment Schedule
+31d0be80-7638-4add-a47d-2c01c4ef623c,LiftSchedule,False,True,Lift Schedule
+415ef835-1547-4a14-930e-34fe46475f8a,BlankSchedule,False,True,Blank Schedule
+e7b46c80-b7be-4142-9bc6-06abf8f100ea,UserDefinedSchedule,True,False,User Defined Schedule

@@ -18,6 +18,8 @@ import time
 from datetime import datetime
 import fnmatch
 from mf_file_utilities import go as open_file
+import ipywidgets as widgets
+from ipyrun.constants import BUTTON_WIDTH_MIN
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -405,3 +407,49 @@ def make_dirs_from_fdir_keys(di: dict):
             s = str(p)
             print(f"failed to make dir: {s}")
     return li_made
+
+
+# widget templates
+def template_image_icon(fpth):
+    file = open(fpth, "rb")
+    image = file.read()
+    return widgets.Image(
+        tooltip='asdf asdad',
+        value=image,
+        format='png',
+        width=30,
+        height=5,
+        layout=widgets.Layout(object_fit = 'contain')
+    )
+
+def template_plus_button(description='', tooltip='add'):
+    return widgets.Button(
+            description=description,
+            tooltip=tooltip,
+            button_style='primary',
+            icon='fa-plus',
+            style={'font_weight':'bold'},
+            layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+
+def template_minus_button(description='', tooltip='remove'):
+    return widgets.Button(
+            description=description,
+            tooltip=tooltip,
+            button_style='danger',
+            icon='fa-minus',
+            style={'font_weight':'bold'},
+            layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+
+def template_add_remove(add_tooltip='add a new user defined schedule',remove_tooltip='remove user defined schedule'): 
+    add = template_plus_button(tooltip=add_tooltip)
+    remove = template_minus_button(tooltip=remove_tooltip)
+    add_remove = widgets.HBox([add, remove])
+    return add_remove, add, remove
+
+def template_checkbox(value=False):
+    return widgets.Checkbox(
+            value=value,
+            disabled=False,
+            indent=False,
+            layout=widgets.Layout(max_width='30px',height='30px', padding='3px')
+            )

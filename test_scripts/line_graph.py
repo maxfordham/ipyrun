@@ -76,7 +76,7 @@ def main(fpth_in, fpth_out_csv, fpth_out_plotly):
     df = graph(formula, x_range, fpth_save_plot=fpth_out_plotly, returndf=True)
     df.to_csv(fpth_out_csv)
     return df
-    ['python', '-O', '/mnt/c/engDev/git_mf/ipyrun/test_scripts/line_graph.py', '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/inputs/inputs-line_graph.csv', '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/line_graph-output.csv', '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/line_graph-output.plotly.json']
+
 if __name__ == "__main__":
     if __debug__:
         from ipyrun.constants import FDIR_APP_EXAMPLE
