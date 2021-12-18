@@ -43,7 +43,7 @@ from typing import Optional, List, Dict, Type
 from pydantic.dataclasses import dataclass
 from pydantic import BaseModel, validator, Field
 from jinja2 import Template
-
+from markdown import markdown
 import plotly.io as pio
 import plotly.graph_objects as go
 
@@ -69,42 +69,27 @@ from ipyrun.constants import (
     PATH_RUNAPPS_HELP,
 )
 
-
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
 
+def _markdown(value='_Markdown_',
+              **kwargs):
+    """
+    a simple template for markdown text input that templates required input
+    fields. additional user defined fields can be added as kwargs
+    """
+    _kwargs = {}
+    _kwargs['value'] = markdown(value)  # required field
+    _kwargs.update(kwargs)  # user overides
+    return widgets.HTML(**_kwargs)
+
 
 # +
 # RUN __FUTURE__
-
-class RunId(BaseModel):
-    """run identifier
-
-    Args:
-        BaseModel (pydantic.BaseModel): inherits pydantic
-
-    Returns:
-        RunId: RunId object
-    """
-
-    index: int = 0
-    process_name: str = "process_name"
-    pretty_name: str = None
-    check: bool = True
-
-    @validator("pretty_name", always=True)
-    def _pretty_name(cls, v, values):
-        if v is None:
-            return str(values["index"]) + " - " + values["process_name"]
-        else:
-            return v
-
-
 class RunUiConfig(BaseModel):
     include_show_hide = True
-
-
+    
 class RunActions(BaseModel):
     """map containing callables that are called when buttons in the RunApp are
     activated. Default values contain dummy calls. setting the values to "None"
@@ -117,6 +102,7 @@ class RunActions(BaseModel):
 
     check: typing.Optional[typing.Callable] = lambda: display("check")
     uncheck: typing.Optional[typing.Callable] = lambda: display("uncheck")
+    get_status: typing.Optional[typing.Callable] = lambda: display("get_status")
     help_ui_show: typing.Optional[typing.Callable] = lambda: display(
         Image(PATH_RUNAPP_HELP)
     )
@@ -135,8 +121,8 @@ class RunActions(BaseModel):
     inputs_hide: typing.Optional[typing.Callable] = lambda: display("inputs_hide")
     outputs_show: typing.Optional[typing.Callable] = lambda: display("outputs_show")
     outputs_hide: typing.Optional[typing.Callable] = lambda: display("outputs_hide")
-    log_show: typing.Optional[typing.Callable] = lambda: display("log_show")
-    log_hide: typing.Optional[typing.Callable] = lambda: display("log_hide")
+    runlog_show: typing.Optional[typing.Callable] = lambda: display("runlog_show")
+    runlog_hide: typing.Optional[typing.Callable] = lambda: display("runlog_hide")
     run: typing.Optional[typing.Callable] = lambda: display("run")
     run_hide: typing.Optional[typing.Callable] = lambda: display("console_hide")
     activate: typing.Optional[typing.Callable] = lambda: display("activate")
@@ -145,40 +131,6 @@ class RunActions(BaseModel):
 
 #     show: typing.Optional[typing.Callable] = (lambda : display('show'))
 #     hide: typing.Optional[typing.Callable] = (lambda : display('hide'))
-
-
-class BaseConfig(BaseModel):
-    run_id: RunId = RunId()
-    config_ui: RunUiConfig = RunUiConfig()
-    config_actions: typing.Any = None  # this one might get overwritten
-
-class RunAppConfig(BaseConfig):
-    """generic RunApp configurator definition. this will be serialised to JSON and remade
-    for storing the Apps state. it will also be used to generate a RunApp when using the
-    "add" button.
-
-    Args:
-        BaseModel ([type]): [description]
-        
-    
-    """
-    
-    actions: RunActions = RunActions() # TODO: add this back in once pydantic has updated such that it can be excluded from the json output. and remade by a validator.
-
-
-
-class BatchId(RunId):
-    description: str = Field(
-        "",
-        description="a description of the batch of RunApps. Displayed as a header to the UI",
-    )
-
-    @validator("pretty_name", always=True)
-    def _pretty_name(cls, v, values):
-        if v is None:
-            return values["process_name"]
-        else:
-            return v
 
 
 #  as the RunActions are so generic, the same actions can be applied to Batch operations
@@ -202,11 +154,7 @@ class BatchActions(RunActions):
     review_hide: typing.Optional[typing.Callable] = lambda: display("review_hide")
 
 
-class BatchAppConfig(BaseModel):
-    # actions: BatchActions = BatchActions() # TODO: add this back in once pydantic has updated such that it can be excluded from the json output. and remade by a validator.
-    batch_id: BatchId = BatchId()
-    config_ui: RunUiConfig = RunUiConfig()
-    config_actions: typing.Any = None  # this one might get overwritten
+
 
 
 if __name__ == "__main__":
@@ -219,8 +167,8 @@ This is everything that will be passed to the RunApp on initialisation
     """
         )
     )
-    display(Markdown("`>>> display(RunAppConfig().dict())`"))
-    display(RunAppConfig().dict())
+    #display(Markdown("`>>> display(RunAppConfig().dict())`"))
+    #display(RunAppConfig().dict())
     display(Markdown("`>>> display(RunActions().dict())`"))
     display(RunActions().dict())
 
@@ -235,12 +183,18 @@ This is everything that will be passed to the RunApp on initialisation
     """
         )
     )
-    display(Markdown("`>>> display(BatchAppConfig().dict())`"))
-    display(BatchAppConfig().dict())
+    #display(Markdown("`>>> display(BatchAppConfig().dict())`"))
+    #display(BatchAppConfig().dict())
     display(Markdown("`>>> display(BatchActions().dict())`"))
     display(BatchActions().dict())
+
+
 # +
-class RunActionsUi:
+import traitlets
+from ipyrun.constants import STATUS_BUTTON_NEEDSRERUN, STATUS_BUTTON_NOOUTPUTS, STATUS_BUTTON_UPTODATE, DI_STATUS_MAP
+#from traitelt
+
+class RunActionsUi(traitlets.HasTraits):
     """maps the RunActions onto buttons. doesn't put them in a container.
 
     Returns:
@@ -249,10 +203,20 @@ class RunActionsUi:
     # TODO: make value == RunActions
     minwidth = BUTTON_WIDTH_MIN
     medwidth = BUTTON_WIDTH_MEDIUM
+    status = traitlets.Unicode()
+    
+    @traitlets.validate("status")
+    def _status(self, proposal):
+        if proposal.value not in ["up_to_date", "no_outputs", "outputs_need_updating"]:
+            raise ValueError(
+                f'{proposal} given. allowed values of "status" are: "up_to_date", "no_outputs", "outputs_need_updating" only'
+            )
+        return proposal
 
     def __init__(self, actions: RunActions = RunActions()): #, checked=True
         #self.checked = checked
         self._init_RunActionsUi(actions)
+        self.status = 'no_outputs'
         
     def _init_RunActionsUi(self, actions):
         
@@ -283,6 +247,9 @@ class RunActionsUi:
         return type(actions)(
             **{k: self._init_run_action(v) for k, v in actions.dict().items()}
         )
+    
+    def _init_actions(self, actions):
+        return actions
 
     def _init_objects(self):
         """initiates UI objects
@@ -294,19 +261,25 @@ class RunActionsUi:
         #         self.help_config
         #         self.inputs
         #         self.outputs
-        #         self.log
+        #         self.runlog
         #         self.check
         #         self.run
         #         self.show
         #         self.hide
         """
-
+    
         self.check = widgets.Checkbox(
             value=False, # self.checked
             disabled=False,
             indent=False,
-            layout=widgets.Layout(max_width="30px", height="30px", padding="3px"),
+            layout=widgets.Layout(max_width="20px", 
+                                  height="40px", 
+                                  padding="3px", 
+                                  #border='3px solid green'
+                                 ),
         )
+        #self.check_uptodate = widgets.HBox(layout={'border':'3px solid green'})
+        self.status_indicator = widgets.Button(**STATUS_BUTTON_NOOUTPUTS)
         self.help_ui = widgets.ToggleButton(
             icon="question-circle",
             tooltip="describes the functionality of elements in the RunApp interface",
@@ -341,9 +314,9 @@ class RunActionsUi:
             style={"font_weight": "bold"},
             layout=widgets.Layout(width=self.medwidth),
         )
-        self.log = widgets.ToggleButton(
-            description="log",
-            tooltip="show a log of when the script was executed to generate the outputs, and by who",
+        self.runlog = widgets.ToggleButton(
+            description="runlog",
+            tooltip="show a runlog of when the script was executed to generate the outputs, and by who",
             button_style="info",
             icon="scroll",
             style={"font_weight": "bold"},
@@ -375,7 +348,7 @@ class RunActionsUi:
         self.out_help_config = widgets.Output()
         self.out_inputs = widgets.Output()
         self.out_outputs = widgets.Output()
-        self.out_log = widgets.Output()
+        self.out_runlog = widgets.Output()
         self.out_console = widgets.Output()
 
     def _init_controls(self):
@@ -384,11 +357,20 @@ class RunActionsUi:
         self.help_config.observe(self._help_run, names="value")
         self.inputs.observe(self._inputs, names="value")
         self.outputs.observe(self._outputs, names="value")
-        self.log.observe(self._log, names="value")
+        self.runlog.observe(self._runlog, names="value")
         self.run.on_click(self._run)
         self.check.observe(self._check, names="value")
         self.show.on_click(self._show)
         self.hide.on_click(self._hide)
+        self.observe(self._status, names="status")
+        self.status_indicator.on_click(self._status_indicator)
+        
+    def _status(self, change):
+        style = DI_STATUS_MAP[self.status]
+        [setattr(self.status_indicator, k, v) for k, v in style.items()];
+        #
+    def _status_indicator(self, onclick):
+        self.actions.get_status()
 
     @property
     def get_show_hide_value(self):
@@ -398,10 +380,9 @@ class RunActionsUi:
             self.help_config.value,
             self.inputs.value,
             self.outputs.value,
-            self.log.value,
+            self.runlog.value,
         ]
     
-
     def _show(self, on_click):
         """default show run data"""
         self.help_ui.value = False
@@ -409,7 +390,7 @@ class RunActionsUi:
         self.help_config.value = False
         self.inputs.value = True
         self.outputs.value = True
-        self.log.value = True
+        self.runlog.value = True
 
     def _hide(self, on_click):
         """default hide run data"""
@@ -418,7 +399,7 @@ class RunActionsUi:
         self.help_config.value = False
         self.inputs.value = False
         self.outputs.value = False
-        self.log.value = False
+        self.runlog.value = False
         with self.out_console:
             clear_output()
 
@@ -478,9 +459,9 @@ class RunActionsUi:
             self.actions.outputs_hide,
         )
 
-    def _log(self, on_change):
+    def _runlog(self, on_change):
         self._show_hide_output(
-            self.out_log, self.log, self.actions.log_show, self.actions.log_hide
+            self.out_runlog, self.runlog, self.actions.runlog_show, self.actions.runlog_hide
         )
 
     def _run(self, on_change):
@@ -509,8 +490,9 @@ class RunActionsUi:
                 widgets.HBox([self.help_config, self.out_help_config]),
                 widgets.HBox([self.inputs, self.out_inputs]),
                 widgets.HBox([self.outputs, self.out_outputs]),
-                widgets.HBox([self.log, self.out_log]),
+                widgets.HBox([self.runlog, self.out_runlog]),
                 widgets.HBox([self.check]),
+                widgets.HBox([self.status_indicator]),
                 widgets.HBox([self.run, self.out_console]),
                 widgets.HBox([self.show]),
                 widgets.HBox([self.hide]),
@@ -535,8 +517,8 @@ These are all of the buttons that will be linked to callables in RunActions
         )
     )
     display(Markdown("`>>> display(RunActionsUi())`"))
-    actions = RunActionsUi()
-    display(RunActionsUi())
+    ui_actions = RunActionsUi()
+    display(ui_actions)
 
 
 # +
@@ -560,7 +542,7 @@ def build_button_bar(button_map: typing.Dict, config_ui: RunUiConfig):
     return button_bar
 
 
-class RunUi(RunActionsUi):
+class RunUi(RunActionsUi):#widgets.HBox, 
     """wrapper that extends RunActionsUi to create UI form. config data that defines
     the functionality of the App are passed as arguments that give the App its
     functionality."""
@@ -592,7 +574,7 @@ class RunUi(RunActionsUi):
                 self.help_config: self.actions.help_config_show,
                 self.inputs: self.actions.inputs_show,
                 self.outputs: self.actions.outputs_show,
-                self.log: self.actions.log_show,
+                self.runlog: self.actions.runlog_show,
                 self.run: self.actions.run,
             },
             "right": [self.show, self.hide],
@@ -621,7 +603,7 @@ class RunUi(RunActionsUi):
                     ),
                 ),
                 widgets.HBox(
-                    [self.out_inputs, self.out_outputs, self.out_log],
+                    [self.out_inputs, self.out_outputs, self.out_runlog],
                     layout=widgets.Layout(
                         width="100%",
                         align_items="stretch",
@@ -641,17 +623,19 @@ class RunUi(RunActionsUi):
 
     def _run_form(self):
         self.button_bar = build_button_bar(self._button_map, self.config_ui)
-        self.layout = widgets.VBox([self.button_bar, self.layout_out])
+        #self.layout = 
         self.acc = widgets.Accordion(
-            children=[self.layout],
+            children=[widgets.VBox([self.button_bar, self.layout_out])],
             selected_index=None,
             layout=widgets.Layout(width="100%"),
         )
         self.acc.set_title(0, self.name)
-        self.run_form = widgets.HBox(
-            [self.check, self.acc],
-            layout=widgets.Layout(margin="0px", padding="0px", border="0px"),
-        ) 
+        #self.check_uptodate.children = [self.check]
+        self.run_form = widgets.HBox([self.check, self.status_indicator, self.acc])
+        # super().__init__(
+        #     [self.check, self.acc],
+        #     #layout=widgets.Layout(margin="0px", padding="0px", border="0px"),
+        # ) 
 
     def display(self):
         display(self.run_form)
@@ -684,11 +668,11 @@ class BatchActionsUi(RunActionsUi):
     """
 
     def __init__(
-        self, actions: BatchActions = BatchActions(), checked: bool = True
-    ):
+        self, actions: BatchActions = BatchActions()):
+        self._init_BatchActionsUi(actions)
+        
+    def _init_BatchActionsUi(self, actions):
         super().__init__(actions=actions)
-        #self.checked = checked
-        self._init_RunActionsUi(actions)
         self._update_objects()
         self._update_controls()
 
@@ -755,7 +739,7 @@ class BatchActionsUi(RunActionsUi):
                 widgets.HBox([self.help_config, self.out_help_config]),
                 widgets.HBox([self.inputs, self.out_inputs]),
                 widgets.HBox([self.outputs, self.out_outputs]),
-                widgets.HBox([self.log, self.out_log]),
+                widgets.HBox([self.runlog, self.out_runlog]),
                 widgets.HBox([self.check]),
                 widgets.HBox([self.run, self.out_console]),
                 widgets.HBox([self.show]),
@@ -811,13 +795,14 @@ class BatchUi(BatchActionsUi):
     def __init__(
         self,
         actions: BatchActions = BatchActions(),
-        name: str = 'batch name',
+        title: str = 'batch title',
         config_ui: RunUiConfig = RunUiConfig(),
         apps: typing.List[typing.Type[RunUi]] = None,
     ):
-        super().__init__(actions=actions)
+        self._init_BatchActionsUi(actions) # super().__init__(actions=actions)
         self.config_ui = config_ui
         self.apps = apps
+        self.title=_markdown(title)
         if self.apps is None:
             self.apps = []
         self._layout_out()
@@ -841,7 +826,7 @@ class BatchUi(BatchActionsUi):
                 self.help_config: self.actions.help_config_show,
                 self.inputs: self.actions.inputs_show,
                 self.outputs: self.actions.outputs_show,
-                self.log: self.actions.log_show,
+                self.runlog: self.actions.runlog_show,
                 self.run: self.actions.run,
                 self.add: self.actions.add_show,
                 self.remove: self.actions.remove_show,
@@ -882,7 +867,7 @@ class BatchUi(BatchActionsUi):
                     ),
                 ),
                 widgets.HBox(
-                    [self.out_inputs, self.out_outputs, self.out_log],
+                    [self.out_inputs, self.out_outputs, self.out_runlog],
                     layout=widgets.Layout(
                         width="100%",
                         align_items="stretch",
@@ -903,33 +888,26 @@ class BatchUi(BatchActionsUi):
     def _run_form(self):
         self.button_bar = build_button_bar(self._button_map, self.config_ui)
         self.top_bar = widgets.HBox([self.check, self.button_bar])
-        self.apps_box = widgets.VBox([app.run_form for app in self.apps])
+        self.apps_box = widgets.VBox([app.run_form for app in self.apps]) #.run_form
         self.batch_form = widgets.VBox(
-            [self.top_bar, self.layout_out, self.apps_box]
+            [self.title, self.top_bar, self.layout_out, self.apps_box]
         )
-
+        # super().__init__(
+        #     [self.top_bar, self.layout_out, self.apps_box],
+        #     #layout=widgets.Layout(margin="0px", padding="0px", border="0px"),
+        # ) 
     def display(self):
         display(self.batch_form)
 
     def _ipython_display_(self):
         self.display()
-        
-    @property
-    def checked(self):
-        pass
 
 
 if __name__ == "__main__":
-    display(
-        Markdown(
-            """
-Batch actions arranged in a container.
-    """
-        )
-    )
+
     run0 = RunUi()
     run1 = RunUi(name='asdf')
-    run_batch = BatchUi(apps=[run0, run1])
+    run_batch = BatchUi(apps=[run0, run1], title='# a batch process')
     display(run_batch)
 # +
 # if __name__ == '__main__':
@@ -961,11 +939,11 @@ Batch actions arranged in a container.
 #     rcsv = RunAppEditCsvLineGraph(config_app_line_graph)
 #     display(rcsv)
 # +
-def log(path_log): # TODO: do logging! 
-    if type(path_log) == str:
-        path_log = pathlib.Path(path_log)
-    if path_log.is_file:
-        self.df_log = del_matching(pd.read_csv(self.fpth_log),'Unnamed')
+def runlog(path_runlog): # TODO: do runlogging! 
+    if type(path_runlog) == str:
+        path_runlog = pathlib.Path(path_runlog)
+    if path_runlog.is_file:
+        self.df_runlog = del_matching(pd.read_csv(self.fpth_runlog),'Unnamed')
     else:
         di = {
             'processName':[],
@@ -975,7 +953,7 @@ def log(path_log): # TODO: do logging!
             'tags':[],
             'fpthInputs':[]
         }
-        self.df_log = pd.DataFrame(di).rename_axis("index")
+        self.df_runlog = pd.DataFrame(di).rename_axis("index")
 
     user = getpass.getuser()
     timestamp = str(pd.to_datetime('today'))
@@ -989,12 +967,14 @@ def log(path_log): # TODO: do logging!
         'tags':[''],
         'fpthInputs':[self.fpth_inputs_archive]
     })
-    self.df_log = self.df_log.append(tmp).reset_index(drop=True)
-    make_dir(self.fdir_log)
-    self.df_log.to_csv(self.fpth_log)
+    self.df_runlog = self.df_runlog.append(tmp).reset_index(drop=True)
+    make_dir(self.fdir_runlog)
+    self.df_runlog.to_csv(self.fpth_runlog)
     return 
     
-#path_log = '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/log/log-expansion_vessel_sizing.csv'
+#path_runlog = '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/runlog/runlog-expansion_vessel_sizing.csv'
 # -
+
+
 
 
