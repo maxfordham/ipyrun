@@ -61,7 +61,7 @@ import inspect
 # display_template_ui_model()
 
 # from this repo
-from ipyrun.utils import make_dir, del_matching
+from ipyrun.utils import make_dir, del_matching, get_status
 from ipyrun.constants import (
     BUTTON_WIDTH_MIN,
     BUTTON_WIDTH_MEDIUM,
@@ -76,7 +76,8 @@ test_constants = load_test_constants()
 from ipyrun.ui_run import *
 from enum import Enum, IntEnum
 from ipyrun.ui_run import RunActionsUi, RunUi, RunUiConfig
-FNM_CONFIG_FILE = "config-shell_handler.json"
+from ipyrun.schema_actions import RunActions, BatchActions
+from ipyrun.schema_config_runshell import ConfigActionsShell, DefaultConfigActionsShell, DisplayfileDefinition, FiletypeEnum, create_displayfile_renderer
 
 def get_mfuser_initials():
     user = getpass.getuser()
@@ -84,168 +85,21 @@ def get_mfuser_initials():
 
 
 # %%
-class FiletypeEnum(str, Enum):
-    input = "in"
-    output = "out"
-    wip = "wip"
-
-
-# %%
-class PyObj(BaseModel):
-    path: pathlib.Path
-    obj_name: str
-    module_name: str = None
-    
-    @validator("module_name", always=True)
-    def _module_name(cls, v, values):
-        if v is None:
-            return values["path"].stem
-        else:
-            return v
-        
-class DisplayfileDefinition(PyObj):
-    ftype: FiletypeEnum = None
-    ext: str
-    
-def _get_PyObj(obj: PyObj):
-    spec = importlib.util.spec_from_file_location(obj.module_name, obj.path)
-    foo = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(foo)
-    return getattr(foo, obj.obj_name)
-
-def create_pydantic_json_file(pyobj: PyObj, path: pathlib.Path):
-    obj = _get_PyObj(pyobj)
-    assert str(type(obj)) == "<class 'pydantic.main.ModelMetaclass'>", "the python object must be a pydantic model"
-    if not hasattr(obj, "file"):
-        from ipyautoui._utils import file
-        setattr(obj, 'file', file) 
-    assert hasattr(obj, "file"), "the pydantic BaseModel must be extended to have method 'file' for writing model to json"
-    myobj = obj()
-    myobj.file(path)
-    return path
-        
-def create_displayfile_renderer(ddf: DisplayfileDefinition, fn_onsave: typing.Callable = lambda: None):
-    model = _get_PyObj(ddf)
-    config_ui = AutoUiConfig(ext=ddf.ext, pydantic_model=model)
-    return AutoUi.create_displayfile_renderer(config_autoui=config_ui, fn_onsave=fn_onsave)
-
-class ConfigActionsShell(BaseModel):
-    index: int = 0
-    key: str = None
-    in_batch: bool = True 
-    status: str = None
-    fpth_script: pathlib.Path
-    process_name: str = None
-    pretty_name: str = None
-    update_config_at_runtime: bool = Field(default=False, description='updates config before running shell command. useful if for example outputs filepaths defined within the input filepaths')
-    fdir_appdata: pathlib.Path = Field(default=None, description='working dir for process execution. defaults to script folder if folder not given.')
-    displayfile_definitions: typing.List[DisplayfileDefinition] = Field(default=None, description='autoui definitions for displaying files. see ipyautui')
-    displayfile_inputs_kwargs: typing.Dict = Field(default_factory=lambda:{})
-    displayfile_outputs_kwargs: typing.Dict = Field(default_factory=lambda:{})
-    fpths_inputs: List[pathlib.Path] = Field(default = None)
-    fpths_outputs: List[pathlib.Path] = Field(default_factory = list)
-    fpth_config: pathlib.Path = Field(FNM_CONFIG_FILE, description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {FNM_CONFIG_FILE}")
-    fpth_runhistory: pathlib.Path = "runhistory.csv"
-    fpth_log: pathlib.Path = "log.csv"
-    call: str = "python -O"
-    params: typing.Dict = {}
-    shell_template: str = """\
-{{ call }} {{ fpth_script }}\
-{% for f in fpths_inputs %} {{f}}{% endfor %}\
-{% for f in fpths_outputs %} {{f}}{% endfor %}\
-{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
-"""
-    shell: str = ""
-    
-class DefaultConfigActionsShell(ConfigActionsShell):
-    
-    @validator("process_name", always=True)
-    def _process_name(cls, v, values):
-        if v is None:
-            return values["fpth_script"].stem.replace('script_','')
-        else:
-            return v
-                       
-    @validator("pretty_name", always=True)
-    def _pretty_name(cls, v, values):
-        if v is None:
-            return str(values["process_name"])
-        else:
-            return v
-
-    @validator("fdir_appdata", always=True)
-    def _fdir_appdata(cls, v, values):
-        if v is None:
-            v=values["fpth_script"].parent
-        return v
-    
-    @validator("fpths_inputs", always=True)
-    def _fpths_inputs(cls, v, values):
-        if v is None:
-            v=[]
-            ddfs = [v_ for v_ in values['displayfile_definitions'] if v_.ftype.value == 'in']
-            paths = [pathlib.Path('in-'+values['process_name']+ddf.ext) for ddf in ddfs] #+str(values['index']).zfill(2)+'-'
-            
-            for ddf, path in zip(ddfs, paths):
-                if not path.is_file():
-                    create_pydantic_json_file(ddf, path)
-            v = paths               
-        assert type(v)==list, 'type(v)!=list'
-        return v
-    
-    @validator("fpths_outputs", always=True)
-    def _fpths_outputs(cls, v, values):
-        if v is None:
-            v=[]
-        return v 
-    
-    @validator("key", always=True)
-    def _key(cls, v, values):
-        if v is None:
-            return str(values['index']).zfill(2)
-        else:
-            return v
-        
-    @validator("fpth_config", always=True)
-    def _fpth_config(cls, v, values):
-        return values["fdir_appdata"] / v
-
-    @validator("fpth_runhistory", always=True)
-    def _fpth_runhistory(cls, v, values):
-        return values["fdir_appdata"] / v
-
-    @validator("shell", always=True)
-    def _shell(cls, v, values):
-        #pprint(values)
-        return Template(values["shell_template"]).render(**values)
-    
 # template run action callables
-def get_status(fpths_inputs, fpths_outputs):
-    #['no_outputs', 'up_to_date', 'outputs_need_updating']
-    if len(fpths_inputs) ==0: 
-        return 'error'
-    for f in fpths_outputs:
-        if f.is_file() is False:
-            return 'no_outputs'
-    in_max = max([f.lstat().st_mtime for f in fpths_inputs])
-    out_max = max([f.lstat().st_mtime for f in fpths_outputs])
-    if in_max > out_max:
-        return 'outputs_need_updating'
-    else: 
-        return 'up_to_date'
-    
-def update_cls_status(cls=None):
-    cls._update_status()
-    
 def check(config: ConfigActionsShell):
     config.in_batch = True
-
+    
 def uncheck(config: ConfigActionsShell):
     config.in_batch = False
     
 def show_files(fpths, class_displayfiles=DisplayFiles, kwargs_displayfiles={}):
     return class_displayfiles([f for f in fpths], **kwargs_displayfiles)
-    
+
+def update_DisplayFiles(config, app):
+    for d in config.displayfile_definitions: 
+        user_file_renderers.update(create_displayfile_renderer(d, fn_onsave=app._update_status))    
+    return functools.partial(DisplayFiles, user_file_renderers=user_file_renderers)
+
 def run_shell(shell: str, cls=None): #
     """
     cmd: str, cls=None
@@ -299,69 +153,131 @@ def fn_buildrunactions(config: ConfigActionsShell, cls=None) -> RunActions:  # f
                             )
     return run_actions
 
-# %%
 
+# %%
+def check(config: ConfigActionsShell):
+    config.in_batch = True
+    
+def uncheck(config: ConfigActionsShell):
+    config.in_batch = False
+    
+def show_files(fpths, class_displayfiles=DisplayFiles, kwargs_displayfiles={}):
+    return class_displayfiles([f for f in fpths], **kwargs_displayfiles)
+
+def update_DisplayFiles(config, app):
+    # user_file_renderers = {}
+    # for d in config.displayfile_definitions: 
+    #     user_file_renderers.update(create_displayfile_renderer(d, fn_onsave=app._update_status))  
+
+    user_file_renderers = {}
+    for d in config.displayfile_definitions: 
+        user_file_renderers.update(create_displayfile_renderer(d, fn_onsave=app._update_status)) 
+    return functools.partial(DisplayFiles, user_file_renderers=user_file_renderers)
+
+def run_shell( app=None): #
+    """
+    cmd: str, cls=None
+    """
+    if app.config.update_config_at_runtime:
+        app.config = app.config #  this updates config and remakes run actions. useful if, for example, output fpths dependent on contents of input files
+    shell = app.config.shell.split(" ")
+    pr = """  
+    """.join(shell)
+    display(Markdown(f"{pr}"))
+    spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
+    try:
+        spinner.start()
+        save = sys.stdout
+        sys.stdout = io.StringIO()
+        proc = subprocess.Popen(shell)
+        proc.wait()
+        in_stdout = sys.stdout.getvalue()
+        sys.stdout = save
+        display(in_stdout)
+        spinner.succeed("Finished")
+    except subprocess.CalledProcessError as e:
+        spinner.fail("Error with Process")
+    app._update_status()
+    
+class RunShellActions(RunActions):
+    """extends RunActions by creating Callables based on data within the app or the config objects"""
+    
+    @validator("check", always=True)
+    def _check(cls, v, values):
+        return functools.partial(check, values["config"])
+    
+    @validator("uncheck", always=True)
+    def _uncheck(cls, v, values):
+        return functools.partial(uncheck, values["config"])
+    
+    @validator("get_status", always=True)
+    def _get_status(cls, v, values):
+        return values["app"]._update_status
+    
+    @validator("help_run_show", always=True)
+    def _help_run_show(cls, v, values):
+        return functools.partial(DisplayFiles, 
+                               [values["config"].fpth_script],
+                               auto_open=True)
+    
+    @validator("help_config_show", always=True)
+    def _help_config_show(cls, v, values):
+        return functools.partial(display_pydantic_json, values["config"])
+    
+    @validator("inputs_show", always=True)
+    def _inputs_show(cls, v, values):
+        return functools.partial(update_DisplayFiles(values["config"], values["app"]), 
+                               values["config"].fpths_inputs,
+                               **values["config"].displayfile_inputs_kwargs)
+    
+    @validator("outputs_show", always=True)
+    def _outputs_show(cls, v, values):
+        return functools.partial(update_DisplayFiles(values["config"], values["app"]), 
+                               values["config"].fpths_outputs,
+                               **values["config"].displayfile_outputs_kwargs)
+    
+    @validator("run", always=True)
+    def _run(cls, v, values):
+        return functools.partial(run_shell, app=values["app"])
+
+    
+
+
+# %%
 
 class RunApp:
     def __init__(self,
-                 config: typing.Type[BaseModel],
+                 config: typing.Any,
                  cls_ui: typing.Type[widgets.Box] = RunUi,
-                 fn_buildactions: typing.Callable[[typing.Type[BaseModel]], RunActions]=fn_buildrunactions
+                 cls_runactions: typing.Type[BaseModel]=RunShellActions
                 ):
         """
         The goal of RunApp is to simplify the process of making a functional UI that interacts
         with remote data for use in a Jupyter Notebook or Voila App. 
         
         Args:
-            config: typing.Type[BaseModel]
+            config: typing.Any
             cls_ui
             fn_buildactions
         """
-        self.fn_buildactions = fn_buildrunactions
-        self.ui = RunActionsUi() # init with defaults
-        self.ui_box = cls_ui(ui_actions=self.ui)
+        self.ui_box = cls_ui(run_actions=RunActions(), name=config.pretty_name) # init with defaults
+        self.cls_runactions = cls_runactions
+        self.ui = self.ui_box.ui
         self.config = config # the setter updates the ui.actions using fn_buildactions. can be updated on the fly
         self._update_status()
         
     @property
     def config(self):
-        return self._config
+        return self.ui.actions.config
     
     @config.setter
     def config(self, value):
-        actions = self.fn_buildactions(value, cls=self)
-        #self.actions = self._init_actions(actions)
-        self.ui.actions = self._init_actions(actions)
-        self._config = value
+        self.ui.actions = self.cls_runactions(config=value, app=self)
         
     def _update_status(self):
         st = get_status(self.config.fpths_inputs, self.config.fpths_outputs)
         self.ui.status = st
         self.config.status = st
-    
-    def _init_run_action(self, action):
-        if action is not None:
-            try:
-                if "cls" in inspect.getfullargspec(action).args:
-                    return functools.partial(action, cls=self)
-                else:
-                    return action
-            except:
-                print("error inspecting the following:")
-                print(action)
-                print(type(action))
-                print("cls" in inspect.getfullargspec(action).args)
-                action()
-        else:
-            return action
-
-    def _init_actions(
-        self, actions: typing.Type[RunActions]
-    ) -> typing.Type[RunActions]:
-        """this allows us to pass the RunApp object to the Run Actions. TODO: describe better! """
-        return type(actions)(
-            **{k: self._init_run_action(v) for k, v in actions.dict().items()}
-        )
     
     def display(self):
         display(self.ui_box)
@@ -371,9 +287,6 @@ class RunApp:
         
 
 
-# %%
-PATH_EXAMPLE_SCRIPT = list(test_constants.DIR_EXAMPLE_PROCESS.glob('script*'))[0]
-
 class MyConfigActionsShell(DefaultConfigActionsShell):
     @validator("fpths_outputs", always=True)
     def _fpths_outputs(cls, v, values):
@@ -382,6 +295,7 @@ class MyConfigActionsShell(DefaultConfigActionsShell):
         paths = [fdir / ('output-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
         return paths
     
+PATH_EXAMPLE_SCRIPT = list(test_constants.DIR_EXAMPLE_PROCESS.glob('script*'))[0]
 MyConfigActionsShell = functools.partial(MyConfigActionsShell, fpth_script=PATH_EXAMPLE_SCRIPT, 
                             displayfile_definitions=[
                                 DisplayfileDefinition(
@@ -396,9 +310,8 @@ run_app = RunApp(config)
 display(run_app)
 
 # %%
-
-# %%
 from typing import Union
+
 class Run(BaseModel):
     fdir_root: pathlib.Path
     process_name: str
