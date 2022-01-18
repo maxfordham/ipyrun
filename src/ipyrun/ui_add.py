@@ -6,34 +6,43 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.4
+#       jupytext_version: 1.13.6
 #   kernelspec:
-#     display_name: Python [conda env:mf_base1] *
+#     display_name: Python [conda env:ipyautoui]
 #     language: python
-#     name: conda-env-mf_base1-py
+#     name: conda-env-ipyautoui-xpython
 # ---
+
+"""
+generic Add run dialogue
+"""
+# %run __init__.py
+# %load_ext lab_black
 
 # +
 import typing
 import ipywidgets as widgets
 import functools
+from ipyautoui.custom import RunName
+from ipyrun.constants import BUTTON_MIN_SIZE
+from markdown import markdown
 
 class RunApps:
     None
 
-def create_runapp(cls=None):
-    return print('create runapp')
+def create_runapp(cls=None, name='name'):
+    return print(name)
 
-class AddRunDialogue:
+class AddRun:
     def __init__(
-        self, app: typing.Type[RunApps]=None, add_cmd: typing.Callable = create_runapp
+        self, app: typing.Type[RunApps]=None, fn_add: typing.Callable = create_runapp, run_name_kwargs:typing.Dict=None
     ):
         """
         a ui element for adding new runs to RunApps
         
         Args:
             app (RunApps): the app that will be modified by this class
-            add_cmd (typing.Callable): a function that is executed to add a new run to the "app"
+            fn_add (typing.Callable): a function that is executed to add a new run to the "app"
                 on_click of a button. the main app is passed to the function using functools:
         
         Code:
@@ -42,28 +51,36 @@ class AddRunDialogue:
                 self.add.on_click(self._add)
 
             def _add(self, click):
-                return functools.partial(self.add_cmd, cls=self.app)()
+                return functools.partial(self.fn_add, cls=self.app)()
             ```
         """
+        self.run_name_kwargs = run_name_kwargs
+        if self.run_name_kwargs is None:
+            self.run_name_kwargs = {}
         self.app = app
-        self.add_cmd = add_cmd
+        self.fn_add = fn_add
         self._init_form()
         self._init_controls()
 
     def _init_form(self):
-        self.add = widgets.Button(icon="check", button_style="success")
-        self.form = widgets.HBox(
-            [
-                self.add,
-                widgets.HTML("would you like to add a run?"),
-            ]
-        )
+        self.add = widgets.Button(icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE))
+        self.run_name = RunName(**self.run_name_kwargs)
+        self.question = widgets.HTML(self.question_value)
+        self.form = widgets.VBox([widgets.HBox([self.add, self.question]), self.run_name])
 
+    @property
+    def question_value(self):
+        return markdown(f"would you like to add new a run? `{self.run_name.name.value}`")
+    
     def _init_controls(self):
         self.add.on_click(self._add)
+        self.run_name.observe(self._question, names='value')
+        
+    def _question(self, on_change):
+        self.question.value = self.question_value
     
     def _add(self, click):
-        return self.add_cmd(cls=self.app)
+        return self.fn_add(cls=self.app, name=self.run_name.value)
 
     def display(self):
         display(self.form)
@@ -74,9 +91,9 @@ class AddRunDialogue:
 if __name__ == "__main__":
 
     def add_run_dialogue(cls=None):
-        display(AddRunDialogue(cls))
-
-    display(AddRunDialogue(app =RunApp()))
+        display(AddRun(cls))
+        
+    add = AddRun(app=RunApps())
+    display(add)
 # -
-
 

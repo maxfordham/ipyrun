@@ -17,9 +17,12 @@ import yaml
 import time 
 from datetime import datetime
 import fnmatch
-from mf_file_utilities import go as open_file
+
+    
 import ipywidgets as widgets
 from ipyrun.constants import BUTTON_WIDTH_MIN
+from ipyautoui._utils import open_file
+
 
 #  from mf_modules.pandas_operations import del_matching
 #  ------------------------------------------------------------------------------------------------
@@ -453,3 +456,4 @@ def template_checkbox(value=False):
             indent=False,
             layout=widgets.Layout(max_width='30px',height='30px', padding='3px')
             )
+

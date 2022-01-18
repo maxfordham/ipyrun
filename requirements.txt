@@ -4,9 +4,7 @@ pandas==1.2.4
 ipydatagrid
 halo==0.0.31
 mfom
-xlsxtemplater==0.1.5
 pydantic==1.8.1
-mf_file_utilities
 plotly==4.14.3
 ipyfilechooser==0.4.3
 ipywidgets==7.6.3
@@ -15,3 +13,7 @@ dataclasses==0.8
 ipython==7.24.1
 PyYAML==5.4.1
 mydocstring
+stringcase
+xlsxtemplater==0.1.5
+mf_file_utilities
+ipyautoui

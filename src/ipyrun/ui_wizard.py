@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.4
+#       jupytext_version: 1.13.3
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python [conda env:ipyautoui]
 #     language: python
-#     name: python3
+#     name: conda-env-ipyautoui-xpython
 # ---
 
 # %%
