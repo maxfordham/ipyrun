@@ -49,6 +49,7 @@ from halo import HaloNotebook
 from ipyautoui.custom import Dictionary, RunName, LoadProject #VArray, 
 
 # from this repo
+from ipyrun.schema_actions import RunActions, BatchActions
 from ipyrun.utils import make_dir, del_matching
 from ipyrun.constants import (
     load_test_constants,
@@ -75,100 +76,14 @@ def _markdown(value='_Markdown_',
 
 
 # +
-# RUN __FUTURE__
+
 class RunUiConfig(BaseModel):
     include_show_hide = True
     
-class RunActions(BaseModel):
-    """map containing callables that are called when buttons in the RunApp are
-    activated. Default values contain dummy calls. setting the values to "None"
-    hides the button in the App. The actions here are used to show / hide another
-    UI element that the user can edit.
-
-    Args:
-        BaseModel (pydantic.BaseModel):
-    """
-    check: Optional[Callable[[], Any]] = lambda: "check"
-    uncheck: Optional[Callable] = lambda: "uncheck"
-    get_status: Optional[Callable] = lambda: "get_status"
-    help_ui_show: Optional[Callable] = lambda: Image(PATH_RUNAPP_HELP)
-    help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
-    help_run_show: Optional[Callable] = lambda: "help_run_show"
-    help_run_hide: Optional[Callable] = lambda: "help_run_hide"
-    help_config_show: Optional[Callable] = lambda: "help_config_show"
-    help_config_hide: Optional[Callable] = lambda: "help_config_hide"
-    inputs_show: Optional[Callable] = lambda: "inputs_show"
-    inputs_hide: Optional[Callable] = lambda: "inputs_hide"
-    outputs_show: Optional[Callable] = lambda: "outputs_show"
-    outputs_hide: Optional[Callable] = lambda: "outputs_hide"
-    runlog_show: Optional[Callable] = lambda: "runlog_show"
-    runlog_hide: Optional[Callable] = lambda: "runlog_hide"
-    run: Optional[Callable] = lambda: "run"
-    run_hide: Optional[Callable] = lambda: "console_hide"
-    activate: Optional[Callable] = lambda: "activate"
-    deactivate: Optional[Callable] = lambda: "deactivate"
-#     show: Optional[Callable] = (lambda : 'show')
-#     hide: Optional[Callable] = (lambda : 'hide')
-
-
-#  as the RunActions are so generic, the same actions can be applied to Batch operations
-#  with the addition of some batch specific operations
-class BatchActions(RunActions):
-    """actions associated within managing a batch of RunApps. As with the RunActions,
-    these actions just call in another UI element that does the actual work. See
-    ui_add.py, ui_remove.py, ui_wizard.py
-
-    Args:
-        RunActions ([type]): [description]
-    """
-    add: Optional[Callable] = lambda: "add" # ????/
-    add_show: Optional[Callable] = lambda: "add_show"
-    add_hide: Optional[Callable] = lambda: "add_hide"
-    remove: Optional[Callable] = lambda: "remove" # ????
-    remove_show: Optional[Callable] = lambda: "remove_show"
-    remove_hide: Optional[Callable] = lambda: "remove_hide"
-    wizard_show: Optional[Callable] = lambda: "wizard_show"
-    wizard_hide: Optional[Callable] = lambda: "wizard_hide"
-    review_show: Optional[Callable] = lambda: "review_show"
-    review_hide: Optional[Callable] = lambda: "review_hide"
-    load_project: Optional[Callable] = lambda: "load_project"
-
-
-if __name__ == "__main__":
-    display(
-        Markdown(
-            """
-### RunActions
-
-This is everything that will be passed to the RunApp on initialisation
-    """
-        )
-    )
-    #display(Markdown("`>>> display(RunAppConfig().dict())`"))
-    #display(RunAppConfig().dict())
-    display(Markdown("`>>> display(RunActions().dict())`"))
-    display(RunActions().dict())
-
-    display(
-        Markdown(
-            """
---- 
-
-### BatchActions
-
-This is everything that will be passed to the RunApp on initialisation
-"""
-        )
-    )
-    #display(Markdown("`>>> display(BatchAppConfig().dict())`"))
-    #display(BatchAppConfig().dict())
-    display(Markdown("`>>> display(BatchActions().dict())`"))
-    display(BatchActions().dict())
-
-
-# +
 class RunActionsUi(traitlets.HasTraits):
     """maps the RunActions onto buttons. doesn't put them in a container.
+    this is always used by the RunUi. the objects created here can then be placed
+    appropriated in the RunUi container
 
     Returns:
         display: of buttons for testing
@@ -500,11 +415,14 @@ if __name__== "__main__":
 
 # +
 class RunUi(widgets.HBox):
-    def __init__(self, run_actions_ui=RunActionsUi(), name='name', include_show_hide=True):
+    """takes run_actions object as an argument and initiates UI objects using 
+    RunActionsUi. This class places these objects in containers to create a 
+    more readable interface"""
+    def __init__(self, run_actions=RunActions(), name='name', include_show_hide=True):
         super().__init__(layout=widgets.Layout(width='100%'))
         self.name = name
         self._init_show_hide(include_show_hide)
-        self.ui = run_actions_ui
+        self.ui = RunActionsUi(actions=run_actions) 
         self._layout_out()
         self._run_form()
         
@@ -595,12 +513,12 @@ class RunUi(widgets.HBox):
         self.update_form()
         
 if __name__=="__main__":
-    ui_actions = RunActionsUi()
-    run_ui = RunUi(ui_actions=ui_actions)
+    run_actions = RunActions()
+    run_ui = RunUi(run_actions=run_actions)
     display(run_ui)
     
-    ui_actions1 = RunActionsUi()
-    run_ui1 = RunUi(ui_actions=ui_actions1)
+    run_actions1 = RunActions()
+    run_ui1 = RunUi(run_actions=run_actions1)
     display(run_ui1)
 
 
@@ -613,8 +531,8 @@ class BatchActionsUi(RunActionsUi):
     """
 
     def __init__(
-        self, actions: BatchActions = BatchActions()):
-        self._init_BatchActionsUi(actions)
+        self, batch_actions: BatchActions = BatchActions()):
+        self._init_BatchActionsUi(batch_actions)
         
     def _init_BatchActionsUi(self, actions):
         super().__init__(actions=actions)
@@ -764,19 +682,18 @@ class BatchUi(widgets.VBox):
 
     def __init__(
         self,
-        ui_actions: BatchActionsUi = BatchActionsUi(actions=BatchActions(wizard_show = None)),
+        batch_actions: BatchActions(wizard_show = None),
         title: str = '# markdown batch title',
         include_show_hide=True,
         runs: Dict[str,Type[RunUi]] = None,
         fn_add = None,
         cls_runs_box=Dictionary,
-        #testing=False
     ):
         super().__init__(layout=widgets.Layout(width='100%'))
         self.cls_runs_box = cls_runs_box
         self.fn_add = fn_add
         self._init_show_hide(include_show_hide)
-        self.ui = ui_actions
+        self.ui = BatchActionsUi(batch_actions=batch_actions)  # ui_actions
         self.title=_markdown(title)
         self._layout_out()
         self._run_form()
@@ -785,17 +702,15 @@ class BatchUi(widgets.VBox):
             runs = {}
         self.runs.items = runs
 
-
-            
     def _init_show_hide(self, include_show_hide):
         if not include_show_hide:
             self.include_show_hide = None
         else:
             self.include_show_hide = include_show_hide
-        
+
     def _update_controls(self):
         self.ui.check.observe(self.check_all, names='value')
-        
+
     def check_all(self, onchange):
         for k, v in self.apps.items():
             v.ui.check.value = self.ui.check.value
@@ -820,7 +735,7 @@ class BatchUi(widgets.VBox):
             # "right": {self.ui.show: self.include_show_hide,
             #           self.ui.hide: self.include_show_hide},
         }
-    
+
     def _layout_out(self):
         self.layout_out = widgets.VBox(
             [
@@ -865,18 +780,6 @@ class BatchUi(widgets.VBox):
             ),
         )
 
-#     def _run_form(self):
-#         self.button_bar = build_button_bar(self._button_map, self.config_ui)
-#         self.top_bar = widgets.HBox([self.check, self.button_bar])
-#         self.apps_box = widgets.VBox([app.run_form for app in self.apps]) #.run_form
-#         self.batch_form = widgets.VBox(
-#             [self.title, self.top_bar, self.layout_out, self.apps_box]
-#         )
-#         # super().__init__(
-#         #     [self.top_bar, self.layout_out, self.apps_box],
-#         #     #layout=widgets.Layout(margin="0px", padding="0px", border="0px"),
-#         # ) 
-        
     def update_form(self):
         """update the form if the actions have changed"""
         self.button_bar_left.children = [k for k, v in self.button_map["left"].items() if v is not None]
@@ -884,7 +787,7 @@ class BatchUi(widgets.VBox):
         check = [k for k, v in self.button_map["outside"].items() if v is not None]
         self.top_bar.children = check + [self.button_bar]
         self.children = [self.title, self.top_bar, self.layout_out, self.runs]
-    
+
     def _run_form(self):
         self.show_hide_box = widgets.HBox([self.ui.show, self.ui.hide],layout=widgets.Layout(align_items="stretch", border='solid LightSeaGreen')) 
         self.button_bar = widgets.HBox(layout=widgets.Layout(width="100%", justify_content="space-between"))
@@ -894,23 +797,24 @@ class BatchUi(widgets.VBox):
         self.top_bar = widgets.HBox(layout=widgets.Layout(width="100%", justify_content="space-between"))
         self.runs = self.cls_runs_box(toggle=False, watch_value=False, add_remove_controls=None, fn_add=self.fn_add, show_hash=None) 
         self.update_form()
-        
-    
+
 
 if __name__ == "__main__":
-    ui_actions=RunActionsUi()
-    ui_actions1=RunActionsUi()
-    run0 = RunUi(name='00-lean-description',ui_actions=ui_actions)
-    run1 = RunUi(name='01-lean-description',ui_actions=ui_actions1)
+    actions=RunActions()
+    actions1=RunActions()
+    run0 = RunUi(name='00-lean-description',run_actions=actions)
+    run1 = RunUi(name='01-lean-description',run_actions=actions1)
     def add_show(cls=None):
         return functools.partial(AddRun, app=cls, fn_add=_fn_add)
     batch_actions = BatchActions(add_show=add_show,
                                 # remove_show = functools.partial(_remove_show, cls=self),
                                 # remove_hide = functools.partial(_remove_hide, cls=self)
                                )
-    ui_actions = BatchActionsUi(actions=batch_actions)
-    run_batch = BatchUi(runs={'00-lean-description':run0, '01-lean-description':run1},ui_actions=ui_actions, title='', fn_add=RunUi)
+    ui_actions = BatchActionsUi(batch_actions=batch_actions)
+    run_batch = BatchUi(runs={'01-lean-description':run0, '02-lean-description':run1},batch_actions=batch_actions, fn_add=RunUi, include_show_hide=False)
     display(run_batch)
+
+
 # +
 # if __name__ == '__main__':
 #     # from ipyrun._ipyeditcsv import EditRunAppCsv # TODO: i think there is an issue with "EditRunAppCsv" that needs fixing
