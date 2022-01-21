@@ -457,3 +457,19 @@ def template_checkbox(value=False):
             layout=widgets.Layout(max_width='30px',height='30px', padding='3px')
             )
 
+def get_status(fpths_inputs, fpths_outputs):
+    """check `st_mtime` for fpths_inputs and fpths_outputs and if any inputs 
+    returns 'no_outputs', 'outputs_need_updating' and 'up_to_date' depending of 
+    dates of last modification"""
+    #['no_outputs', 'up_to_date', 'outputs_need_updating']
+    if len(fpths_inputs) ==0: 
+        return 'error'
+    for f in fpths_outputs:
+        if f.is_file() is False:
+            return 'no_outputs'
+    in_max = max([f.lstat().st_mtime for f in fpths_inputs])
+    out_max = max([f.lstat().st_mtime for f in fpths_outputs])
+    if in_max > out_max:
+        return 'outputs_need_updating'
+    else: 
+        return 'up_to_date'
