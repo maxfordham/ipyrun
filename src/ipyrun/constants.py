@@ -59,7 +59,6 @@ DI_STATUS_MAP = frozenmap(
 
 FPTH_MXF_ICON = PATH_PACKAGE / 'images' / 'mxf-icon.png'
 FPTH_USER_ICON = PATH_PACKAGE / 'images' / 'user-icon.png'
-FPTH_TEMPLATE_PROCESSES = PATH_PACKAGE / 'processes-schedule.csv'
 FNM_CONFIG_FILE = "config-shell_handler.json"
 
 def load_test_constants():

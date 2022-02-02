@@ -67,7 +67,7 @@ def create_pydantic_json_file(pyobj: PyObj, path: pathlib.Path):
     obj = _get_PyObj(pyobj)
     assert str(type(obj)) == "<class 'pydantic.main.ModelMetaclass'>", "the python object must be a pydantic model"
     if not hasattr(obj, "file"):
-        setattr(obj, 'file', file) 
+        setattr(obj, 'file', file)
     assert hasattr(obj, "file"), "the pydantic BaseModel must be extended to have method 'file' for writing model to json"
     myobj = obj()
     myobj.file(path)
@@ -87,10 +87,10 @@ class ConfigActionsShell(BaseModel):
     pretty_name: str = None
     key: str = None
     fdir_appdata: pathlib.Path = Field(default=None, description='working dir for process execution. defaults to script folder if folder not given.')
-    in_batch: bool = True
+    in_batch: bool = False
     status: str = None
     update_config_at_runtime: bool = Field(
-        default=False, 
+        default=False,
         description='updates config before running shell command. useful if for example outputs filepaths defined within the input filepaths')
     displayfile_definitions: List[DisplayfileDefinition] = Field(default=None, description='autoui definitions for displaying files. see ipyautui')
     displayfile_inputs_kwargs: Dict = Field(default_factory=lambda:{})
@@ -109,7 +109,6 @@ class ConfigActionsShell(BaseModel):
 {% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
 """
     shell: str = ""
-
 
 
 class DefaultConfigActionsShell(ConfigActionsShell):
@@ -147,10 +146,13 @@ class DefaultConfigActionsShell(ConfigActionsShell):
     @validator("fdir_appdata", always=True)
     def _fdir_appdata(cls, v, values):
         if v is None:
-            v = values["fpth_script"].parent
+            v = values["fpth_script"].parent # put next to script
         else:
-            v = v / values["key"]
-            v.mkdir()
+            if v.stem == values["key"]: # folder with key name alread exists
+                return v
+            else: # create a folder with key name for run
+                v = v / values["key"]
+                v.mkdir()
         return v
 
     @validator("fpths_inputs", always=True)

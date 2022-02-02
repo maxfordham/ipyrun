@@ -5,7 +5,7 @@ from pydantic.dataclasses import dataclass
 from pydantic import BaseModel, validator, Field
 from ipyrun.constants import PATH_RUNAPP_HELP, PATH_RUNAPPS_HELP
 from IPython.display import Image
-    
+
 des_config = """
 a config object from which the actions are built. this allows RunActions to be inherited and validators to be added
 that configure the actions based on the data in the config object.
@@ -59,6 +59,7 @@ class BatchActions(RunActions):
     """
     add: Optional[Callable] = lambda: "add" # ????/
     remove: Optional[Callable] = lambda: "remove" # ????
+    load: Optional[Callable] = lambda: "load" # ???? 
     add_show: Optional[Callable] = lambda: "add_show"
     add_hide: Optional[Callable] = lambda: "add_hide"
     remove_show: Optional[Callable] = lambda: "remove_show"
