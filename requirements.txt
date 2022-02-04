@@ -17,3 +17,4 @@ stringcase
 xlsxtemplater==0.1.5
 mf_file_utilities
 ipyautoui
+jsonschema2md

@@ -129,3 +129,7 @@ interim
 conda.recipe/conda_build_config.yaml
 ipyrun/run.ipynb
 /src/ipyrun/*.ipynb
+/docs/source
+/docs/_templates
+/docs/_static
+/docs/_build
