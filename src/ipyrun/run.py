@@ -83,6 +83,7 @@ from ipyrun.ui_run import RunActionsUi, RunUi, RunUiConfig
 from ipyrun.ui_add import AddRun
 from ipyrun.schema_actions import RunActions, BatchActions
 from ipyrun.schema_config_runshell import ConfigActionsShell, DefaultConfigActionsShell, DisplayfileDefinition, FiletypeEnum, create_displayfile_renderer
+from ipyrun.schema_config_batch import ConfigBatch
 from ipyrun.basemodel import BaseModel
 
 def get_mfuser_initials():
@@ -193,8 +194,8 @@ class RunApp(widgets.HBox):
 
         Args:
             config: typing.Any
-            cls_ui
-            fn_buildactions
+            cls_ui: 
+            cls_actions: a RunActions class. can be extended with validators for but names must remain
         """
         super().__init__(layout=widgets.Layout(flex="100%"))
         self.ui_form = cls_ui(run_actions=RunActions(), name=config.pretty_name)
@@ -246,6 +247,9 @@ if __name__ == "__main__":
     config = MyConfigActionsShell()
     run_app = RunApp(config)
     display(run_app)
+
+# %%
+run_app.ui.actions.help_ui_show = None
 
 
 # %%

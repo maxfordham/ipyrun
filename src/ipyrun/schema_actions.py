@@ -17,16 +17,14 @@ class RunActions(BaseModel):
     """map containing callables that are called when buttons in the RunApp are
     activated. Default values contain dummy calls. setting the values to "None"
     hides the button in the App. The actions here are used to show / hide another
-    UI element that the user can edit.
-
-    Args:
-        BaseModel (pydantic.BaseModel):
-    """
+    UI element that the user can edit."""
     config: Any = Field(None, description=des_config)
     app: Any = Field(None, description=des_app)
+    config_save: Optional[Callable] = lambda: "config_save"
     check: Optional[Callable[[], Any]] = lambda: "check"
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
+    update_status: Optional[Callable] = lambda: "update_status"
     help_ui_show: Optional[Callable] = lambda: Image(PATH_RUNAPP_HELP)
     help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
     help_run_show: Optional[Callable] = lambda: "help_run_show"

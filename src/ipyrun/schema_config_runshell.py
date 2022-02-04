@@ -2,7 +2,7 @@
 # jupyter:
 #   jupytext:
 #     cell_metadata_filter: -all
-#     formats: ipynb,py:light
+#     formats: py:light
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -16,65 +16,78 @@
 
 # +
 # %run __init__.py
+#  ^ this means that the local imports still work when running as a notebook
 # %load_ext lab_black
+
 
 import pathlib
 import functools
 # object models
 from typing import Optional, List, Dict, Type, Callable, Any
-from pydantic.dataclasses import dataclass
 from pydantic import validator, Field
 from enum import Enum, IntEnum
 from ipyrun.constants import FNM_CONFIG_FILE
 from jinja2 import Template
 import importlib.util
 from ipyautoui import AutoUi, DisplayFiles, AutoUiConfig
-from ipyautoui._utils import file
+from ipyautoui._utils import file, PyObj, load_PyObj, create_pydantic_json_file
 from ipyautoui.basemodel import BaseModel
 import stringcase
-
-
 # -
+
+
+
+# class PyObj(BaseModel):
+#     path: pathlib.Path
+#     obj_name: str
+#     module_name: str = None
+
+#     @validator("module_name", always=True)
+#     def _module_name(cls, v, values):
+#         if v is None:
+#             return values["path"].stem
+#         else:
+#             return v
+        
+# def load_PyObj(obj: PyObj):
+#     spec = importlib.util.spec_from_file_location(obj.module_name, obj.path)
+#     foo = importlib.util.module_from_spec(spec)
+#     spec.loader.exec_module(foo)
+#     return getattr(foo, obj.obj_name)
+
+
+# def create_pydantic_json_file(pyobj: PyObj, path: pathlib.Path, **kwargs):
+#     """
+#     loads a pyobj (which must be a pydantic model) and then saves the default Json to file. 
+    
+#     Args:
+#         pyobj (PyObj): definition of where to get a pydantic model
+#         path (pathlib.Path): where to save the pydantic json
+#         **kwargs : passed to the pydantic model upon initiation
+        
+#     Returns: 
+#         path
+#     """
+#     obj = load_PyObj(pyobj)
+#     assert str(type(obj)) == "<class 'pydantic.main.ModelMetaclass'>", "the python object must be a pydantic model"
+#     if not hasattr(obj, "file"):
+#         setattr(obj, 'file', file)
+#     assert hasattr(obj, "file"), "the pydantic BaseModel must be extended to have method 'file' for writing model to json"
+#     myobj = obj(**kwargs)
+#     myobj.file(path)
+#     return path
 
 class FiletypeEnum(str, Enum):
     input = "in"
     output = "out"
     wip = "wip"
 
-class PyObj(BaseModel):
-    path: pathlib.Path
-    obj_name: str
-    module_name: str = None
-
-    @validator("module_name", always=True)
-    def _module_name(cls, v, values):
-        if v is None:
-            return values["path"].stem
-        else:
-            return v
-
 class DisplayfileDefinition(PyObj):
     ftype: FiletypeEnum = None
     ext: str
 
-def _get_PyObj(obj: PyObj):
-    spec = importlib.util.spec_from_file_location(obj.module_name, obj.path)
-    foo = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(foo)
-    return getattr(foo, obj.obj_name)
-
-def create_pydantic_json_file(pyobj: PyObj, path: pathlib.Path):
-    obj = _get_PyObj(pyobj)
-    assert str(type(obj)) == "<class 'pydantic.main.ModelMetaclass'>", "the python object must be a pydantic model"
-    if not hasattr(obj, "file"):
-        setattr(obj, 'file', file)
-    assert hasattr(obj, "file"), "the pydantic BaseModel must be extended to have method 'file' for writing model to json"
-    myobj = obj()
-    myobj.file(path)
-    return path
-
 def create_displayfile_renderer(ddf: DisplayfileDefinition, fn_onsave: Callable = lambda: None):
-    model = _get_PyObj(ddf)
+    model = load_PyObj(ddf)
     config_ui = AutoUiConfig(ext=ddf.ext, pydantic_model=model)
     return AutoUi.create_displayfile_renderer(config_autoui=config_ui, fn_onsave=fn_onsave)
 
@@ -83,8 +96,8 @@ class ConfigActionsShell(BaseModel):
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
     index: int = 0
     fpth_script: pathlib.Path
-    process_name: str = None
-    pretty_name: str = None
+    process_name: str = None # change to name? 
+    pretty_name: str = None # change to title? 
     key: str = None
     fdir_appdata: pathlib.Path = Field(default=None, description='working dir for process execution. defaults to script folder if folder not given.')
     in_batch: bool = False
@@ -97,7 +110,7 @@ class ConfigActionsShell(BaseModel):
     displayfile_outputs_kwargs: Dict = Field(default_factory=lambda:{})
     fpths_inputs: Optional[List[pathlib.Path]] = None
     fpths_outputs: Optional[List[pathlib.Path]] = None
-    fpth_config: pathlib.Path = Field(FNM_CONFIG_FILE, description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {FNM_CONFIG_FILE}")
+    fpth_config: pathlib.Path = Field(FNM_CONFIG_FILE, description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {str(FNM_CONFIG_FILE)}")
     fpth_runhistory: pathlib.Path = "runhistory.csv"
     fpth_log: pathlib.Path = "log.csv"
     call: str = "python -O"
@@ -152,7 +165,7 @@ class DefaultConfigActionsShell(ConfigActionsShell):
                 return v
             else: # create a folder with key name for run
                 v = v / values["key"]
-                v.mkdir()
+                v.mkdir(exist_ok=True)
         return v
 
     @validator("fpths_inputs", always=True)
@@ -200,3 +213,5 @@ if __name__ == "__main__":
     display(config.dict())
     config1 = DefaultConfigActionsShell(fpth_script='my_script.py', fdir_appdata=test_constants.DIR_EXAMPLE_PROCESS.parent / 'test_dir', index=1)
     display(config1.dict())
+
+

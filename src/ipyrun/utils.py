@@ -460,7 +460,15 @@ def template_checkbox(value=False):
 def get_status(fpths_inputs, fpths_outputs):
     """check `st_mtime` for fpths_inputs and fpths_outputs and if any inputs 
     returns 'no_outputs', 'outputs_need_updating' and 'up_to_date' depending of 
-    dates of last modification"""
+    dates of last modification
+    
+    Args:
+        fpths_inputs (List[pathlib.Path]): list of input files
+        fpths_outputs (List[pathlib.Path]): list of output files
+        
+    Returns:
+        str: 'no_outputs', 'outputs_need_updating' or 'up_to_date' 
+        """
     #['no_outputs', 'up_to_date', 'outputs_need_updating']
     if len(fpths_inputs) ==0: 
         return 'error'

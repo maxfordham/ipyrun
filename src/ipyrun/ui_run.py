@@ -14,8 +14,8 @@
 # ---
 
 """
-contains core UI elements and dummy definitions for RunActions and BatchActions. 
-The Actions need to be re-defined to create anytype of functionality. 
+contains core UI elements and dummy definitions for RunActions and BatchActions.
+This creates a generic interface upon which functions for running workflows can be mapped onto.
 """
 # %run __init__.py
 # %load_ext lab_black
@@ -62,7 +62,7 @@ from ipyrun.constants import (
 )
 from ipyrun.ui_add import AddRun
 from ipyrun.ui_remove import RemoveRun
-from ipyrun.constants import STATUS_BUTTON_NEEDSRERUN, STATUS_BUTTON_NOOUTPUTS, STATUS_BUTTON_UPTODATE, DI_STATUS_MAP
+from ipyrun.constants import STATUS_BUTTON_NEEDSRERUN, STATUS_BUTTON_NOOUTPUTS, STATUS_BUTTON_UPTODATE, DI_STATUS_MAP, DEFAULT_BUTTON_STYLES
 import immutables
 frozenmap = (
     immutables.Map
@@ -78,115 +78,22 @@ def _markdown(value='_Markdown_',
     _kwargs['value'] = markdown(value)  # required field
     _kwargs.update(kwargs)  # user overides
     return widgets.HTML(**_kwargs)
-
-
-# +
-# BUTTON_WIDTH_MIN
-# BUTTON_WIDTH_MEDIUM
-CHECK = dict(
-    value=False, # self.checked
-    disabled=False,
-    indent=False,
-    layout=dict(max_width="20px", 
-                          height="40px", 
-                          padding="3px", 
-                         )
-)
-# widget button styling
-HELP_UI = dict(
-    icon="question-circle",
-    tooltip="describes the functionality of elements in the RunApp interface",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MIN}
-)
-HELP_RUN = dict(
-    icon="book",
-    tooltip="describes the functionality of elements in the RunApp interface",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MIN},
-)
-HELP_CONFIG = dict(
-    icon="cog",
-    tooltip="the config of the task",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MIN},
-)
-INPUTS = dict(
-    description="inputs",
-    tooltip="edit the user input information that is used when the script is executed",
-    button_style="warning",
-    icon="edit",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MEDIUM},
-)
-OUTPUTS = dict(
-    description="outputs",
-    icon="search",
-    tooltip="show a preview of the output files generated when the script runs",
-    button_style="info",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MEDIUM},
-)
-RUNLOG = dict(
-    description="runlog",
-    tooltip="show a runlog of when the script was executed to generate the outputs, and by who",
-    button_style="info",
-    icon="scroll",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MEDIUM},
-)
-RUN = dict(
-    description=" run",
-    icon="fa-play",
-    tooltip="execute the script based on the user inputs",
-    button_style="success",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MEDIUM},
-)
-SHOW = dict(
-    icon="fa-eye",
-    tooltips="default show",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MIN},
-)
-HIDE = dict(
-    icon="fa-eye-slash",
-    tooltips="default show",
-    style={"font_weight": "bold"},
-    layout={"width":BUTTON_WIDTH_MIN},
-)
-
-DEFAULT_BUTTON_STYLES = frozenmap(
-    check = CHECK,
-    status_indicator = STATUS_BUTTON_NOOUTPUTS,
-    help_ui = HELP_UI,
-    help_run = HELP_RUN,
-    help_config = HELP_CONFIG,
-    inputs = INPUTS,
-    outputs = OUTPUTS,
-    runlog = RUNLOG,
-    run = RUN,
-    show = SHOW,
-    hide = HIDE,
-)
-
-
 # +
 class UiComponents():
-    def __init__(self, di_button_styles=DEFAULT_BUTTON_STYLES):
-        self._init_UiButtons(di_button_styles)
+    def __init__(self, button_styles=DEFAULT_BUTTON_STYLES):
+        self._init_UiButtons(button_styles)
 
     @property
-    def di_button_styles(self):
-        return self._di_button_styles
+    def button_styles(self):
+        return self._button_styles
     
-    @di_button_styles.setter
-    def di_button_styles(self, value):
+    @button_styles.setter
+    def button_styles(self, value):
         for k, v in value.items():
-            [setattr(getattr(self, k), k_, v_) for k_, v_ in v.items()];
-        self._di_button_styles = value
+            [setattr(getattr(self, k), k_, v_) for k_, v_ in v.items()]
+        self._button_styles = value
         
-    def _init_UiButtons(self, di_button_styles=DEFAULT_BUTTON_STYLES):
+    def _init_UiButtons(self, button_styles=DEFAULT_BUTTON_STYLES):
         self.check = widgets.Checkbox()
         self.status_indicator = widgets.Button()
         self.help_ui = widgets.ToggleButton()
@@ -195,9 +102,9 @@ class UiComponents():
         self.inputs = widgets.ToggleButton()
         self.outputs = widgets.ToggleButton()
         self.runlog = widgets.ToggleButton()
-        self.run = widgets.Button(**RUN)
-        self.show = widgets.Button(**SHOW)
-        self.hide = widgets.Button(**HIDE)
+        self.run = widgets.Button()
+        self.show = widgets.Button()
+        self.hide = widgets.Button()
 
         self.out_help_ui = widgets.Output()
         self.out_help_run = widgets.Output()
@@ -206,15 +113,15 @@ class UiComponents():
         self.out_outputs = widgets.Output()
         self.out_runlog = widgets.Output()
         self.out_console = widgets.Output()
-        self.di_button_styles = di_button_styles
+        
+        self.button_styles = button_styles
         
 
 if __name__ == "__main__":
-    display(widgets.VBox([widgets.HBox([widgets.HTML(f'<b>{k}</b>', layout={'width':'120px'}), v]) for k, v in UiComponents().__dict__.items() if k != "_di_button_styles"]))
+    display(widgets.VBox([widgets.HBox([widgets.HTML(f'<b>{k}</b>', layout={'width':'120px'}), v]) for k, v in UiComponents().__dict__.items() if k != "_button_styles"]))
 
 
 # +
-
 class RunUiConfig(BaseModel):
     include_show_hide = True
     
@@ -243,14 +150,14 @@ class RunActionsUi(traitlets.HasTraits, UiComponents):
             )
         return proposal
     
-    def __init__(self, actions: RunActions = RunActions(), di_button_styles=DEFAULT_BUTTON_STYLES):
-        self._init_UiButtons(di_button_styles)
+    def __init__(self, actions: RunActions = RunActions(), button_styles=DEFAULT_BUTTON_STYLES):
+        self._init_UiButtons(button_styles)
         self._init_RunActionsUi(actions)
         
         
     def _init_RunActionsUi(self, actions):
         self.status = 'no_outputs'
-        self._actions = actions
+        self.actions = actions
         self._init_controls()
     
     @property
@@ -261,16 +168,21 @@ class RunActionsUi(traitlets.HasTraits, UiComponents):
     def status(self, value):
         self._status = value
         self._style_status('click')
-
-    @property
-    def actions(self):
-        return self._actions
-    
-    @actions.setter
-    def actions(self, value):
-        self._actions = value
+        
+    # def _init_show_hide_functions(self):
+    #     show_hide_buttons = ['help_ui', 'help_run', 'help_config', 'inputs', 'outputs', 'runlog']
+    #     for b in show_hide_buttons:
+    #         f = lambda self, on_change: self._show_hide_output(
+    #             getattr(self, 'out_'+b),
+    #             getattr(self, b),
+    #             getattr(self.actions, b+'_show'),
+    #             getattr(self.actions, b+'_hide')
+    #         )
+    #         setattr(self, '_'+b, f)
 
     def _init_controls(self):
+        # show hide toggle widgets
+        # self._init_show_hide_functions()
         self.help_ui.observe(self._help_ui, names="value")
         self.help_run.observe(self._help_run, names="value")
         self.help_config.observe(self._help_config, names="value")
@@ -288,7 +200,7 @@ class RunActionsUi(traitlets.HasTraits, UiComponents):
     def _style_status(self, change):
         style = dict(DI_STATUS_MAP[self.status])
         [setattr(self.status_indicator, k, v) for k, v in style.items()];
-        
+
     def _status_indicator(self, onclick):
         self.actions.get_status()
 
@@ -323,7 +235,7 @@ class RunActionsUi(traitlets.HasTraits, UiComponents):
     ):
         with widgets_output:
             if widget_button.value:
-                widget_button.layout.border = TOGGLEBUTTON_ONCLICK_BORDER_LAYOUT #'solid yellow 2px'
+                widget_button.layout.border = TOGGLEBUTTON_ONCLICK_BORDER_LAYOUT  # 'solid yellow 2px'
                 show = show_action()
                 if show is not None:
                     display(show)
@@ -444,7 +356,7 @@ if __name__== "__main__":
 
 
 # +
-class RunUi(widgets.HBox):
+class RunUi(widgets.HBox): #
     """takes run_actions object as an argument and initiates UI objects using 
     RunActionsUi. This class places these objects in containers to create a 
     more readable interface"""
