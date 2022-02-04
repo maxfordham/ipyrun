@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,py:light
+#     formats: py:light
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -22,20 +22,25 @@ generic Add run dialogue
 # +
 import typing
 import ipywidgets as widgets
-import functools
 from ipyautoui.custom import RunName
 from ipyrun.constants import BUTTON_MIN_SIZE
 from markdown import markdown
 
+
 class RunApps:
     None
 
-def create_runapp(cls=None, process_name='name'):
+
+def create_runapp(cls=None, process_name="name"):
     return print(process_name)
+
 
 class AddModelRun:
     def __init__(
-        self, app: typing.Type[RunApps]=None, fn_add: typing.Callable = create_runapp, run_name_kwargs:typing.Dict=None
+        self,
+        app: typing.Type[RunApps] = None,
+        fn_add: typing.Callable = create_runapp,
+        run_name_kwargs: typing.Dict = None,
     ):
         """
         a ui element for adding new runs to RunApps
@@ -63,22 +68,26 @@ class AddModelRun:
         self._init_controls()
 
     def _init_form(self):
-        self.add = widgets.Button(icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE))
+        self.add = widgets.Button(
+            icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE)
+        )
         self.run_name = RunName(**self.run_name_kwargs)
         self.question = widgets.HTML(self.question_value)
-        self.form = widgets.VBox([widgets.HBox([self.add, self.question]), self.run_name])
+        self.form = widgets.VBox(
+            [widgets.HBox([self.add, self.question]), self.run_name]
+        )
 
     @property
     def question_value(self):
         return markdown(f"would you like to add new a run? `{self.run_name.value}`")
-    
+
     def _init_controls(self):
         self.add.on_click(self._add)
-        self.run_name.observe(self._question, names='_value')
-        
+        self.run_name.observe(self._question, names="_value")
+
     def _question(self, on_change):
         self.question.value = self.question_value
-    
+
     def _add(self, click):
         return self.fn_add(cls=self.app, process_name=self.run_name.value)
 
@@ -88,14 +97,18 @@ class AddModelRun:
     def _ipython_display_(self):
         self.display()
 
+
 if __name__ == "__main__":
-        
+
     add = AddModelRun(app=RunApps())
     display(add)
 # +
 class AddRun:
     def __init__(
-        self, app: typing.Type[RunApps]=None, fn_add: typing.Callable = create_runapp, run_name_kwargs:typing.Dict=None
+        self,
+        app: typing.Type[RunApps] = None,
+        fn_add: typing.Callable = create_runapp,
+        run_name_kwargs: typing.Dict = None,
     ):
         """
         a ui element for adding new runs to RunApps
@@ -123,7 +136,9 @@ class AddRun:
         self._init_controls()
 
     def _init_form(self):
-        self.add = widgets.Button(icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE))
+        self.add = widgets.Button(
+            icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE)
+        )
         self.question = widgets.HTML(markdown(f"would you like to add new a run?"))
         self.form = widgets.HBox([self.add, self.question])
 
@@ -138,8 +153,9 @@ class AddRun:
 
     def _ipython_display_(self):
         self.display()
-        
+
+
 if __name__ == "__main__":
-        
+
     add = AddRun(app=RunApps())
     display(add)

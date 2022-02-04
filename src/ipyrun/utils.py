@@ -1,24 +1,21 @@
-
 """
 this module contains utility functions. these are copied from the main mf library.
 """
 
-import os 
+import os
 import pathlib
-import sys
 import re
 import codecs
-import subprocess
 import glob
 import pandas as pd
 from IPython.display import Markdown
 import json
 import yaml
-import time 
+import time
 from datetime import datetime
 import fnmatch
 
-    
+
 import ipywidgets as widgets
 from ipyrun.constants import BUTTON_WIDTH_MIN
 from ipyautoui._utils import open_file
@@ -33,14 +30,15 @@ def del_cols(df, cols):
         try:
             del df[cols]
         except:
-            print(cols + ' is not in column index')
+            print(cols + " is not in column index")
     else:
         for col in cols:
             try:
                 del df[col]
             except:
-                print(col + ' is not in column index')
+                print(col + " is not in column index")
     return df
+
 
 def del_matching(df, string):
     """
@@ -49,6 +47,7 @@ def del_matching(df, string):
     matching = [s for s in list(df) if string in s]
     df = del_cols(df, matching)
     return df
+
 
 #  from mf_modules.jupyter_formatting import md_fromfile, display_python_file
 #  ------------------------------------------------------------------------------------------------
@@ -67,21 +66,23 @@ def md_fromfile(fpth):
     Returns:
         displays in IPython notebook
     """
-    file = open(fpth,mode='r',encoding='utf-8') # Open a file: file
-    all_of_it = file.read() # read all lines at once
-    file.close() # close the file
+    file = open(fpth, mode="r", encoding="utf-8")  # Open a file: file
+    all_of_it = file.read()  # read all lines at once
+    file.close()  # close the file
     display(Markdown(all_of_it))
+
 
 def display_python_file(fpth):
     """
     pass the fpth of a python file and get a
     rendered view of the code.
     """
-    with open(fpth, 'r') as myfile:
+    with open(fpth, "r") as myfile:
         data = myfile.read()
     return Markdown("\n```Python\n" + data + "\n```")
 
-def recursive_glob(rootdir='.', pattern='*', recursive=True):
+
+def recursive_glob(rootdir=".", pattern="*", recursive=True):
     """ 
     Search recursively for files matching a specified pattern.
     
@@ -105,25 +106,25 @@ def recursive_glob(rootdir='.', pattern='*', recursive=True):
         pattern='????????_????_?*_?*_?*_?*_?*_?*'
         recursive_glob(rootdir=rootdir, pattern=pattern, recursive=True)
     """
-    matches=[]
-    if recursive ==True:
+    matches = []
+    if recursive == True:
         for root, dirnames, filenames in os.walk(rootdir):
             for filename in fnmatch.filter(filenames, pattern):
                 matches.append(os.path.join(root, filename))
 
     else:
-        for filename in glob.glob1(rootdir,pattern):
-            matches.append(os.path.join(rootdir,filename))
-            
+        for filename in glob.glob1(rootdir, pattern):
+            matches.append(os.path.join(rootdir, filename))
+
     return matches
 
-def string_of_time(t):
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t))
 
-def time_meta_data(fpth,
-                   as_DataFrame: bool = True,
-                   timeformat: str = 'strftime'):
-    '''
+def string_of_time(t):
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
+
+
+def time_meta_data(fpth, as_DataFrame: bool = True, timeformat: str = "strftime"):
+    """
     extract time based metadata about a file
 
     Name:
@@ -153,40 +154,48 @@ def time_meta_data(fpth,
     To Do:
         add optionally extract other meta-data available from os.stat
         this should be *args inputs
-    '''
+    """
 
     di = {}
     try:
         meta = os.stat(fpth)
     except:
         return None
-    di['fpth'] = fpth
-    if timeformat == 'strftime':
-        di['time_of_file_creation'] = string_of_time(meta.st_ctime)
-        di['time_of_most_recent_access'] = string_of_time(meta.st_atime)
-        di['time_of_most_recent_content_modification'] = string_of_time(meta.st_mtime)
+    di["fpth"] = fpth
+    if timeformat == "strftime":
+        di["time_of_file_creation"] = string_of_time(meta.st_ctime)
+        di["time_of_most_recent_access"] = string_of_time(meta.st_atime)
+        di["time_of_most_recent_content_modification"] = string_of_time(meta.st_mtime)
     else:
-        di['time_of_file_creation'] = datetime.fromtimestamp(time.mktime(time.localtime(meta.st_ctime)))
-        di['time_of_most_recent_access'] = datetime.fromtimestamp(time.mktime(time.localtime(meta.st_atime)))
-        di['time_of_most_recent_content_modification'] =datetime.fromtimestamp(time.mktime(time.localtime(meta.st_mtime)))
+        di["time_of_file_creation"] = datetime.fromtimestamp(
+            time.mktime(time.localtime(meta.st_ctime))
+        )
+        di["time_of_most_recent_access"] = datetime.fromtimestamp(
+            time.mktime(time.localtime(meta.st_atime))
+        )
+        di["time_of_most_recent_content_modification"] = datetime.fromtimestamp(
+            time.mktime(time.localtime(meta.st_mtime))
+        )
 
     if as_DataFrame:
-        return pd.DataFrame.from_dict(di, orient='index').T
+        return pd.DataFrame.from_dict(di, orient="index").T
     else:
         return di
 
 
 def get_time_of_most_recent_content_modification(fpth):
     try:
-         return time_meta_data(fpth,as_DataFrame=False,timeformat='datetime').get('time_of_most_recent_content_modification')
+        return time_meta_data(fpth, as_DataFrame=False, timeformat="datetime").get(
+            "time_of_most_recent_content_modification"
+        )
     except:
         return None
 
 
 def make_dir(directory):
-    '''
+    """
     check if folder exists, if not, make a new folder using python
-    '''
+    """
     import os, errno
 
     try:
@@ -195,9 +204,10 @@ def make_dir(directory):
         if e.errno != errno.EEXIST:
             raise
 
+
 #  from mf_modules.pydtype_operations flatten_list, import read_json, read_txt, read_yaml
 #  ------------------------------------------------------------------------------------------------
-def flatten_list(list_of_lists: list)-> list: 
+def flatten_list(list_of_lists: list) -> list:
     """Flatten a list of (lists of (lists of strings)) for any level 
     of nesting
     
@@ -209,20 +219,24 @@ def flatten_list(list_of_lists: list)-> list:
     """
     rt = []
     for i in list_of_lists:
-        if isinstance(i,list): rt.extend(flatten_list(i))
-        else: rt.append(i)
+        if isinstance(i, list):
+            rt.extend(flatten_list(i))
+        else:
+            rt.append(i)
     return rt
 
-def read_json(fpth, encoding='utf8'):
-    '''
+
+def read_json(fpth, encoding="utf8"):
+    """
     read info in a .json file
-    '''
-    with open(fpth, 'r', encoding=encoding) as f:
+    """
+    with open(fpth, "r", encoding=encoding) as f:
         json_file = json.load(f)
     return json_file
 
-def read_txt(fpth,encoding='utf-8',delim=None,read_lines=True):
-    '''
+
+def read_txt(fpth, encoding="utf-8", delim=None, read_lines=True):
+    """
     read a .txt file
     
     Args:
@@ -233,14 +247,14 @@ def read_txt(fpth,encoding='utf-8',delim=None,read_lines=True):
             '\t', ','
         read_lines(bool): readlines or whole string (delim may not work if read_lines==False
 
-    '''
+    """
     with codecs.open(fpth, encoding=encoding) as f:
-        if read_lines==True:
+        if read_lines == True:
             content = f.readlines()
         else:
             content = f.read()
     f.close()
-    if delim!=None:
+    if delim != None:
         li = []
         for n in range(0, len(content)):
             li.append(content[n].split(delim))
@@ -248,7 +262,8 @@ def read_txt(fpth,encoding='utf-8',delim=None,read_lines=True):
     else:
         return content
 
-def read_yaml(fpth, encoding='utf8'):
+
+def read_yaml(fpth, encoding="utf8"):
     """
     read yaml file.
 
@@ -260,10 +275,15 @@ def read_yaml(fpth, encoding='utf8'):
         except yaml.YAMLError as exc:
             print(exc)
     return data
+
+
 #  ------------------------------------------------------------------------------------------------
 
-def write_json(data, fpth='data.json', sort_keys=True, indent=4, print_fpth=False, openFile=False):
-    '''
+
+def write_json(
+    data, fpth="data.json", sort_keys=True, indent=4, print_fpth=False, openFile=False
+):
+    """
     write output to json file
     Args:
         data
@@ -283,19 +303,22 @@ def write_json(data, fpth='data.json', sort_keys=True, indent=4, print_fpth=Fals
         if openFile==True:
             open_file(fpth)
         return fpth
-    '''
-    out=json.dumps(data, sort_keys=sort_keys, indent=indent)
-    f = open(fpth,"w")
+    """
+    out = json.dumps(data, sort_keys=sort_keys, indent=indent)
+    f = open(fpth, "w")
     f.write(out)
     f.close()
-    if print_fpth ==True:
+    if print_fpth == True:
         print(fpth)
-    if openFile==True:
+    if openFile == True:
         open_file(fpth)
     return fpth
 
-def write_yaml(data, fpth='data.yaml', sort_keys=True, indent=4, print_fpth=True, openFile=False):
-    '''
+
+def write_yaml(
+    data, fpth="data.yaml", sort_keys=True, indent=4, print_fpth=True, openFile=False
+):
+    """
     write output to json file
     Args:
         data
@@ -303,17 +326,18 @@ def write_yaml(data, fpth='data.yaml', sort_keys=True, indent=4, print_fpth=True
         ** fpth='data.json'
         ** print_fpth=True
         ** openFile=False
-    '''
-    with open(fpth, 'w') as outfile:
+    """
+    with open(fpth, "w") as outfile:
         yaml.dump(data, outfile, sort_keys=sort_keys, default_flow_style=False)
-    if print_fpth ==True:
+    if print_fpth == True:
         print(fpth)
-    if openFile==True:
+    if openFile == True:
         open_file(fpth)
     return fpth
 
-def di_from_li_of_di(li_of_di,key,value):
-    '''
+
+def di_from_li_of_di(li_of_di, key, value):
+    """
     returns first matching dict from list of dicts
 
     Code:
@@ -330,9 +354,8 @@ def di_from_li_of_di(li_of_di,key,value):
          
          di_from_li_of_di(li_of_di,"name","Tom")
          >>> {'name': 'Tom', 'age': 10}
-    '''
+    """
     return {l[key]: l[value] for l in li_of_di}
-
 
 
 # directories -------------------------------------------------
@@ -354,6 +377,7 @@ def flatten_list(list_of_lists: list) -> list:
             rt.append(i)
     return rt
 
+
 def jobno_fromdir(fdir):
     """
     returns the job number from a given file directory
@@ -372,11 +396,12 @@ def jobno_fromdir(fdir):
         job_no = matches[0]
     return job_no
 
+
 def find_fdir_keys(di):
     """searches dict for key that contains string 'fdir'. ignores J:\\
     can handle lists for fdir* values"""
     li = list(di.keys())
-    li = flatten_list([di[l] for l in li if l[0:4] == "fdir"]) 
+    li = flatten_list([di[l] for l in li if l[0:4] == "fdir"])
     li = [l for l in li if l != "J:\\"]
     li = [l for l in li if l != "None"]
     return li
@@ -417,45 +442,55 @@ def template_image_icon(fpth):
     file = open(fpth, "rb")
     image = file.read()
     return widgets.Image(
-        tooltip='asdf asdad',
+        tooltip="asdf asdad",
         value=image,
-        format='png',
+        format="png",
         width=30,
         height=5,
-        layout=widgets.Layout(object_fit = 'contain')
+        layout=widgets.Layout(object_fit="contain"),
     )
 
-def template_plus_button(description='', tooltip='add'):
-    return widgets.Button(
-            description=description,
-            tooltip=tooltip,
-            button_style='primary',
-            icon='fa-plus',
-            style={'font_weight':'bold'},
-            layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
 
-def template_minus_button(description='', tooltip='remove'):
+def template_plus_button(description="", tooltip="add"):
     return widgets.Button(
-            description=description,
-            tooltip=tooltip,
-            button_style='danger',
-            icon='fa-minus',
-            style={'font_weight':'bold'},
-            layout=widgets.Layout(width=BUTTON_WIDTH_MIN))
+        description=description,
+        tooltip=tooltip,
+        button_style="primary",
+        icon="fa-plus",
+        style={"font_weight": "bold"},
+        layout=widgets.Layout(width=BUTTON_WIDTH_MIN),
+    )
 
-def template_add_remove(add_tooltip='add a new user defined schedule',remove_tooltip='remove user defined schedule'): 
+
+def template_minus_button(description="", tooltip="remove"):
+    return widgets.Button(
+        description=description,
+        tooltip=tooltip,
+        button_style="danger",
+        icon="fa-minus",
+        style={"font_weight": "bold"},
+        layout=widgets.Layout(width=BUTTON_WIDTH_MIN),
+    )
+
+
+def template_add_remove(
+    add_tooltip="add a new user defined schedule",
+    remove_tooltip="remove user defined schedule",
+):
     add = template_plus_button(tooltip=add_tooltip)
     remove = template_minus_button(tooltip=remove_tooltip)
     add_remove = widgets.HBox([add, remove])
     return add_remove, add, remove
 
+
 def template_checkbox(value=False):
     return widgets.Checkbox(
-            value=value,
-            disabled=False,
-            indent=False,
-            layout=widgets.Layout(max_width='30px',height='30px', padding='3px')
-            )
+        value=value,
+        disabled=False,
+        indent=False,
+        layout=widgets.Layout(max_width="30px", height="30px", padding="3px"),
+    )
+
 
 def get_status(fpths_inputs, fpths_outputs):
     """check `st_mtime` for fpths_inputs and fpths_outputs and if any inputs 
@@ -469,15 +504,16 @@ def get_status(fpths_inputs, fpths_outputs):
     Returns:
         str: 'no_outputs', 'outputs_need_updating' or 'up_to_date' 
         """
-    #['no_outputs', 'up_to_date', 'outputs_need_updating']
-    if len(fpths_inputs) ==0: 
-        return 'error'
+    # ['no_outputs', 'up_to_date', 'outputs_need_updating']
+    if len(fpths_inputs) == 0:
+        return "error"
     for f in fpths_outputs:
         if f.is_file() is False:
-            return 'no_outputs'
+            return "no_outputs"
     in_max = max([f.lstat().st_mtime for f in fpths_inputs])
     out_max = max([f.lstat().st_mtime for f in fpths_outputs])
     if in_max > out_max:
-        return 'outputs_need_updating'
-    else: 
-        return 'up_to_date'
+        return "outputs_need_updating"
+    else:
+        return "up_to_date"
+

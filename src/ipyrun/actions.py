@@ -1,9 +1,27 @@
-import functools
-# object models
-from typing import Optional, List, Dict, Type, Callable, Any
-from pydantic.dataclasses import dataclass
-from pydantic import BaseModel, validator, Field
-from ipyrun.constants import PATH_RUNAPP_HELP, PATH_RUNAPPS_HELP
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: py:light
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.13.6
+#   kernelspec:
+#     display_name: Python [conda env:ipyautoui]
+#     language: python
+#     name: conda-env-ipyautoui-xpython
+# ---
+
+# %run __init__.py
+#  ^ this means that the local imports still work when running as a notebook
+# %load_ext lab_black
+
+# +
+from typing import Optional, Callable, Any
+from pydantic import BaseModel, Field
+from ipyrun.constants import PATH_RUNAPP_HELP
 from IPython.display import Image
 
 des_config = """
@@ -13,14 +31,17 @@ that configure the actions based on the data in the config object.
 des_app = """
 the app instance. this allows actions to be associated to the app using the validators.
 """
+
+
 class RunActions(BaseModel):
     """map containing callables that are called when buttons in the RunApp are
     activated. Default values contain dummy calls. setting the values to "None"
     hides the button in the App. The actions here are used to show / hide another
     UI element that the user can edit."""
+
     config: Any = Field(None, description=des_config)
     app: Any = Field(None, description=des_app)
-    config_save: Optional[Callable] = lambda: "config_save"
+    save_config: Optional[Callable] = lambda: "save_config"
     check: Optional[Callable[[], Any]] = lambda: "check"
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
@@ -41,6 +62,8 @@ class RunActions(BaseModel):
     run_hide: Optional[Callable] = lambda: "console_hide"
     activate: Optional[Callable] = lambda: "activate"
     deactivate: Optional[Callable] = lambda: "deactivate"
+
+
 #     show: Optional[Callable] = (lambda : 'show')
 #     hide: Optional[Callable] = (lambda : 'hide')
 
@@ -55,9 +78,10 @@ class BatchActions(RunActions):
     Args:
         RunActions ([type]): [description]
     """
-    add: Optional[Callable] = lambda: "add" # ????/
-    remove: Optional[Callable] = lambda: "remove" # ????
-    load: Optional[Callable] = lambda: "load" # ???? 
+
+    add: Optional[Callable] = lambda: "add"  # ????/
+    remove: Optional[Callable] = lambda: "remove"  # ????
+    load: Optional[Callable] = lambda: "load"  # ????
     add_show: Optional[Callable] = lambda: "add_show"
     add_hide: Optional[Callable] = lambda: "add_hide"
     remove_show: Optional[Callable] = lambda: "remove_show"

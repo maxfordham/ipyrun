@@ -22,20 +22,23 @@ generic Add run dialogue
 # %%
 import typing
 import ipywidgets as widgets
-import functools
 from markdown import markdown
+
 
 class RunApps:
     None
 
+
 def fn_remove(cls=None, delete_data=True):
-    return print(f'remove runapp = {delete_data}')
+    return print(f"remove runapp = {delete_data}")
+
 
 class RemoveRun:
     def __init__(
-        self, app: typing.Type[RunApps]=None, 
-        fn_remove: typing.Callable=fn_remove, 
-        md_question: str="delete all files associated with selected runs (_recommended_, ***note.*** _this requires all active files to be closed_)"
+        self,
+        app: typing.Type[RunApps] = None,
+        fn_remove: typing.Callable = fn_remove,
+        md_question: str = "delete all files associated with selected runs (_recommended_, ***note.*** _this requires all active files to be closed_)",
     ):
         """
         a ui element for adding new runs to RunApps
@@ -62,24 +65,23 @@ class RemoveRun:
 
     def _init_form(self):
         self.delete_data = widgets.Checkbox(
-            value=True, # self.checked
+            value=True,  # self.checked
             disabled=False,
             indent=False,
-            layout=widgets.Layout(max_width="20px", 
-                                  height="40px", 
-                                  padding="3px", 
-                                  #border='3px solid green'
-                                 ))
+            layout=widgets.Layout(
+                max_width="20px",
+                height="40px",
+                padding="3px",
+                # border='3px solid green'
+            ),
+        )
         self.form = widgets.HBox(
-            [
-                self.delete_data,
-                widgets.HTML(markdown(self.md_question)),
-            ]
+            [self.delete_data, widgets.HTML(markdown(self.md_question)),]
         )
 
     def _init_controls(self):
-        self.delete_data.observe(self._delete_data, names='value')
-    
+        self.delete_data.observe(self._delete_data, names="value")
+
     def _delete_data(self, on_change):
         self.fn_remove(cls=self.app, delete_data=self.delete_data.value)
 
@@ -88,6 +90,7 @@ class RemoveRun:
 
     def _ipython_display_(self):
         self.display()
+
 
 if __name__ == "__main__":
 

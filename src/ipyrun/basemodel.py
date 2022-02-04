@@ -1,3 +1,6 @@
+"""Added functionality to default pydantic.BaseModel (mostly for reading and
+writing to file)
+"""
 from pydantic import BaseModel
 import stringcase
 import pathlib
@@ -21,6 +24,14 @@ class BaseModel(BaseModel):
         path.write_text(self.schema(**{"indent": 4}), encoding="utf-8")
 
     def file_mdschema(self, path: pathlib.Path, **json_kwargs):
+        """creates markdown file from jsonschema using 
+
+        Reference:
+            https://github.com/RalfG/jsonschema2md
+
+        Args:
+            path (pathlib.Path): output path of md-schema
+        """
         if type(path) == str:
             path = pathlib.Path(path)
         path_schema = path.with_suffix(".schema.json")
