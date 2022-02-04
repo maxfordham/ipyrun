@@ -33,6 +33,7 @@ extensions = [
 	'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.autodoc_pydantic'
 ]
 
 # Napoleon settings
@@ -63,6 +64,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'sphinx_book_theme'
+
+# autodoc_pydantic settings
+autodoc_pydantic_model_show_json = True
+autodoc_pydantic_settings_show_json = False
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
