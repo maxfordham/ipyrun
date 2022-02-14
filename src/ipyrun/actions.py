@@ -46,7 +46,7 @@ class RunActions(BaseModel):
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
     update_status: Optional[Callable] = lambda: "update_status"
-    help_ui_show: Optional[Callable] = lambda: Image(PATH_RUNAPP_HELP)
+    help_ui_show: Optional[Callable] = lambda: 'help_ui_show' #Image(PATH_RUNAPP_HELP)
     help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
     help_run_show: Optional[Callable] = lambda: "help_run_show"
     help_run_hide: Optional[Callable] = lambda: "help_run_hide"
@@ -62,10 +62,8 @@ class RunActions(BaseModel):
     run_hide: Optional[Callable] = lambda: "console_hide"
     activate: Optional[Callable] = lambda: "activate"
     deactivate: Optional[Callable] = lambda: "deactivate"
-
-
-#     show: Optional[Callable] = (lambda : 'show')
-#     hide: Optional[Callable] = (lambda : 'hide')
+    show: Optional[Callable] = (lambda : 'show')
+    hide: Optional[Callable] = (lambda : 'hide')
 
 
 #  as the RunActions are so generic, the same actions can be applied to Batch operations
