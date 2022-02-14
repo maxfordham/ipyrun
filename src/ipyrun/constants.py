@@ -148,7 +148,31 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     run=RUN,
     show=SHOW,
     hide=HIDE,
+    container=dict(layout={'width':'100%'}, selected_index=None)
 )
+
+ADD = dict(
+    icon="plus",
+    tooltip="add a run",
+    style={"font_weight": "bold"},
+    button_style="primary",
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+REMOVE = dict(
+    icon="minus",
+    tooltip="add a run",
+    style={"font_weight": "bold"},
+    button_style="danger",
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+WIZARD = dict(
+    icon="exchange-alt",
+    tooltip="add a run",
+    style={"font_weight": "bold"},
+    button_style="warning",
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+
 # ------------------------------------------------
 
 
