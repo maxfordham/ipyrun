@@ -92,7 +92,7 @@ def create_displayfile_renderer(
     )
 
 
-class ConfigActionsShell(BaseModel):
+class ConfigShell(BaseModel):
     """a config object. all the definitions required to create the RunActions for a shell running tools are here.
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
@@ -112,11 +112,11 @@ class ConfigActionsShell(BaseModel):
         description="updates config before running shell command. useful if for example outputs filepaths defined within the input filepaths",
     )
     displayfile_definitions: List[DisplayfileDefinition] = Field(
-        default=None,
+        default_factory=list,
         description="autoui definitions for displaying files. see ipyautui",
     )
-    displayfile_inputs_kwargs: Dict = Field(default_factory=lambda: {})
-    displayfile_outputs_kwargs: Dict = Field(default_factory=lambda: {})
+    displayfile_inputs_kwargs: Dict = Field(default_factory=dict)
+    displayfile_outputs_kwargs: Dict = Field(default_factory=dict)
     fpths_inputs: Optional[List[pathlib.Path]] = None
     fpths_outputs: Optional[List[pathlib.Path]] = None
     fpth_params: pathlib.Path = None
@@ -140,8 +140,8 @@ class ConfigActionsShell(BaseModel):
 # -
 
 
-class DefaultConfigActionsShell(ConfigActionsShell):
-    """extends ConfigActionsShell with validators only. 
+class DefaultConfigShell(ConfigShell):
+    """extends ConfigShell with validators only. 
     this creates opinionated relationships between the variables that dont necessarily have to exist.
     
     A likely way that this would need extending is to generate fpth_outputs based on other fields here. 
@@ -150,14 +150,13 @@ class DefaultConfigActionsShell(ConfigActionsShell):
     Example:
         ::
         
-            class LineGraphConfigActionsShell(DefaultConfigActionsShell):
+            class LineGraphConfigShell(DefaultConfigShell):
                 @validator("fpths_outputs", always=True)
                 def _fpths_outputs(cls, v, values):
                     fdir = values['fdir_appdata']
                     nm = values['process_name']
                     paths = [fdir / ('output-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
-            
     """
 
     @validator("fpth_script")
@@ -252,12 +251,12 @@ class DefaultConfigActionsShell(ConfigActionsShell):
 
 
 # +
-def check(config: ConfigActionsShell, fn_saveconfig):
+def check(config: ConfigShell, fn_saveconfig):
     config.in_batch = True
     fn_saveconfig()
 
 
-def uncheck(config: ConfigActionsShell, fn_saveconfig):
+def uncheck(config: ConfigShell, fn_saveconfig):
     config.in_batch = False
     fn_saveconfig()
 
@@ -269,8 +268,9 @@ def show_files(fpths, class_displayfiles=DisplayFiles, kwargs_displayfiles={}):
 def update_status(app, fn_saveconfig):
     if app is None:
         print("update status requires an app object to update the UI")
+    print(type(app))
     st = app.actions.get_status()
-    app.ui.status = st
+    app.status = st #.ui
     app.config.status = st
     fn_saveconfig()
 
@@ -291,7 +291,7 @@ def run_shell(app=None):
             app.config
         )  #  this updates config and remakes run actions. useful if, for example, output fpths dependent on contents of input files
     print(f'run { app.config.key}')
-    if app.ui.status == "up_to_date":
+    if app.status == "up_to_date":
         print(f"already up-to-date")
         #clear_output()
         return
@@ -319,6 +319,7 @@ def run_shell(app=None):
 
 class RunShellActions(RunActions):
     """extends RunActions by creating Callables based on data within the app or the config objects"""
+    config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
 
     @validator("save_config", always=True)
     def _save_config(cls, v, values):
@@ -354,21 +355,27 @@ class RunShellActions(RunActions):
 
     @validator("inputs_show", always=True)
     def _inputs_show(cls, v, values):
-        # DisplayFilesInputs = update_DisplayFiles(values["config"], fn_onsave=values['update_status'])
-        return functools.partial(
-            update_DisplayFiles(values["config"], fn_onsave=values["update_status"]),
-            values["config"].fpths_inputs,
-            **values["config"].displayfile_inputs_kwargs,
-        )
+        if values["config"] is not None:
+            DisplayFilesInputs = update_DisplayFiles(values["config"], fn_onsave=values['update_status'])
+            return functools.partial(
+                DisplayFilesInputs,
+                values["config"].fpths_inputs,
+                **values["config"].displayfile_inputs_kwargs,
+            )
+        else:
+            return None
 
     @validator("outputs_show", always=True)
     def _outputs_show(cls, v, values):
-        DisplayFilesOutputs = update_DisplayFiles(values["config"], values["app"])
-        return functools.partial(
-            DisplayFilesOutputs,
-            values["config"].fpths_outputs,
-            **values["config"].displayfile_outputs_kwargs,
-        )
+        if values["config"] is not None and values["app"] is not None:
+            DisplayFilesOutputs = update_DisplayFiles(values["config"])#, values["app"]
+            return functools.partial(
+                DisplayFilesOutputs,
+                values["config"].fpths_outputs,
+                **values["config"].displayfile_outputs_kwargs,
+            )
+        else:
+            return None
 
     @validator("run", always=True)
     def _run(cls, v, values):
@@ -380,7 +387,7 @@ if __name__ == "__main__":
     from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
 
     test_constants = load_test_constants()
-    config = DefaultConfigActionsShell(
+    config = DefaultConfigShell(
         fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_appdata=test_constants.FDIR_APPDATA
     )
     display(config.dict())
@@ -395,7 +402,7 @@ if __name__ == "__main__":
         load_test_constants,
     )
 
-    class LineGraphConfigActionsShell(DefaultConfigActionsShell):
+    class LineGraphConfigShell(DefaultConfigShell):
         @validator("fpths_outputs", always=True)
         def _fpths_outputs(cls, v, values):
             fdir = values["fdir_appdata"]
@@ -406,8 +413,8 @@ if __name__ == "__main__":
             ]
             return paths
 
-    LineGraphConfigActionsShell = functools.partial(
-        LineGraphConfigActionsShell,
+    LineGraphConfigShell = functools.partial(
+        LineGraphConfigShell,
         fpth_script=FPTH_EXAMPLE_SCRIPT,
         displayfile_definitions=[
             DisplayfileDefinition(
@@ -419,8 +426,8 @@ if __name__ == "__main__":
         ],
     )
 
-    config = LineGraphConfigActionsShell(fdir_appdata=test_constants.FDIR_APPDATA)
-    run_app = RunApp(config, cls_ui=RunUi, cls_actions=RunShellActions)
+    config = LineGraphConfigShell(fdir_appdata=test_constants.FDIR_APPDATA)
+    run_app = RunApp(config, cls_actions=RunShellActions) #cls_ui=RunUi, 
     display(run_app)
 
 
@@ -444,7 +451,7 @@ class ConfigBatch(BaseModel):
         default=RunApp, description="the class that defines the RunApp.", exclude=True
     )
     cls_config: Union[Type, Callable] = Field(
-        default=DefaultConfigActionsShell,
+        default=DefaultConfigShell,
         description="the class that defines the config of a RunApp. this has can have fpth_script baked in",
         exclude=True,
     )
@@ -475,7 +482,7 @@ if __name__ == "__main__":
     test_constants = load_test_constants()
     config_batch = ConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
-        cls_config=ConfigActionsShell,
+        cls_config=ConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
     from devtools import debug
@@ -613,11 +620,11 @@ if __name__ == "__main__":
         @validator("cls_config", always=True)
         def _cls_config(cls, v, values):
             """bundles RunApp up as a single argument callable"""
-            return LineGraphConfigActionsShell
+            return LineGraphConfigShell
 
     config_batch = LineGraphConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
-        # cls_config=MyConfigActionsShell,
+        # cls_config=MyConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
     if config_batch.fpth_config.is_file():
