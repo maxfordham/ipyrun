@@ -19,10 +19,15 @@
 # %load_ext lab_black
 
 # +
+import functools
 from typing import Optional, Callable, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+from markdown import markdown
+
+from IPython.display import Image, clear_output
+from ipywidgets import widgets
+
 from ipyrun.constants import PATH_RUNAPP_HELP
-from IPython.display import Image
 
 des_config = """
 a config object from which the actions are built. this allows RunActions to be inherited and validators to be added
@@ -64,11 +69,83 @@ class RunActions(BaseModel):
     deactivate: Optional[Callable] = lambda: "deactivate"
     show: Optional[Callable] = (lambda : 'show')
     hide: Optional[Callable] = (lambda : 'hide')
+    
+def display_runui_tooltips(runui):
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
+    li = [k for k, v in runui.map_actions.items() if v is not None]
+    li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
+    return widgets.VBox([widgets.HBox([l, widgets.HTML(markdown(f"*{l.tooltip}*"))]) for l in li])
+
+
+
+def show(app):
+    print('show')
+    app.help_ui.value = False
+    app.help_run.value = False
+    app.help_config.value = False
+    app.inputs.value = True
+    app.outputs.value = True
+    app.runlog.value = True
+
+def hide(app):
+    print('hide')
+    app.help_ui.value = False
+    app.help_run.value = False
+    app.help_config.value = False
+    app.inputs.value = False
+    app.outputs.value = False
+    app.runlog.value = False
+    with app.out_console:
+        clear_output()
+
+class DefaultRunActions(RunActions):
+    @validator("show", always=True)
+    def _show(cls, v, values):
+        return None
+
+    @validator("hide", always=True)
+    def _hide(cls, v, values):
+        return None
+
+    @validator("activate", always=True)
+    def _activate(cls, v, values):
+        return functools.partial(show, values['app'])
+
+    @validator("deactivate", always=True)
+    def _deactivate(cls, v, values):
+        return functools.partial(hide, values['app'])
+
+    @validator("help_ui_show", always=True)
+    def _help_ui_show(cls, v, values):
+        return functools.partial(display_runui_tooltips, values['app'])
 
 
 #  as the RunActions are so generic, the same actions can be applied to Batch operations
 #  with the addition of some batch specific operations
 class BatchActions(RunActions):
+    """actions associated within managing a batch of RunApps. As with the RunActions,
+    these actions just call in another UI element that does the actual work. See
+    ui_add.py, ui_remove.py, ui_wizard.py
+
+    Args:
+        RunActions ([type]): [description]
+    """
+
+    add: Optional[Callable] = lambda: "add"  # ????/
+    remove: Optional[Callable] = lambda: "remove"  # ????
+    load: Optional[Callable] = lambda: "load"  # ????
+    add_show: Optional[Callable] = lambda: "add_show"
+    add_hide: Optional[Callable] = lambda: "add_hide"
+    remove_show: Optional[Callable] = lambda: "remove_show"
+    remove_hide: Optional[Callable] = lambda: "remove_hide"
+    wizard_show: Optional[Callable] = lambda: "wizard_show"
+    wizard_hide: Optional[Callable] = lambda: "wizard_hide"
+    review_show: Optional[Callable] = lambda: "review_show"
+    review_hide: Optional[Callable] = lambda: "review_hide"
+    load_project: Optional[Callable] = lambda: "load_project"
+
+    
+class DefaultBatchActions(DefaultRunActions):
     """actions associated within managing a batch of RunApps. As with the RunActions,
     these actions just call in another UI element that does the actual work. See
     ui_add.py, ui_remove.py, ui_wizard.py
