@@ -9,6 +9,7 @@ import codecs
 import glob
 import pandas as pd
 from IPython.display import Markdown
+from markdown import markdown
 import json
 import yaml
 import time
@@ -517,3 +518,25 @@ def get_status(fpths_inputs, fpths_outputs):
     else:
         return "up_to_date"
 
+    
+from pydantic import BaseModel, validate_model
+def validate(model: BaseModel):
+    """validate pydantic model after initialiation. NOT IN USE"""
+    *_, validation_error = validate_model(model.__class__, model.__dict__)
+    if validation_error:
+        raise validation_error
+        
+def display_ui_tooltips(uiobj):
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed. NOT IN USE"""
+    li = []
+    for k, v in uiobj.__dict__.items():
+        try:
+            if "tooltip" in v.__dict__["_trait_values"]:
+                li.append(v)
+            else:
+                pass
+        except:
+            pass
+    return widgets.VBox(
+        [widgets.HBox([l, widgets.HTML(markdown(f"*{l.tooltip}*"))]) for l in li]
+    )
