@@ -12,7 +12,7 @@
 #   kernelspec:
 #     display_name: Python [conda env:ipyautoui]
 #     language: python
-#     name: conda-env-ipyautoui-xpython
+#     name: conda-env-ipyautoui-py
 # ---
 
 """
@@ -37,7 +37,7 @@ from markdown import markdown
 
 # object models
 from pydantic import BaseModel, validator, Field
-from typing import Optional, List, Dict, Type, Callable, Union
+from typing import Optional, List, Dict, Type, Callable, Union, Any
 from enum import Enum
 
 # widget stuff
@@ -57,10 +57,16 @@ from ipyautoui.basemodel import BaseModel
 
 # from this repo
 from ipyrun.runui import RunUi, RunApp, BatchApp
-from ipyrun.actions import RunActions, BatchActions
+from ipyrun.actions import (
+    RunActions,
+    BatchActions,
+    DefaultRunActions,
+    DefaultBatchActions,
+)
 from ipyrun.basemodel import BaseModel
 from ipyrun.utils import get_status
 from ipyrun.constants import FNM_CONFIG_FILE
+from ipyrun.constants import DI_STATUS_MAP
 
 # display_template_ui_model()  # TODO: add this to docs
 
@@ -97,7 +103,7 @@ class ConfigShell(BaseModel):
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
     index: int = 0
-    fpth_script: pathlib.Path
+    fpth_script: pathlib.Path = "script.py"
     process_name: str = None  # change to name?
     pretty_name: str = None  # change to title?
     key: str = None
@@ -149,7 +155,7 @@ class DefaultConfigShell(ConfigShell):
     
     Example:
         ::
-        
+
             class LineGraphConfigShell(DefaultConfigShell):
                 @validator("fpths_outputs", always=True)
                 def _fpths_outputs(cls, v, values):
@@ -158,6 +164,13 @@ class DefaultConfigShell(ConfigShell):
                     paths = [fdir / ('output-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
     """
+
+    @validator("status")
+    def _status(cls, v, values):
+        li = list(DI_STATUS_MAP.keys()) + [None]
+        if v not in li:
+            ValueError(f"status must be in {str(li)}")
+        return v
 
     @validator("fpth_script")
     def validate_fpth_script(cls, v):
@@ -268,9 +281,8 @@ def show_files(fpths, class_displayfiles=DisplayFiles, kwargs_displayfiles={}):
 def update_status(app, fn_saveconfig):
     if app is None:
         print("update status requires an app object to update the UI")
-    print(type(app))
     st = app.actions.get_status()
-    app.status = st #.ui
+    app.status = st  # .ui
     app.config.status = st
     fn_saveconfig()
 
@@ -290,10 +302,10 @@ def run_shell(app=None):
         app.config = (
             app.config
         )  #  this updates config and remakes run actions. useful if, for example, output fpths dependent on contents of input files
-    print(f'run { app.config.key}')
+    print(f"run { app.config.key}")
     if app.status == "up_to_date":
         print(f"already up-to-date")
-        #clear_output()
+        # clear_output()
         return
     shell = app.config.shell.split(" ")
     pr = """
@@ -317,8 +329,9 @@ def run_shell(app=None):
     app.actions.update_status()
 
 
-class RunShellActions(RunActions):
+class RunShellActions(DefaultRunActions):
     """extends RunActions by creating Callables based on data within the app or the config objects"""
+
     config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
 
     @validator("save_config", always=True)
@@ -346,7 +359,7 @@ class RunShellActions(RunActions):
     @validator("help_run_show", always=True)
     def _help_run_show(cls, v, values):
         return functools.partial(
-            DisplayFiles, [values["config"].fpth_script], auto_open=True
+            DisplayFiles, [values["config"].fpth_script], patterns="*"
         )
 
     @validator("help_config_show", always=True)
@@ -356,7 +369,9 @@ class RunShellActions(RunActions):
     @validator("inputs_show", always=True)
     def _inputs_show(cls, v, values):
         if values["config"] is not None:
-            DisplayFilesInputs = update_DisplayFiles(values["config"], fn_onsave=values['update_status'])
+            DisplayFilesInputs = update_DisplayFiles(
+                values["config"], fn_onsave=values["update_status"]
+            )
             return functools.partial(
                 DisplayFilesInputs,
                 values["config"].fpths_inputs,
@@ -368,7 +383,9 @@ class RunShellActions(RunActions):
     @validator("outputs_show", always=True)
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
-            DisplayFilesOutputs = update_DisplayFiles(values["config"])#, values["app"]
+            DisplayFilesOutputs = update_DisplayFiles(
+                values["config"]
+            )  # , values["app"]
             return functools.partial(
                 DisplayFilesOutputs,
                 values["config"].fpths_outputs,
@@ -380,6 +397,10 @@ class RunShellActions(RunActions):
     @validator("run", always=True)
     def _run(cls, v, values):
         return functools.partial(run_shell, app=values["app"])
+
+    @validator("runlog_show", always=True)
+    def _runlog_show(cls, v, values):
+        return None  # TODO: add logging!
 
 
 # -
@@ -403,6 +424,10 @@ if __name__ == "__main__":
     )
 
     class LineGraphConfigShell(DefaultConfigShell):
+        @validator("fpth_script", always=True, pre=True)
+        def _set_fpth_script(cls, v, values):
+            return FPTH_EXAMPLE_SCRIPT
+
         @validator("fpths_outputs", always=True)
         def _fpths_outputs(cls, v, values):
             fdir = values["fdir_appdata"]
@@ -413,21 +438,28 @@ if __name__ == "__main__":
             ]
             return paths
 
-    LineGraphConfigShell = functools.partial(
-        LineGraphConfigShell,
-        fpth_script=FPTH_EXAMPLE_SCRIPT,
-        displayfile_definitions=[
-            DisplayfileDefinition(
-                path=FPTH_EXAMPLE_INPUTSCHEMA,
-                obj_name="LineGraph",
-                ext=".lg.json",
-                ftype=FiletypeEnum.input,
-            )
-        ],
-    )
+        @validator("displayfile_definitions", always=True)
+        def _displayfile_definitions(cls, v, values):
+            return [
+                DisplayfileDefinition(
+                    path=FPTH_EXAMPLE_INPUTSCHEMA,
+                    obj_name="LineGraph",
+                    ext=".lg.json",
+                    ftype=FiletypeEnum.input,
+                )
+            ]
+
+    class LineGraphShellActions(RunShellActions):
+        @validator("inputs_show", always=True)
+        def _inputs_show_update(cls, v, values):
+            return functools.partial(v, patterns="*")
+
+        @validator("outputs_show", always=True)
+        def _outputs_show_update(cls, v, values):
+            return functools.partial(v, patterns="*.plotly.json")
 
     config = LineGraphConfigShell(fdir_appdata=test_constants.FDIR_APPDATA)
-    run_app = RunApp(config, cls_actions=RunShellActions) #cls_ui=RunUi, 
+    run_app = RunApp(config, cls_actions=LineGraphShellActions)  # cls_ui=RunUi,
     display(run_app)
 
 
@@ -437,11 +469,12 @@ class ConfigBatch(BaseModel):
         default=FNM_CONFIG_FILE, description="name of config file for batch app"
     )
     title: str = Field(default="", description="markdown description of BatchApp")
-    cls_ui: Callable = Field(
-        default=RunUi,
-        description="the class that defines the RunUi widget container",
-        exclude=True,
-    )
+    # cls_ui: Callable = Field(
+    #     default=RunUi,
+    #     description="the class that defines the RunUi widget container",
+    #     exclude=True,
+    # )
+    status: str = None
     cls_actions: Callable = Field(
         default=RunShellActions,
         description="the class that defines the RunActions (extended with validators based on use case)",
@@ -467,13 +500,20 @@ class ConfigBatch(BaseModel):
     def _cls_app(cls, v, values):
         """bundles RunApp up as a single argument callable"""
         return functools.partial(
-            v, cls_ui=values["cls_ui"], cls_actions=values["cls_actions"]
+            v, cls_actions=values["cls_actions"]  # cls_ui=values["cls_ui"],
         )
 
     @validator("configs", always=True)
     def _configs(cls, v, values):
         """bundles RunApp up as a single argument callable"""
         return [values["cls_config"](**v_) for v_ in v]
+
+    @validator("status")
+    def _status(cls, v, values):
+        li = list(DI_STATUS_MAP.keys()) + [None]
+        if v not in li:
+            ValueError(f"status must be in {str(li)}")
+        return v
 
 
 if __name__ == "__main__":
@@ -489,21 +529,26 @@ if __name__ == "__main__":
 
     debug(config_batch)
 
+
 # +
-
-
 def fn_add(app, **kwargs):
     cls_config = app.config.cls_config
     if "index" not in kwargs:
-        kwargs["index"] = app.config.configs[-1].index + 1
+        if len(app.config.configs) == 0:
+            kwargs["index"] = 0
+        else:
+            kwargs["index"] = app.config.configs[-1].index + 1
     kwargs["fdir_appdata"] = app.config.fdir_root
     config = cls_config(**kwargs)
     app.configs_append(config)
-    app.ui.add.value = False
+    app.add.value = False
+    app.watch_run_statuses()
+    app.actions.update_status()
 
 
 def fn_add_show(app):
-    app.ui.actions.add()
+    clear_output()
+    app.actions.add()
 
 
 def fn_add_hide(app):
@@ -517,12 +562,14 @@ def fn_remove(app=None, key=None):
     fdir = [i.fdir_appdata for i in app.config.configs if i.key == key][0]
     app.configs_remove(key)
     shutil.rmtree(fdir)
+    app.watch_run_statuses()
+    app.actions.update_status()
 
 
 def fn_remove_show(app=None):
     app.runs.add_remove_controls = "remove_only"
     return widgets.HTML(
-        markdown("# 🗑️ select runs below to delete 🗑️")
+        markdown("### 🗑️ select runs below to delete 🗑️")
     )  # RemoveRun(app=app)
 
 
@@ -531,7 +578,7 @@ def fn_remove_hide(app=None):
 
 
 def check_batch(app, fn_saveconfig, bool_=True):
-    [setattr(v.ui.check, "value", bool_) for k, v in app.runs.items.items()]
+    [setattr(v.check, "value", bool_) for k, v in app.runs.items.items()]
     [setattr(c, "in_batch", bool_) for c in app.config.configs]
     fn_saveconfig()
 
@@ -546,7 +593,23 @@ def run_batch(app=None):
     [v.run() for v in app.run_actions if v.config.in_batch]
 
 
-class BatchShellActions(BatchActions):
+def batch_get_status(app=None):
+    st = [a.get_status() for a in app.run_actions]
+    if st is None:
+        st = "error"
+    bst = "error"
+    for s in ["up_to_date", "no_outputs", "outputs_need_updating", "error"]:
+        if s in st:
+            bst = s
+    return bst
+
+
+def batch_update_status(app=None):
+    [a.update_status() for a in app.run_actions]
+    app.status = app.actions.get_status()
+
+
+class BatchShellActions(DefaultBatchActions):
     @validator("save_config", always=True)
     def _save_config(cls, v, values):
         return functools.partial(values["config"].file, values["config"].fpth_config)
@@ -608,19 +671,45 @@ class BatchShellActions(BatchActions):
     def _outputs_show(cls, v, values):
         return None
 
+    @validator("get_status", always=True)
+    def _get_status(cls, v, values):
+        return functools.partial(batch_get_status, app=values["app"])
+
+    @validator("update_status", always=True)
+    def _update_status(cls, v, values):
+        return functools.partial(batch_update_status, app=values["app"])
+
 
 # -
 
 if __name__ == "__main__":
+    # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
     from ipyrun.constants import load_test_constants
 
     test_constants = load_test_constants()
 
     class LineGraphConfigBatch(ConfigBatch):
+        @validator("cls_actions", always=True)
+        def _cls_actions(cls, v, values):
+            """bundles RunApp up as a single argument callable"""
+            return LineGraphShellActions
+
         @validator("cls_config", always=True)
         def _cls_config(cls, v, values):
             """bundles RunApp up as a single argument callable"""
             return LineGraphConfigShell
+
+    class LineGraphBatchActions(BatchShellActions):
+        @validator("config", always=True)
+        def _config(cls, v, values):
+            """bundles RunApp up as a single argument callable"""
+            if type(v) == dict:
+                v = LineGraphConfigBatch(**v)
+            return v
+
+        @validator("runlog_show", always=True)
+        def _runlog_show(cls, v, values):
+            return None
 
     config_batch = LineGraphConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
@@ -629,5 +718,7 @@ if __name__ == "__main__":
     )
     if config_batch.fpth_config.is_file():
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
-    app = BatchApp(config_batch, cls_actions=BatchShellActions)
+    app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
