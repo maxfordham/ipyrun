@@ -37,8 +37,8 @@ from ipyautoui.constants import TOGGLEBUTTON_ONCLICK_BORDER_LAYOUT
 from ipyautoui.custom import Dictionary, LoadProject
 
 # from this repo
-from ipyrun.actions import RunActions, BatchActions
-from ipyrun.utils import make_dir, del_matching
+from ipyrun.actions import RunActions, BatchActions, DefaultRunActions
+from ipyrun.utils import make_dir, del_matching, validate
 from ipyrun.constants import (
     BUTTON_WIDTH_MIN,
     BUTTON_WIDTH_MEDIUM,
@@ -46,27 +46,13 @@ from ipyrun.constants import (
     DEFAULT_BUTTON_STYLES,
 )
 from ipyrun.constants import ADD, REMOVE, WIZARD
+# -
+
+from ipyautoui.custom import FileChooser
+FileChooser()
 
 # +
-def display_ui_tooltips(uiobj):
-    """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
-    li = []
-    for k, v in uiobj.__dict__.items():
-        try:
-            if 'tooltip' in v.__dict__['_trait_values']:
-                li.append(v)
-            else:
-                pass
-        except:
-            pass
-    return widgets.VBox(
-        [
-            widgets.HBox([
-                l, widgets.HTML(
-                    markdown(f"*{l.tooltip}*")
-                )
-            ]) for l in li]
-    )
+
 
 class UiComponents:
     def __init__(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion):
@@ -84,7 +70,7 @@ class UiComponents:
 
     def _init_UiButtons(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion):
         self.check = widgets.Checkbox()
-        self.status_indicator = widgets.Button()
+        self.status_indicator = widgets.Button(disabled=True)
         self.help_ui = widgets.ToggleButton()
         self.help_run = widgets.ToggleButton()
         self.help_config = widgets.ToggleButton()
@@ -105,6 +91,8 @@ class UiComponents:
         self.out_console = widgets.Output()
 
         self.di_button_styles = di_button_styles
+        
+        #self.selector = File
 
 
 if __name__ == "__main__":
@@ -122,28 +110,16 @@ if __name__ == "__main__":
 # -
 
 if __name__ == "__main__":
+    from ipyrun.utils import display_ui_tooltips
     uiobj = UiComponents()
     display(display_ui_tooltips(uiobj))
-
-# +
-from ipywidgets import FloatText
-
-text = FloatText(continuous_update=False)
-
-def validate(change):
-    # Put your validation condition here
-    if change['new'] > 50:
-        change['owner'].value = change['old']
-
-text.observe(validate, 'value')
-text
 
 
 # +
 class RunUiConfig(BaseModel):
     include_show_hide = True
 
-class RunActionsUi(UiComponents): #traitlets.HasTraits, 
+class RunActionsUi(UiComponents): 
     """maps the RunActions onto buttons. doesn't put them in a container.
     this is always used by the RunUi. the objects created here can then be placed
     appropriated in the RunUi container
@@ -151,29 +127,9 @@ class RunActionsUi(UiComponents): #traitlets.HasTraits,
     Returns:
         display: of buttons for testing
     """
-
-    # TODO: make value == RunActions
     minwidth = BUTTON_WIDTH_MIN
     medwidth = BUTTON_WIDTH_MEDIUM
-    _status = traitlets.Unicode()  # could just validate the status_indicator widget instead... https://github.com/jupyter-widgets/ipywidgets/issues/1941
-    # _status= ''
-
-#     @traitlets.default("_status")
-#     def _default_status(self):
-#         return "no_outputs"
-
-#     @traitlets.validate("_status")
-#     def _validate_status(self, proposal):
-#         if proposal.value not in [
-#             "up_to_date",
-#             "no_outputs",
-#             "outputs_need_updating",
-#             "error",
-#         ]:
-#             raise ValueError(
-#                 f'{proposal} given. allowed values of "status" are: "up_to_date", "no_outputs", "outputs_need_updating", "error" only'
-#             )
-#         return proposal
+    _status = "no_outputs" 
 
     def __init__(
         self, actions: RunActions = RunActions(), di_button_styles=DEFAULT_BUTTON_STYLES
@@ -192,30 +148,38 @@ class RunActionsUi(UiComponents): #traitlets.HasTraits,
 
     @actions.setter
     def actions(self, value):
-        #cl = type(value.config)
+        cl = type(value)
         di = value.dict()
         di['app'] = self
-        self._actions = type(value)(**di)
-
-#     @property
-#     def status(self):
-#         return self._status.value
-
-#     @status.setter
-#     def status(self, value):
-#         self._status = value
-#         self._style_status("click")
+        self._actions = cl(**di)
         
+        # value.app = self
+        # self._actions = value
+        # validate(self._actions)
+        # ^ this not working 
+        # ^ TODO: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        if value not in list(DI_STATUS_MAP.keys()):
+            raise ValueError(
+                f'{proposal} must be one of: {str(list(DI_STATUS_MAP.keys()))}'
+            )
+        self._status = value
+        self._style_status("click")
+
     def _style_status(self, change):
         style = dict(DI_STATUS_MAP[self.status])
-        [setattr(self.status_indicator, k, v) for k, v in style.items()]
+        [setattr(self.status_indicator, k, v) for k, v in style.items() if k!='layout']
 
     def _status_indicator(self, onclick):
         self.actions.get_status()
 
     def _init_controls(self):
-        # show hide toggle widgets
-        # self._init_show_hide_functions()
         self.help_ui.observe(self._help_ui, names="value")
         self.help_run.observe(self._help_run, names="value")
         self.help_config.observe(self._help_config, names="value")
@@ -224,12 +188,10 @@ class RunActionsUi(UiComponents): #traitlets.HasTraits,
         self.runlog.observe(self._runlog, names="value")
         if 'selected_index' in self.container.traits():
             self.container.observe(self._container, names="selected_index")
-
         self.run.on_click(self._run)
         self.check.observe(self._check, names="value")
         self.show.on_click(self._show)
         self.hide.on_click(self._hide)
-        #self.observe(self._status, names="status")
         self.status_indicator.on_click(self._status_indicator)
 
     def _container(self, on_change):
@@ -261,9 +223,11 @@ class RunActionsUi(UiComponents): #traitlets.HasTraits,
                 widget_button.layout.border = (
                     TOGGLEBUTTON_ONCLICK_BORDER_LAYOUT  # 'solid yellow 2px'
                 )
-                show = show_action()
-                if show is not None:
-                    display(show)
+                
+                if show_action is not None:
+                    show = show_action()
+                    if show is not None:
+                        display(show)
             else:
                 widget_button.layout.border = ""
                 hide_action()
@@ -356,32 +320,6 @@ class RunActionsUi(UiComponents): #traitlets.HasTraits,
         with self.out_console:
             clear_output()
 
-#     # for testing / explanation only -----
-#     def display(self):
-#         """note. this is for dev only. this class is designed to be inherited into a form
-#         where the display method is overwritten"""
-#         self.out = widgets.VBox(
-#             [
-#                 widgets.HBox([self.help_ui, self.out_help_ui]),
-#                 widgets.HBox([self.help_run, self.out_help_run]),
-#                 widgets.HBox([self.help_config, self.out_help_config]),
-#                 widgets.HBox([self.inputs, self.out_inputs]),
-#                 widgets.HBox([self.outputs, self.out_outputs]),
-#                 widgets.HBox([self.runlog, self.out_runlog]),
-#                 widgets.HBox([self.check]),
-#                 widgets.HBox([self.status_indicator]),
-#                 widgets.HBox([self.run, self.out_console]),
-#                 widgets.HBox([self.show]),
-#                 widgets.HBox([self.hide]),
-#                 widgets.HBox([self.container]),
-#             ]
-#         )
-#         display(widgets.HTML("<b>Buttons to be programmed from `RunActions`</b> "))
-#         display(self.out)
-
-#     def _ipython_display_(self):
-#         self.display()
-
 def test_display_runapp(app):
     """note. this is for dev only. this class is designed to be inherited into a form
     where the display method is overwritten"""
@@ -422,56 +360,12 @@ These are all of the buttons that will be linked to callables in RunActions
     """
         )
     )
+    from ipyrun.actions import DefaultRunActions
     from pydantic import validator
     import functools
-    def show(app):
-        print('show')
-        app.help_ui.value = False
-        app.help_run.value = False
-        app.help_config.value = False
-        app.inputs.value = True
-        app.outputs.value = True
-        app.runlog.value = True
-
-    def hide(app):
-        print('hide')
-        app.help_ui.value = False
-        app.help_run.value = False
-        app.help_config.value = False
-        app.inputs.value = False
-        app.outputs.value = False
-        app.runlog.value = False
-        with app.out_console:
-            clear_output()
-
-    class MyRunActions(RunActions):
-        @validator("show", always=True)
-        def _show(cls, v, values):
-            """default show run data. TODO - move to actions"""
-            return functools.partial(show, values['app'])
-
-        @validator("hide", always=True)
-        def _hide(cls, v, values):
-            """default show run data. TODO - move to actions"""
-            return functools.partial(hide, values['app'])
-
-        @validator("activate", always=True)
-        def _activate(cls, v, values):
-            """default show run data. TODO - move to actions"""
-            return functools.partial(show, values['app'])
-
-        @validator("deactivate", always=True)
-        def _deactivate(cls, v, values):
-            """default show run data. TODO - move to actions"""
-            return functools.partial(hide, values['app'])
-        
-        @validator("help_ui_show", always=True)
-        def _help_ui_show(cls, v, values):
-            """default show run data. TODO - move to actions"""
-            return functools.partial(display_ui_tooltips, values['app'])
 
     display(Markdown("`>>> display(RunActionsUi())`"))
-    actions = MyRunActions(check=None)
+    actions = DefaultRunActions(check=None)
     run_actions_ui = RunActionsUi(actions)
     test_display_runapp(run_actions_ui)
 
@@ -495,35 +389,48 @@ class RunUi(RunActionsUi):
         
     def _init_RunUi(self, name, run_actions):
         self.name = name
-        self._init_UiButtons()
         self._init_form()
         self._init_RunActionsUi(run_actions)
-        self._update_controls()
+        
+        
+#         self._update_controls()
 
-    def _update_controls(self):
-        self.out_inputs.observe(self._update_out, names='outputs')
-        self.out_outputs.observe(self._update_out, names='outputs') 
-        self.out_runlog.observe(self._update_out, names='outputs')
+#     def _update_controls(self):
+#         self.out_inputs.observe(self._update_out, names='outputs')
+#         self.out_outputs.observe(self._update_out, names='outputs') 
+#         self.out_runlog.observe(self._update_out, names='outputs')
 
-    def _update_out(self, on_change):
-        out = [self.out_inputs, self.out_outputs, self.out_runlog]
-        self.out_box_main.children = [o for o in out if len(o.outputs) > 0]
-
+#     def _update_out(self, on_change): # TODO: this isnt working properly
+#         out = [self.out_inputs, self.out_outputs, self.out_runlog]
+#         self.out_box_main.children = [o for o in out if len(o.outputs) > 0]
+# TODO: make something like this ^ work. 
+# ^ the goal is to let the inputs or outputs take full width if only 1 is selected... 
+        
     @property
     def actions(self):
         return self._actions
 
     @actions.setter
     def actions(self, value):
-        # run actions depends on "config" and "app" so must be regenerated based on those things
-        cl = type(value.config)
+        cl = type(value)
         di = value.dict()
         di['app'] = self
-        self._actions = type(value)(**di)
+        self._actions = cl(**di)
         self.update_form()
+        
+        # value.app = self
+        # self._actions = value
+        # validate(self._actions)
+        # ^ this not working 
+        # ^ TODO: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
 
     def update_form(self):
         """update the form if the actions have changed"""
+        #self._layout_out()
+        self.layout_out.children = [self.out_console, self.out_help_ui, self.out_box_help, self.out_box_main]
+        self.out_box_help.children = [self.out_help_run, self.out_help_config]
+        self.out_box_main.children = [self.out_inputs, self.out_outputs, self.out_runlog]
+        
         self.container.children = [widgets.VBox([self.button_bar, self.layout_out])]
         self.button_bar_left.children = self.get_buttons(['help_ui', 'help_run', 'help_config', 'show',  'inputs', 'outputs', 'runlog', 'run'])
         self.run_form.children = self.get_buttons(['check', 'status_indicator']) + [self.container]
@@ -531,9 +438,7 @@ class RunUi(RunActionsUi):
             self.container.set_title(0, self.name)
         except:
             pass
-        self.layout_out.children = [self.out_console, self.out_help_ui, self.out_box_help, self.out_box_main]
-        self.out_box_help.children = [self.out_help_run, self.out_help_config]
-        self.out_box_main.children = [self.out_inputs, self.out_outputs, self.out_runlog]
+
 
     def _init_form(self):
         # buttons
@@ -550,6 +455,7 @@ class RunUi(RunActionsUi):
         self.button_bar.children = [self.button_bar_left, self.button_bar_right]
 
         # out
+        
         self.layout_out = widgets.VBox(
             layout=widgets.Layout(
                 width="100%",
@@ -576,13 +482,14 @@ class RunUi(RunActionsUi):
                     ),
                 )
 
+        
 
 if __name__ == "__main__":
     run_actions = RunActions()
     run_ui = RunUi(run_actions=run_actions)
     display(run_ui.run_form)
 
-    run_actions1 = MyRunActions(check=None)
+    run_actions1 = DefaultRunActions(check=None)
     run_ui1 = RunUi(run_actions=run_actions1)
     display(run_ui1.run_form)
 # -
@@ -595,72 +502,13 @@ if __name__ == "__main__":
     run_ui.actions = actions
 
 
-# + active=""
-# class RunApp(widgets.HBox):
-#     def __init__(
-#         self,
-#         config: Any,
-#         cls_ui: Type[widgets.Box] = RunUi,
-#         cls_actions: Type[BaseModel] = RunActions,
-#     ):
-#         """
-#         The goal of RunApp is to simplify the process of making a functional UI that interacts
-#         with remote data for use in a Jupyter Notebook or Voila App. 
-#
-#         Args:
-#             config: Any
-#             cls_ui:
-#             cls_actions: a RunActions class. can be extended with validators for but names must remain
-#         """
-#         super().__init__(layout=widgets.Layout(flex="100%"))
-#         try:
-#             name = config.pretty_name
-#         except:
-#             name = None
-#         self.ui = cls_ui(run_actions=RunActions(), name=name)
-#         self.children = [self.ui.run_form]
-#         # self.ui_box = cls_ui(run_actions=RunActions(), name=config.pretty_name) # init with defaults
-#         self.cls_actions = cls_actions
-#         self.config = config  # the setter updates the ui.actions using fn_buildactions. can be updated on the fly
-#         #self.update_status()
-#
-#     @property
-#     def config(self):
-#         return self.ui.actions.config
-#
-#     @config.setter
-#     def config(self, value):
-#         print(type(self))
-#         actions = self.cls_actions(config=value, app=self)
-#         self.ui.actions = actions
-#         self.ui.actions.save_config()
-#
-#     @property
-#     def actions(self):
-#         return self.ui.actions
-#
-#     @actions.setter
-#     def actions(self, value):
-#         self.ui.actions = value
-#
-#     def update_status(self):
-#         self.actions.update_status()
-#
-#
-# if __name__ == "__main__":
-#     from ipyrun.runshell import ConfigShell
-#
-#     config = ConfigShell(fpth_script="script.py", pretty_name="pretty name")
-#     app = RunApp(config)
-#     display(app)
-
 # +
 class RunApp(widgets.HBox, RunUi):
     def __init__(
         self,
         config: Any,
         #cls_ui: Type[widgets.Box] = RunUi,
-        cls_actions: Type[BaseModel] = RunActions,
+        cls_actions: Type[BaseModel] = DefaultRunActions,
     ):
         """
         The goal of RunApp is to simplify the process of making a functional UI that interacts
@@ -671,19 +519,15 @@ class RunApp(widgets.HBox, RunUi):
             cls_ui: 
             cls_actions: a RunActions class. can be extended with validators for but names must remain
         """
-        super().__init__()
-        #super().__init__(self)
-        
+        super().__init__(layout={'width':'100%'}) # init HBox
         try:
             name = config.pretty_name
         except:
             name = None
         self._init_RunUi(run_actions=RunActions(), name=name)  # init default actions
-        #self.ui = cls_ui(run_actions=RunActions(), name=name)
         self.children = [self.run_form]
         self.cls_actions = cls_actions
         self.config = config  # the setter updates the ui.actions using fn_buildactions. can be updated on the fly
-        #self.update_status()
 
     @property
     def config(self):
@@ -694,13 +538,9 @@ class RunApp(widgets.HBox, RunUi):
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
-
-    def update_status(self):
         self.actions.update_status()
         
-    # def _ipython_display_(self):
-    #     #display(self.run_form)
-    #     self.display()
+
 
 
 if __name__ == "__main__":
@@ -708,14 +548,7 @@ if __name__ == "__main__":
 
     config = ConfigShell(fpth_script="script.py", pretty_name="pretty name")
     app = RunApp(config)
-    #display(app)
-# -
-
-app
-
-RunApp.__mro__
-
-widgets.HBox([app])
+    display(app)
 
 
 # + tags=[]
@@ -734,8 +567,8 @@ class BatchActionsUi(RunActionsUi):
         self._init_BatchActionsUi(batch_actions, di_button_styles=di_button_styles)
 
     def _init_BatchActionsUi(self, actions, di_button_styles=DEFAULT_BUTTON_STYLES):
-        self._init_RunActionsUi(actions, di_button_styles=DEFAULT_BUTTON_STYLES)
         self._update_objects()
+        self._init_RunActionsUi(actions, di_button_styles=DEFAULT_BUTTON_STYLES)
         self._update_controls()
 
     def _update_objects(self):
@@ -751,6 +584,14 @@ class BatchActionsUi(RunActionsUi):
         self.add.observe(self._add, names="value")
         self.remove.observe(self._remove, names="value")
         self.wizard.observe(self._wizard, names="value")
+        
+        self.out_inputs.observe(self._update_out, names='outputs')
+        self.out_outputs.observe(self._update_out, names='outputs') 
+        self.out_runlog.observe(self._update_out, names='outputs')
+
+    def _update_out(self, on_change):
+        out = [self.out_inputs, self.out_outputs, self.out_runlog]
+        self.out_box_main.children = [o for o in out if len(o.outputs)>0]
 
     def _add(self, on_change):
         self._show_hide_output(
@@ -773,220 +614,85 @@ class BatchActionsUi(RunActionsUi):
             self.actions.wizard_hide,
         )
 
-    def display(self):
-        """note. this is for dev only. this class is designed to be inherited into a form
-        where the display method is overwritten"""
-        out = widgets.VBox(
-            [
-                widgets.HBox([self.help_ui, self.out_help_ui]),
-                widgets.HBox([self.help_run, self.out_help_run]),
-                widgets.HBox([self.help_config, self.out_help_config]),
-                widgets.HBox([self.inputs, self.out_inputs]),
-                widgets.HBox([self.outputs, self.out_outputs]),
-                widgets.HBox([self.runlog, self.out_runlog]),
-                widgets.HBox([self.check]),
-                widgets.HBox([self.run, self.out_console]),
-                widgets.HBox([self.show]),
-                widgets.HBox([self.hide]),
-                self.load_project,
-            ]
-        )
-        display(
-            widgets.HTML(
-                """
-Buttons to be programmed from `RunActions`. <br>
-<b>NOTE. this class is a designed to be inherited by a container class. 
-this display funtion is for testing only and will be overwritten</b>'
-        """
-            )
-        )
-        display(out)
-
-        out_batch_only = widgets.VBox(
-            [
-                widgets.HBox([self.add, self.out_add]),
-                widgets.HBox([self.remove, self.out_remove]),
-                widgets.HBox([self.wizard, self.out_wizard]),
-            ]
-        )
-        display(
-            widgets.HTML(
-                """
-Buttons to be programmed from `BatchActions`. <br>
-<b>NOTE. this class is a designed to be inherited by a container class. 
-this display funtion is for testing only and will be overwritten</b>'
-        """
-            )
-        )
-        display(out_batch_only)
-
-    def _ipython_display_(self):
-        self.display()
-
-
-if __name__ == "__main__":
-    batch = BatchActionsUi()
-    display(batch)
-
-
-# +
-class BatchUi(BatchActionsUi):
-    """Manage an array of RunApps
-
-    Args:
-        BatchActionsUi ([type]): [description]
-    """
-
-    def __init__(
-        self,
-        batch_actions: BatchActions(wizard_show=None),
-        title: str = "# markdown batch title",
-        include_show_hide=True,
-        runs: Dict[str, Type[RunUi]] = None,
-        fn_add=None,
-        cls_runs_box=Dictionary,
-    ):
-        self._init_BatchActionsUi(batch_actions)
-        self.cls_runs_box = cls_runs_box
-        self.fn_add = fn_add
-        self._init_show_hide(include_show_hide)
-        self.title = widgets.HTML(markdown(title))
-        self._layout_out()
-        self._run_form()
-        self._update_batch_controls()
-        if runs is None:
-            runs = {}
-        self.runs.items = runs
-
     @property
-    def actions(self):
-        return self._actions
-
-    @actions.setter
-    def actions(self, value):
-        self._actions = value
-        self.update_form()
-
-    def _init_show_hide(self, include_show_hide):
-        if not include_show_hide:
-            self.include_show_hide = None
-        else:
-            self.include_show_hide = include_show_hide
-
-    def _update_batch_controls(self):
-        self.check.observe(self.check_all, names="value")
-
-    def check_all(self, onchange):
-        for k, v in self.apps.items():
-            v.check.value = self.check.value
-
-    @property
-    def button_map(self):
+    def map_actions(self):
         return {
-            "outside": {self.check: self.actions.check},
-            "left": {
+                self.check: self.actions.check,
+                self.status_indicator: self.actions.get_status,
                 self.help_ui: self.actions.help_ui_show,
                 self.help_run: self.actions.help_run_show,
                 self.help_config: self.actions.help_config_show,
-                self.show_hide_box: self.include_show_hide,
                 self.inputs: self.actions.inputs_show,
                 self.outputs: self.actions.outputs_show,
                 self.runlog: self.actions.runlog_show,
                 self.run: self.actions.run,
+                self.show: self.actions.show,
+                self.hide: self.actions.hide,
                 self.add: self.actions.add_show,
                 self.remove: self.actions.remove_show,
-                self.wizard: self.actions.wizard_show,
-            },
-            # "right": {self.show: self.include_show_hide,
-            #           self.hide: self.include_show_hide},
-        }
+                self.wizard: self.actions.wizard_show
+            }
 
-    def _layout_out(self):
-        self.layout_out = widgets.VBox(
-            [
-                widgets.HBox([self.out_console]),
-                widgets.HBox(
-                    [self.out_help_ui],
-                    layout=widgets.Layout(
-                        width="100%",
-                        align_items="stretch",
-                        justify_content="space-between",
-                        align_content="stretch",
-                    ),
-                ),
-                widgets.HBox([self.out_add, self.out_remove, self.out_wizard],),
-                widgets.HBox(
-                    [self.out_help_run, self.out_help_config],
-                    layout=widgets.Layout(
-                        width="100%",
-                        align_items="stretch",
-                        justify_content="space-between",
-                        align_content="stretch",
-                    ),
-                ),
-                widgets.HBox(
-                    [self.out_inputs, self.out_outputs, self.out_runlog],
-                    layout=widgets.Layout(
-                        width="100%",
-                        align_items="stretch",
-                        justify_content="space-between",
-                        align_content="stretch",
-                    ),
-                ),
-            ],
-            layout=widgets.Layout(
-                width="100%",
-                align_items="stretch",
-                align_content="stretch",
-                display="flex",
-                flex="flex-grow",
-            ),
-        )
+        
+def test_display_batchactionsui(self: BatchActionsUi):
 
-    def update_form(self):
-        """update the form if the actions have changed"""
-        self.button_bar_left.children = [
-            k for k, v in self.button_map["left"].items() if v is not None
+    """note. this is for dev only. this class is designed to be inherited into a form
+    where the display method is overwritten"""
+    out = widgets.VBox(
+        [
+            widgets.HBox([self.help_ui, self.out_help_ui]),
+            widgets.HBox([self.help_run, self.out_help_run]),
+            widgets.HBox([self.help_config, self.out_help_config]),
+            widgets.HBox([self.inputs, self.out_inputs]),
+            widgets.HBox([self.outputs, self.out_outputs]),
+            widgets.HBox([self.runlog, self.out_runlog]),
+            widgets.HBox([self.check]),
+            widgets.HBox([self.run, self.out_console]),
+            widgets.HBox([self.show]),
+            widgets.HBox([self.hide]),
+            self.load_project,
         ]
-        # self.button_bar_right.children = [k for k, v in self.button_map["right"].items() if v is not None]
-        check = [k for k, v in self.button_map["outside"].items() if v is not None]
-        self.top_bar.children = check + [self.button_bar]
-        self.batch_form.children = [
-            self.title,
-            self.top_bar,
-            self.layout_out,
-            self.runs,
-        ]
+    )
+    display(
+        widgets.HTML(
+            """
+Buttons to be programmed from `RunActions`. <br>
+<b>NOTE. this class is a designed to be inherited by a container class. 
+this display funtion is for testing only and will be overwritten</b>'
+    """
+        )
+    )
+    display(out)
 
-    def _run_form(self):
-        self.batch_form = widgets.VBox()
-        self.show_hide_box = widgets.HBox(
-            [self.show, self.hide],
-            layout=widgets.Layout(align_items="stretch", border="solid LightSeaGreen"),
+    out_batch_only = widgets.VBox(
+        [
+            widgets.HBox([self.add, self.out_add]),
+            widgets.HBox([self.remove, self.out_remove]),
+            widgets.HBox([self.wizard, self.out_wizard]),
+        ]
+    )
+    display(
+        widgets.HTML(
+            """
+Buttons to be programmed from `BatchActions`. <br>
+<b>NOTE. this class is a designed to be inherited by a container class. 
+this display funtion is for testing only and will be overwritten</b>'
+    """
         )
-        self.button_bar = widgets.HBox(
-            layout=widgets.Layout(width="100%", justify_content="space-between")
-        )
-        self.button_bar_left = widgets.HBox(
-            layout=widgets.Layout(align_items="stretch")
-        )
-        self.button_bar_right = widgets.HBox(
-            layout=widgets.Layout(align_items="stretch")
-        )
-        self.button_bar.children = (
-            [self.button_bar_left] + [self.button_bar_right] + [self.load_project]
-        )
-        self.top_bar = widgets.HBox(
-            layout=widgets.Layout(width="100%", justify_content="space-between")
-        )
-        self.runs = self.cls_runs_box(
-            toggle=False,
-            watch_value=False,
-            add_remove_controls=None,
-            fn_add=self.fn_add,
-            show_hash=None,
-        )
-        self.update_form()
+    )
+    display(out_batch_only)
+
+if __name__ == "__main__":
+    batch = BatchActionsUi()
+    test_display_batchactionsui(batch)
+
+# +
+KWARGS_OUT_WIDGET_LAYOUT = dict(
+                        width="100%",
+                        align_items="stretch",
+                        #justify_content="space-between",
+                        align_content="stretch",
+                    )
 
 class BatchUi(BatchActionsUi):  
     """takes run_actions object as an argument and initiates UI objects using 
@@ -997,58 +703,63 @@ class BatchUi(BatchActionsUi):
         self,
         batch_actions: BatchActions(wizard_show=None),
         title: str = "# markdown batch title",
-        include_show_hide=True,
         runs: Dict[str, Type[RunUi]] = None,
         fn_add=None,
         cls_runs_box=Dictionary,
     ):
-
-        self.title = widgets.HTML(markdown(title))
-        self.cls_runs_box = cls_runs_box
-        self.fn_add = fn_add
-        self._init_UiButtons()
-        self._init_form()
-        self._init_BatchActionsUi(batch_actions)
-
-        self._update_batch_controls()
-        if runs is None:
-            runs = {}
-        self.runs.items = runs
-
-        # self._init_show_hide(include_show_hide)
-        # self._layout_out()
-        # self._run_form()
-
-    def _update_batch_controls(self):
-        self.check.observe(self.check_all, names="value")
-
-    def check_all(self, onchange):
-        for k, v in self.runs.items.items():
-            v.ui.check.value = self.check.value
-
-    def _update_controls(self):
-        self.out_inputs.observe(self._update_out, names='outputs')
-        self.out_outputs.observe(self._update_out, names='outputs') 
-        self.out_runlog.observe(self._update_out, names='outputs')
-
-    def _update_out(self, on_change):
-        out = [self.out_inputs, self.out_outputs, self.out_runlog]
-        self.out_box_main.children = [o for o in out if len(o.outputs)>0]
-
+        self._init_BatchUi(batch_actions, title, runs , fn_add, cls_runs_box)
+        
     @property
     def actions(self):
         return self._actions
 
     @actions.setter
     def actions(self, value):
+        cl = type(value)
         di = value.dict()
         di['app'] = self
-        self._actions = type(value)(**di)
+        self._actions = cl(**di)
         self.update_form()
 
+    def _init_BatchUi(
+        self,
+        batch_actions: BatchActions(wizard_show=None),
+        title: str = "# markdown batch title",
+        runs: Dict[str, Type[RunUi]] = None,
+        fn_add=None,
+        cls_runs_box=Dictionary,
+    ):
+        self.title = widgets.HTML(markdown(title))
+        self.cls_runs_box = cls_runs_box
+        self.fn_add = fn_add
+        self._init_UiButtons()
+        self._init_form()
+        self._init_BatchActionsUi(batch_actions)
+        self._update_batch_controls()
+        if runs is None:
+            runs = {}
+        self.runs.items = runs
+
+    def _update_batch_controls(self):
+        self.check.observe(self.check_all, names="value")
+        self.watch_run_statuses()
+
+    def check_all(self, onchange):
+        for k, v in self.runs.items.items():
+            v.check.value = self.check.value
+            
+    def _update_batch_status(self, onchange):
+        self.actions.update_status()
+            
+    def watch_run_statuses(self):
+        for k, v in self.runs.items.items():
+            v.status_indicator.unobserve(self._update_batch_status)
+            v.status_indicator.observe(self._update_batch_status, names="tooltip")
+    
     def update_form(self):
         """update the form if the actions have changed"""
-        self.button_bar_left.children = self.get_buttons(['help_ui', 'help_run', 'help_config', 'show',  'inputs', 'outputs', 'runlog', 'run'])
+        self.status_indicator.layout = {"width": BUTTON_WIDTH_MIN}
+        self.button_bar_left.children = self.get_buttons(['help_ui', 'help_run', 'help_config', 'show',  'inputs', 'outputs', 'runlog', 'run', 'add', 'remove']) #, 'add', 'remove'
         self.top_bar.children = self.get_buttons(['check', 'status_indicator']) + [self.button_bar]
         self.batch_form.children = [
             self.title,
@@ -1057,10 +768,10 @@ class BatchUi(BatchActionsUi):
             self.runs,
         ]
 
-        self.layout_out.children = [self.out_console, self.out_help_ui, self.out_box_help, self.out_box_main]
+        self.layout_out.children = [self.out_box_addremove, self.out_console, self.out_help_ui, self.out_box_help, self.out_box_main]
         self.out_box_help.children = [self.out_help_run, self.out_help_config]
+        self.out_box_addremove.children = [self.out_add, self.out_remove, self.out_wizard]
         self.out_box_main.children = [self.out_inputs, self.out_outputs, self.out_runlog]
-        
 
     def _init_form(self):
         # buttons
@@ -1087,33 +798,13 @@ class BatchUi(BatchActionsUi):
         )
 
         # out
-        self.layout_out = widgets.VBox(
-            layout=widgets.Layout(
-                width="100%",
-                align_items="stretch",
-                align_content="stretch",
-                display="flex",
-                flex="flex-grow",
-            ),
-        )
-        self.out_box_help = widgets.HBox(
-                    layout=widgets.Layout(
-                        width="100%",
-                        align_items="stretch",
-                        justify_content="space-between",
-                        align_content="stretch",
-                    ),
-                )
-        self.out_box_main = widgets.HBox(
-                    layout=widgets.Layout(
-                        width="100%",
-                        align_items="stretch",
-                        justify_content="space-between",
-                        align_content="stretch",
-                    ),
-                )
-# -
+        self.layout_out = widgets.VBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
+        self.out_box_help = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
+        self.out_box_addremove = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
+        self.out_box_main = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
 
+
+# -
 if __name__ == "__main__":
     config = ConfigShell(
         fpth_script="script.py", pretty_name="00-lean-description"
@@ -1128,7 +819,7 @@ if __name__ == "__main__":
         return "add"
 
     batch_actions = BatchActions(  # add_show=add_show,
-        inputs_show=None, outputs_show=None, runlog_show=None, wizard_show=None
+        inputs_show=None, outputs_show=None, runlog_show=None, wizard_show=None, show=None
     )
     ui_actions = BatchActionsUi(batch_actions=batch_actions)
     run_batch = BatchUi(
@@ -1138,12 +829,11 @@ if __name__ == "__main__":
     display(run_batch.batch_form)
 
 
-
-class BatchApp(widgets.VBox):
+# +
+class BatchApp(widgets.VBox, BatchUi):
     def __init__(
         self,
         config: Any,
-        cls_ui: Type[widgets.Box] = BatchUi,
         cls_actions: Type[BaseModel] = BatchActions,
     ):
         """
@@ -1155,32 +845,29 @@ class BatchApp(widgets.VBox):
         """
         super().__init__(
             layout=widgets.Layout(flex="100%")
-        )  # , flex="flex-grow"display="flex",
+        )
         try:
-            title = config.pretty_name
+            title = config.title
         except:
             title = ""
-        self.ui = cls_ui(batch_actions=BatchActions(), title=title)
-        self.children = [self.ui.batch_form]
         self.cls_actions = cls_actions
+        self._init_BatchUi(BatchActions(), title)  # runs , fn_add, cls_runs_box
+        self.children = [self.batch_form]  # [self.ui.batch_form]
         self.config = config  # the setter updates the ui.actions
 
     @property
     def run_actions(self):
-        return [v.ui.actions for k, v in self.runs.items.items()]
-
-    @property
-    def runs(self):
-        return self.ui.runs
+        return [v.actions for k, v in self.runs.items.items()]
 
     @property
     def config(self):
-        return self.ui.actions.config
+        return self.actions.config
 
     @config.setter
     def config(self, value):
-        self.ui.actions = self.cls_actions(config=value, app=self)
-        self.ui.actions.save_config()
+        actions = self.cls_actions(config=value, app=self)
+        self.actions = actions
+        self.actions.save_config()
         try:
             self.runs.items = {
                 c.key: self.make_run(c) for c in self.config.configs
@@ -1189,25 +876,19 @@ class BatchApp(widgets.VBox):
             print("error building runs fron config")
             print(f"self.config == {str(self.config)}")
         self.update_in_batch()
- 
+        self.actions.update_status()
+
     def update_in_batch(self): # TODO: remove config dependent code? 
         for k, v in self.runs.items.items():
-            v.ui.check.value = v.config.in_batch
-            
-    def check_all(self, onchange):
-        for k, v in self.apps.items():
-            v.check.value = self.check.value
-        
-    def update_status(self):
-        self.ui.actions.update_status()
-        
+            v.check.value = v.config.in_batch
+
     def make_run(self, config):
         """builds RunApp from config"""
         return self.config.cls_app(config)
 
     def configs_append(self, config):  # TODO: remove config dependent code? 
-        self.ui.actions.config.configs.append(config)
-        self.ui.actions.save_config()
+        self.actions.config.configs.append(config)
+        self.actions.save_config()
         newapp = self.make_run(config)
         self.runs.add_row(new_key=config.key, item=newapp)
         self.update_in_batch()
@@ -1215,15 +896,18 @@ class BatchApp(widgets.VBox):
     def configs_remove(self, key):  # TODO: remove config dependent code? 
         self.config.configs = [c for c in self.config.configs if c.key != key]
         self.update_in_batch()
-
-    @property
-    def actions(self):
-        return self.ui.actions
-
+        self.actions.save_config()
 
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigBatch
-    config_batch = ConfigBatch(fdir_root='.', fpth_script='script.py', configs=[config.dict()]) # create simple example... 
+    config_batch = ConfigBatch(fdir_root='.', fpth_script='script.py', title='# title') 
+    batch_app = BatchApp(config_batch)
+    display(batch_app)
+# -
+
+if __name__ == "__main__":
+    from ipyrun.runshell import ConfigBatch
+    config_batch = ConfigBatch(fdir_root='.', fpth_script='script.py', configs=[config.dict()], title='# title') # create simple example... 
     batch_app = BatchApp(None)
     display(batch_app)
 
@@ -1231,7 +915,6 @@ if __name__ == "__main__":
 import pandas as pd
 import getpass
 import pathlib
-
 
 def runlog(path_runlog):  # TODO: do runlogging!
     if type(path_runlog) == str:
@@ -1294,7 +977,8 @@ if __name__ == "__main__":
         )
     )
 
+#
 
-
+#
 
 
