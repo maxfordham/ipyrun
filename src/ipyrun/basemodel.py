@@ -39,6 +39,6 @@ class BaseModel(BaseModel):
         subprocess.run(["jsonschema2md", str(path_schema), str(path)])
 
     class Config:
-        alias_generator = stringcase.titlecase
+        #alias_generator = stringcase.titlecase
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
