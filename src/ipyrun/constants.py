@@ -29,7 +29,6 @@ STATUS_BUTTON_UPTODATE = frozenmap(
     button_style="success",
     tooltip="up-to-date",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    disabled=True,
 )
 
 STATUS_BUTTON_NOOUTPUTS = frozenmap(
@@ -38,7 +37,6 @@ STATUS_BUTTON_NOOUTPUTS = frozenmap(
     button_style="",
     tooltip="no-outputs",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    disabled=True,
 )
 
 STATUS_BUTTON_NEEDSRERUN = frozenmap(
@@ -47,7 +45,6 @@ STATUS_BUTTON_NEEDSRERUN = frozenmap(
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    disabled=True,
 )
 STATUS_BUTTON_ERROR = frozenmap(
     icon="fa-exclamation-triangle",
@@ -55,7 +52,6 @@ STATUS_BUTTON_ERROR = frozenmap(
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    disabled=True,
 )
 
 DI_STATUS_MAP = frozenmap(
