@@ -67,15 +67,15 @@ class RunActions(BaseModel):
     run_hide: Optional[Callable] = lambda: "console_hide"
     activate: Optional[Callable] = lambda: "activate"
     deactivate: Optional[Callable] = lambda: "deactivate"
-    show: Optional[Callable] = (lambda : 'show')
-    hide: Optional[Callable] = (lambda : 'hide')
+    show: Optional[Callable] = lambda : 'show'
+    hide: Optional[Callable] = lambda : 'hide'
+    load: Optional[Callable] = lambda: "load"  # ????
     
 def display_runui_tooltips(runui):
     """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
     li = [k for k, v in runui.map_actions.items() if v is not None]
     li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
     return widgets.VBox([widgets.HBox([l, widgets.HTML(markdown(f"*{l.tooltip}*"))]) for l in li])
-
 
 
 def show(app):
@@ -156,7 +156,6 @@ class DefaultBatchActions(DefaultRunActions):
 
     add: Optional[Callable] = lambda: "add"  # ????/
     remove: Optional[Callable] = lambda: "remove"  # ????
-    load: Optional[Callable] = lambda: "load"  # ????
     add_show: Optional[Callable] = lambda: "add_show"
     add_hide: Optional[Callable] = lambda: "add_hide"
     remove_show: Optional[Callable] = lambda: "remove_show"

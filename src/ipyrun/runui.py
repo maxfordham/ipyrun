@@ -46,17 +46,14 @@ from ipyrun.constants import (
     DEFAULT_BUTTON_STYLES,
 )
 from ipyrun.constants import ADD, REMOVE, WIZARD
-# -
-
 from ipyautoui.custom import FileChooser
-FileChooser()
 
 # +
 
 
 class UiComponents:
-    def __init__(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion):
-        self._init_UiButtons(di_button_styles=di_button_styles,container=container)
+    def __init__(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion, select=FileChooser):
+        self._init_UiButtons(di_button_styles=di_button_styles,container=container, select=select)
 
     @property
     def di_button_styles(self):
@@ -68,7 +65,7 @@ class UiComponents:
             [setattr(getattr(self, k), k_, v_) for k_, v_ in v.items() if k_ in getattr(self, k).traits()]
         self._di_button_styles = value
 
-    def _init_UiButtons(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion):
+    def _init_UiButtons(self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion, select=FileChooser):
         self.check = widgets.Checkbox()
         self.status_indicator = widgets.Button(disabled=True)
         self.help_ui = widgets.ToggleButton()
@@ -80,7 +77,10 @@ class UiComponents:
         self.run = widgets.Button()
         self.show = widgets.Button()
         self.hide = widgets.Button()
+        self.load = widgets.Button()
         self.container = container([widgets.HTML('container')])
+        if select is not None:
+            self.select = select()
 
         self.out_help_ui = widgets.Output()
         self.out_help_run = widgets.Output()
@@ -193,6 +193,16 @@ class RunActionsUi(UiComponents):
         self.show.on_click(self._show)
         self.hide.on_click(self._hide)
         self.status_indicator.on_click(self._status_indicator)
+        if self.load is not None:
+            self.load.on_click(self._load)
+            
+    def _load(self, on_click):
+        """default show run data. TODO - move to actions"""
+        try:
+            v = self.select.value
+        except:
+            ValueError('a select widget with a value trait must be passed for actions.load to work')
+        self.actions.load(v)
 
     def _container(self, on_change):
         if self.container.selected_index is None:
@@ -310,7 +320,8 @@ class RunActionsUi(UiComponents):
                 self.runlog: self.actions.runlog_show,
                 self.run: self.actions.run,
                 self.show: self.actions.show,
-                self.hide: self.actions.hide
+                self.hide: self.actions.hide,
+                self.load: self.actions.load
             }
 
     def get_buttons(self, li_buttons):
@@ -337,6 +348,7 @@ def test_display_runapp(app):
             widgets.HBox([app.show]),
             widgets.HBox([app.hide]),
             widgets.HBox([app.container]),
+            widgets.HBox([app.load, app.select])
         ]
     )
     display(widgets.HTML("<b>Buttons to be programmed from `RunActions`</b> "))
@@ -391,8 +403,7 @@ class RunUi(RunActionsUi):
         self.name = name
         self._init_form()
         self._init_RunActionsUi(run_actions)
-        
-        
+
 #         self._update_controls()
 
 #     def _update_controls(self):
@@ -404,6 +415,7 @@ class RunUi(RunActionsUi):
 #         out = [self.out_inputs, self.out_outputs, self.out_runlog]
 #         self.out_box_main.children = [o for o in out if len(o.outputs) > 0]
 # TODO: make something like this ^ work. 
+#     : use ipyflex !!!
 # ^ the goal is to let the inputs or outputs take full width if only 1 is selected... 
         
     @property
@@ -433,6 +445,7 @@ class RunUi(RunActionsUi):
         
         self.container.children = [widgets.VBox([self.button_bar, self.layout_out])]
         self.button_bar_left.children = self.get_buttons(['help_ui', 'help_run', 'help_config', 'show',  'inputs', 'outputs', 'runlog', 'run'])
+        self.button_bar_right.children = self.get_buttons(['load'])#, 'select'
         self.run_form.children = self.get_buttons(['check', 'status_indicator']) + [self.container]
         try:
             self.container.set_title(0, self.name)
@@ -454,8 +467,7 @@ class RunUi(RunActionsUi):
         )
         self.button_bar.children = [self.button_bar_left, self.button_bar_right]
 
-        # out
-        
+        # out # update the output to use ipyflex
         self.layout_out = widgets.VBox(
             layout=widgets.Layout(
                 width="100%",
@@ -541,8 +553,6 @@ class RunApp(widgets.HBox, RunUi):
         self.actions.update_status()
         
 
-
-
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigShell
 
@@ -571,7 +581,7 @@ class BatchActionsUi(RunActionsUi):
         self._init_RunActionsUi(actions, di_button_styles=DEFAULT_BUTTON_STYLES)
         self._update_controls()
 
-    def _update_objects(self):
+    def _update_objects(self): # TODO: define updated batch objects better... 
         self.add = widgets.ToggleButton(**ADD)
         self.remove = widgets.ToggleButton(**REMOVE)
         self.wizard = widgets.ToggleButton(**WIZARD)
@@ -907,7 +917,7 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigBatch
-    config_batch = ConfigBatch(fdir_root='.', fpth_script='script.py', configs=[config.dict()], title='# title') # create simple example... 
+    config_batch = ConfigBatch(fdir_root='.', fpth_script='script.py', configs=[config.dict()], title='# title') # TODO: sort out "title" (and how its named in the back)
     batch_app = BatchApp(None)
     display(batch_app)
 
