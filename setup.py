@@ -24,15 +24,13 @@ requirements = diff(requirements, piponly)
 
 setup(author="John Gunstone",
     author_email='gunstone.john@gmail.com',
-    python_requires='>=3.5',
+    python_requires='>=3.9',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     description="A generic user interface for running scripts. Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and data files are generated as outputs when the script is run. A timestamped record of script execution is maintained. An ipywdiget user interface allows users to edit script input data and view outputs of script execution.",
     license="MIT license",
