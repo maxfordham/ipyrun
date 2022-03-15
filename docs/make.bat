@@ -25,7 +25,7 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-sphinx-apidoc -f -d 6 -o source ../src/ipyrun
+call sphinx-apidoc -f -d 6 -o source ../src/ipyrun
 REM ^ build docs from package docstrings
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%

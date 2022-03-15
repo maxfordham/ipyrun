@@ -1,6 +1,6 @@
 # ipyrun
 
-ipyrun is designed for rapidly creating an app user interface (to be operated in a jupyter notebook / lab or voila app) to run a script or process and generate resultant output files. The app caches input, output and runtime data, such that the previous state of the app is available to the user when returning. C
+ipyrun is UI first package built on ipywidgets designed for rapidly creating an app user interface for use in a jupyter notebook / lab or voila app. To run a script or process and generate resultant output files. The app caches input, output and runtime data, such that the previous state of the app is available to the user when returning. 
 
 ## Use cases
 

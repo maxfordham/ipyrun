@@ -33,7 +33,8 @@ extensions = [
 	'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.autodoc_pydantic'
+    'sphinxcontrib.autodoc_pydantic',
+    'myst_parser'
 ]
 
 # Napoleon settings
@@ -64,6 +65,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'sphinx_book_theme'
+html_static_path = ['_build/html/_static']
+html_logo = "images/icon.svg"
 
 # autodoc_pydantic settings
 autodoc_pydantic_model_show_json = True
