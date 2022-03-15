@@ -29,6 +29,7 @@ STATUS_BUTTON_UPTODATE = frozenmap(
     button_style="success",
     tooltip="up-to-date",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
+    #disabled=True,
 )
 
 STATUS_BUTTON_NOOUTPUTS = frozenmap(
@@ -37,6 +38,7 @@ STATUS_BUTTON_NOOUTPUTS = frozenmap(
     button_style="",
     tooltip="no-outputs",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
+    #disabled=True,
 )
 
 STATUS_BUTTON_NEEDSRERUN = frozenmap(
@@ -45,6 +47,7 @@ STATUS_BUTTON_NEEDSRERUN = frozenmap(
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
+    #disabled=True,
 )
 STATUS_BUTTON_ERROR = frozenmap(
     icon="fa-exclamation-triangle",
@@ -52,6 +55,7 @@ STATUS_BUTTON_ERROR = frozenmap(
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
+    #disabled=True,
 )
 
 DI_STATUS_MAP = frozenmap(
@@ -77,19 +81,19 @@ HELP_UI = dict(
 )
 HELP_RUN = dict(
     icon="book",
-    tooltip="describes the functionality of elements in the RunApp interface",
+    tooltip="describes what the Run process is actually doing. whats it for...?",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
 )
 HELP_CONFIG = dict(
     icon="cog",
-    tooltip="the config of the task",
+    tooltip="the config of the Run. i.e. where is the process getting data from and saving results to?",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
 )
 INPUTS = dict(
     description="inputs",
-    tooltip="edit the user input information that is used when the script is executed",
+    tooltip="edit the user input information that is used when the process is executed",
     button_style="warning",
     icon="edit",
     style={"font_weight": "bold"},
@@ -114,21 +118,29 @@ RUNLOG = dict(
 RUN = dict(
     description=" run",
     icon="fa-play",
-    tooltip="execute the script based on the user inputs",
+    tooltip="execute the process based on the defined user inputs",
     button_style="success",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MEDIUM},
 )
 SHOW = dict(
     icon="fa-eye",
-    tooltips="default show",
+    tooltip="default show",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
 )
 HIDE = dict(
     icon="fa-eye-slash",
-    tooltips="default show",
+    tooltip="default show",
     style={"font_weight": "bold"},
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+
+LOAD = dict(
+    icon="fa-upload",
+    tooltip="load selected",
+    style={"font_weight": "bold"},
+    button_style="info",
     layout={"width": BUTTON_WIDTH_MIN},
 )
 
@@ -144,6 +156,7 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     run=RUN,
     show=SHOW,
     hide=HIDE,
+    load=LOAD,
     container=dict(layout={'width':'100%'}, selected_index=None)
 )
 
