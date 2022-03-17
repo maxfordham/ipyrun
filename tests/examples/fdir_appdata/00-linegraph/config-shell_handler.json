@@ -1,0 +1,37 @@
+{
+    "index": 0,
+    "fpth_script": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/script_linegraph.py",
+    "name": "linegraph",
+    "long_name": "00 - Linegraph",
+    "key": "00-linegraph",
+    "fdir_appdata": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph",
+    "in_batch": false,
+    "status": "up_to_date",
+    "update_config_at_runtime": false,
+    "displayfile_definitions": [
+        {
+            "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
+            "obj_name": "LineGraph",
+            "module_name": "input_schema_linegraph",
+            "ftype": "in",
+            "ext": ".lg.json"
+        }
+    ],
+    "displayfile_inputs_kwargs": {},
+    "displayfile_outputs_kwargs": {},
+    "fpths_inputs": [
+        "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/in-00-linegraph.lg.json"
+    ],
+    "fpths_outputs": [
+        "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/output-linegraph.csv",
+        "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.plotly.json"
+    ],
+    "fpth_params": null,
+    "fpth_config": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/config-shell_handler.json",
+    "fpth_runhistory": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/runhistory.csv",
+    "fpth_log": "log.csv",
+    "call": "python -O",
+    "params": {},
+    "shell_template": "{{ call }} {{ fpth_script }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
+    "shell": "python -O /mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/script_linegraph.py /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/in-00-linegraph.lg.json /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/output-linegraph.csv /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.plotly.json"
+}

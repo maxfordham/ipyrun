@@ -55,16 +55,16 @@ def return_alphanumeric_str(string):
 @dataclass
 class SelectProcess:
     """state definition of a given schedule"""
-    process_name: str = ''
-    pretty_name: str = ''
+    name: str = ''
+    long_name: str = ''
     exists: bool = False
     fromTemplate: bool = False
     guid: uuid.uuid4 = field(default_factory=lambda: str(uuid.uuid4()))  # lambda means a new UUID is created each time its initialised
         
     def __post_init__(self):
-        if self.pretty_name == '':
-            self.pretty_name = self.process_name
-        self.process_name = return_alphanumeric_str(self.pretty_name)
+        if self.long_name == '':
+            self.long_name = self.name
+        self.name = return_alphanumeric_str(self.long_name)
         
 @dataclass
 class SelectWidgetRow:
@@ -73,7 +73,7 @@ class SelectWidgetRow:
     create: widgets.Button = None
     remove: widgets.Button  = None
     
-    pretty_name: widgets.Text  = None
+    long_name: widgets.Text  = None
     fromTemplate: widgets.Image = None
     row: widgets.HBox = None
     guid: uuid.uuid4 = None
@@ -81,14 +81,14 @@ class SelectWidgetRow:
     def __post_init__(self):
         self.create = widgets.Button(disabled=False, layout=widgets.Layout(width=BUTTON_WIDTH_MIN, height=BUTTON_HEIGHT_MIN))
         self.remove = widgets.Button(disabled=False, layout=widgets.Layout(width=BUTTON_WIDTH_MIN, height=BUTTON_HEIGHT_MIN))
-        self.pretty_name = widgets.Text(disabled=True)
+        self.long_name = widgets.Text(disabled=True)
         self.fromTemplate = widgets.Image(
                                 format='png',
                                 width=BUTTON_HEIGHT_MIN,
                                 height=BUTTON_HEIGHT_MIN,
                                 layout=widgets.Layout(object_fit = 'contain')
                             )
-        self.row = widgets.HBox([self.create, self.remove, self.fromTemplate,  self.pretty_name])#exists,
+        self.row = widgets.HBox([self.create, self.remove, self.fromTemplate,  self.long_name])#exists,
 
 
 # %%
@@ -107,31 +107,31 @@ def style_widget_row(row:SelectWidgetRow, s: SelectProcess, debug: bool = False)
         row.remove.style.button_color = None
         row.remove.disabled = False
         
-    row.pretty_name.value = s.pretty_name
+    row.long_name.value = s.long_name
     row.guid = s.guid
     
     if s.exists and s.fromTemplate:
         if debug:
             print('check. remove only. --> add. blank.')
-        check_remove_only(row, create_tooltip='{} already exists in project. MXF standard schedule.'.format(s.pretty_name))
+        check_remove_only(row, create_tooltip='{} already exists in project. MXF standard schedule.'.format(s.long_name))
         row.fromTemplate.value = FROM_TEMPLATE_IMG[True]
-        row.pretty_name.disabled = True
+        row.long_name.disabled = True
     elif s.exists and not s.fromTemplate:
         if debug:
             print('check. remove only. --> add. remove from list.')
-        check_remove_only(row, create_tooltip='{} already exists in project. Project defined schedule.'.format(s.pretty_name))
+        check_remove_only(row, create_tooltip='{} already exists in project. Project defined schedule.'.format(s.long_name))
         row.fromTemplate.value = FROM_TEMPLATE_IMG[False]
-        row.pretty_name.disabled = True
+        row.long_name.disabled = True
     elif not s.exists and s.fromTemplate:
         if debug:
             print('add. blank. --> check. remove only.')  
         row.fromTemplate.value = FROM_TEMPLATE_IMG[True]
-        row.pretty_name.disabled = True
+        row.long_name.disabled = True
         #create
         row.create.disabled = False
         row.create.icon = 'fa-plus'
         row.create.button_style='warning'
-        row.create.tooltip = 'add {} to project. MXF standard schedule.'.format(s.pretty_name)
+        row.create.tooltip = 'add {} to project. MXF standard schedule.'.format(s.long_name)
         #remove
         row.remove.tooltip='cannot remove template processes from list'
         row.remove.button_style = ''
@@ -149,13 +149,13 @@ def style_widget_row(row:SelectWidgetRow, s: SelectProcess, debug: bool = False)
         row.create.disabled = False
         row.create.icon = 'fa-plus'
         row.create.button_style='warning'
-        row.create.tooltip = 'add {} to project. Project defined schedule.'.format(s.pretty_name)
+        row.create.tooltip = 'add {} to project. Project defined schedule.'.format(s.long_name)
         #remove
         row.remove.tooltip = 'remove from list'
         row.remove.icon = 'fa-minus'
         row.remove.button_style = ''
         row.fromTemplate.value = FROM_TEMPLATE_IMG[False]
-        row.pretty_name.disabled = False
+        row.long_name.disabled = False
     
 def get_SelectProcess_from_SelectWidgetRow(row:SelectWidgetRow) -> SelectProcess:
     """
@@ -168,17 +168,17 @@ def get_SelectProcess_from_SelectWidgetRow(row:SelectWidgetRow) -> SelectProcess
     Returns: 
         s (SelectProcess): data object
     """
-    s = SelectProcess(pretty_name=row.pretty_name.value)
-    if row.create.tooltip == '{} already exists in project. MXF standard schedule.'.format(s.pretty_name):
+    s = SelectProcess(long_name=row.long_name.value)
+    if row.create.tooltip == '{} already exists in project. MXF standard schedule.'.format(s.long_name):
         s.exists = True
         s.fromTemplate = True
-    elif '{} already exists in project. Project defined schedule.'.format(s.pretty_name):
+    elif '{} already exists in project. Project defined schedule.'.format(s.long_name):
         s.exists = True
         s.fromTemplate = False
-    elif 'add {} to project. MXF standard schedule.'.format(s.pretty_name):
+    elif 'add {} to project. MXF standard schedule.'.format(s.long_name):
         s.exists = False
         s.fromTemplate = True
-    elif 'add {} to project. Project defined schedule.'.format(s.pretty_name):
+    elif 'add {} to project. Project defined schedule.'.format(s.long_name):
         s.exists = False
         s.fromTemplate = True
     else:
@@ -198,19 +198,19 @@ def debug_style_widget_row():
     display(row.row)
     print(get_SelectProcess_from_SelectWidgetRow(row))
     print('-----------------')
-    style_widget_row(row0,SelectProcess(exists=True, fromTemplate=True, pretty_name='from template'), debug=True)
+    style_widget_row(row0,SelectProcess(exists=True, fromTemplate=True, long_name='from template'), debug=True)
     display(row0.row)
     print(get_SelectProcess_from_SelectWidgetRow(row0))
     print('-----------------')
-    style_widget_row(row1,SelectProcess(exists=True, fromTemplate=False, pretty_name='user defined'), debug=True)
+    style_widget_row(row1,SelectProcess(exists=True, fromTemplate=False, long_name='user defined'), debug=True)
     display(row1.row)
     print(get_SelectProcess_from_SelectWidgetRow(row1))
     print('-----------------')
-    style_widget_row(row2,SelectProcess(exists=False, fromTemplate=True, pretty_name='from template'), debug=True)
+    style_widget_row(row2,SelectProcess(exists=False, fromTemplate=True, long_name='from template'), debug=True)
     display(row2.row)
     print(get_SelectProcess_from_SelectWidgetRow(row2))
     print('-----------------')
-    style_widget_row(row3,SelectProcess(exists=False, fromTemplate=False, pretty_name='user defined'), debug=True)
+    style_widget_row(row3,SelectProcess(exists=False, fromTemplate=False, long_name='user defined'), debug=True)
     display(row3.row)
     print(get_SelectProcess_from_SelectWidgetRow(row3))
     print('-----------------')
@@ -287,10 +287,10 @@ if __name__ =='__main__':
 
 
 # %%
-def add_process(main_app, process_name, pretty_name):
+def add_process(main_app, name, long_name):
     print('add_process called')
     
-def remove_process(main_app, process_name):
+def remove_process(main_app, name):
     print('remove_process called')
     
 class AddRemoveProcess(AddRemoveScheduleForm):
@@ -326,48 +326,48 @@ class AddRemoveProcess(AddRemoveScheduleForm):
        
     def _init_row_controls(self, guid):
         self._get_select_processes_widget(guid).create.on_click(functools.partial(self._create, guid=guid))
-        self._get_select_processes_widget(guid).pretty_name.observe(self._update_change_name, 'value')
+        self._get_select_processes_widget(guid).long_name.observe(self._update_change_name, 'value')
         self._get_select_processes_widget(guid).remove.on_click(functools.partial(self._remove, guid=guid))
         
     def _create(self, onclick, guid=None):
-        process_name = self.df_processes.loc[guid,'process_name']
-        pretty_name = self.df_processes.loc[guid,'pretty_name']
-        if self._is_unique(process_name):
-            self._display_message(f"added to project: {process_name}")
-            self.add_process(self.main_app, process_name, pretty_name)
+        name = self.df_processes.loc[guid,'name']
+        long_name = self.df_processes.loc[guid,'long_name']
+        if self._is_unique(name):
+            self._display_message(f"added to project: {name}")
+            self.add_process(self.main_app, name, long_name)
             tmp = self.df_processes
             tmp.loc[guid, 'exists'] = True           
             self.df_processes = tmp
             self._update_row_style(guid=guid)
         else:
-            self._display_message(f'ERROR - already exists in project: {process_name}')
+            self._display_message(f'ERROR - already exists in project: {name}')
     
-    def _remove_from_list(self, guid, process_name):
-        self._display_message(f"removed from list: {process_name}")
+    def _remove_from_list(self, guid, name):
+        self._display_message(f"removed from list: {name}")
         tmp = self.df_processes
         tmp = tmp.drop([guid])
         self.df_processes = tmp
         self.select_processes_widgets.remove(self._get_select_processes_widget(guid))
         self.select_processes.children = self.select_processes_children  
         
-    def _remove_from_project(self, guid, process_name):
-        self._display_message(f"removed from project: {process_name}")
+    def _remove_from_project(self, guid, name):
+        self._display_message(f"removed from project: {name}")
         tmp = self.df_processes
         tmp.loc[guid, 'exists'] = False 
         self.df_processes = tmp
         self._update_row_style(guid=guid)
-        self.remove_process(self.main_app, process_name)
+        self.remove_process(self.main_app, name)
     
     def _remove(self, onclick, guid=None):
-        process_name = self.df_processes.loc[guid,'process_name']
+        name = self.df_processes.loc[guid,'name']
         if not self.df_processes.loc[guid,'exists'] and not self.df_processes.loc[guid,'fromTemplate']:
             # if not in project, and user defined
-            self._remove_from_list(guid, process_name)
+            self._remove_from_list(guid, name)
         elif self.df_processes.loc[guid,'exists']:
             # if in project, just return to list
-            self._remove_from_project(guid, process_name)
+            self._remove_from_project(guid, name)
         else:
-            self._display_message('ERROR WHEN REMOVING: {}'.format(process_name))
+            self._display_message('ERROR WHEN REMOVING: {}'.format(name))
 
     def _add_user_defined(self, onclick):
         add = SelectProcess()
@@ -382,16 +382,16 @@ class AddRemoveProcess(AddRemoveScheduleForm):
 
     @property
     def schedule_names(self):
-        return [s.pretty_name.value for s in self.select_processes_widgets]
+        return [s.long_name.value for s in self.select_processes_widgets]
 
     def _update_change_name(self, change):
         tmp = self.df_processes
-        tmp['pretty_name'] = self.schedule_names
-        tmp['process_name'] = [return_alphanumeric_str(string) for string in self.schedule_names]
+        tmp['long_name'] = self.schedule_names
+        tmp['name'] = [return_alphanumeric_str(string) for string in self.schedule_names]
         self.df_processes = tmp
 
-    def _is_unique(self, process_name):
-        if len(self.df_processes.query('exists == True and process_name == "{}"'.format(process_name))) == 0:
+    def _is_unique(self, name):
+        if len(self.df_processes.query('exists == True and name == "{}"'.format(name))) == 0:
             return True
         else:
             return False

@@ -31,8 +31,8 @@ class RunApps:
     None
 
 
-def create_runapp(cls=None, process_name="name"):
-    return print(process_name)
+def create_runapp(cls=None, name="name"):
+    return print(name)
 
 
 class AddModelRun:
@@ -89,7 +89,7 @@ class AddModelRun:
         self.question.value = self.question_value
 
     def _add(self, click):
-        return self.fn_add(cls=self.app, process_name=self.run_name.value)
+        return self.fn_add(cls=self.app, name=self.run_name.value)
 
     def display(self):
         display(self.form)

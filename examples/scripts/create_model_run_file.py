@@ -374,7 +374,7 @@ if __name__ == '__main__':
     # config
 
     config = read_json(fpth_config)
-    print(config['process_name'])
+    print(config['name'])
     os.chdir(config['fdir']) # change the working dir to the app that is executing the script
     outputs = config['fpths_outputs']
 

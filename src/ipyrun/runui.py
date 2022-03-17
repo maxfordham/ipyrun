@@ -533,7 +533,7 @@ class RunApp(widgets.HBox, RunUi):
         """
         super().__init__(layout={'width':'100%'}) # init HBox
         try:
-            name = config.pretty_name
+            name = config.long_name
         except:
             name = None
         self._init_RunUi(run_actions=RunActions(), name=name)  # init default actions
@@ -556,7 +556,7 @@ class RunApp(widgets.HBox, RunUi):
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigShell
 
-    config = ConfigShell(fpth_script="script.py", pretty_name="pretty name")
+    config = ConfigShell(fpth_script="script.py", long_name="pretty name")
     app = RunApp(config)
     display(app)
 
@@ -817,10 +817,10 @@ class BatchUi(BatchActionsUi):
 # -
 if __name__ == "__main__":
     config = ConfigShell(
-        fpth_script="script.py", pretty_name="00-lean-description"
+        fpth_script="script.py", long_name="00-lean-description"
     )
     config = ConfigShell(
-        fpth_script="script.py", pretty_name="01-lean-description"
+        fpth_script="script.py", long_name="01-lean-description"
     )
     run0 = RunApp(config)
     run1 = RunApp(config)
@@ -948,7 +948,7 @@ def runlog(path_runlog):  # TODO: do runlogging!
 
     tmp = pd.DataFrame(
         {
-            "processName": [self.process_name],
+            "processName": [self.name],
             "user": [user],
             "datetime": [timestamp],
             "formalIssue": [""],

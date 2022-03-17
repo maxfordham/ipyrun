@@ -106,8 +106,8 @@ class ConfigShell(BaseModel):
 
     index: int = 0
     fpth_script: pathlib.Path = "script.py"
-    process_name: str = None  # change to name?
-    pretty_name: str = None  # change to title?
+    name: str = None  # change to name?
+    long_name: str = None  # change to title?
     key: str = None
     fdir_appdata: pathlib.Path = Field(
         default=None,
@@ -162,7 +162,7 @@ class DefaultConfigShell(ConfigShell):
                 @validator("fpths_outputs", always=True)
                 def _fpths_outputs(cls, v, values):
                     fdir = values['fdir_appdata']
-                    nm = values['process_name']
+                    nm = values['name']
                     paths = [fdir / ('output-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
     """
@@ -179,22 +179,22 @@ class DefaultConfigShell(ConfigShell):
         assert " " not in str(v.stem), "must be alphanumeric"
         return v
 
-    @validator("process_name", always=True)
-    def _process_name(cls, v, values):
+    @validator("name", always=True)
+    def _name(cls, v, values):
         if v is None:
             return values["fpth_script"].stem.replace("script_", "")
         else:
             if " " in v:
-                raise ValueError("the process_name must not contain any spaces")
+                raise ValueError("the name must not contain any spaces")
             return v
 
-    @validator("pretty_name", always=True)
-    def _pretty_name(cls, v, values):
+    @validator("long_name", always=True)
+    def _long_name(cls, v, values):
         if v is None:
             return (
                 str(values["index"]).zfill(2)
                 + " - "
-                + stringcase.titlecase(values["process_name"])
+                + stringcase.titlecase(values["name"])
             )
         else:
             return v
@@ -202,7 +202,7 @@ class DefaultConfigShell(ConfigShell):
     @validator("key", always=True)
     def _key(cls, v, values):
         if v is None:
-            return str(values["index"]).zfill(2) + "-" + values["process_name"]
+            return str(values["index"]).zfill(2) + "-" + values["name"]
         else:
             return v
 
@@ -433,7 +433,7 @@ if __name__ == "__main__":
         @validator("fpths_outputs", always=True)
         def _fpths_outputs(cls, v, values):
             fdir = values["fdir_appdata"]
-            nm = values["process_name"]
+            nm = values["name"]
             paths = [
                 fdir / ("output-" + nm + ".csv"),
                 fdir / ("out-" + nm + ".plotly.json"),
@@ -722,3 +722,5 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
