@@ -64,7 +64,7 @@ from ipyrun.actions import (
     DefaultBatchActions,
 )
 from ipyrun.basemodel import BaseModel
-from ipyrun.utils import get_status
+from ipyrun._utils import get_status
 from ipyrun.constants import FNM_CONFIG_FILE
 from ipyrun.constants import DI_STATUS_MAP
 
@@ -74,6 +74,8 @@ from ipyrun.constants import DI_STATUS_MAP
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
+# -
+
 
 
 # +
@@ -720,5 +722,3 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-

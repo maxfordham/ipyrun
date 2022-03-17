@@ -34,7 +34,7 @@ import functools
 
 #  local imports
 from ipyrun.constants import FPTH_USER_ICON, FPTH_MXF_ICON, FPTH_TEMPLATE_PROCESSES, BUTTON_WIDTH_MIN, BUTTON_HEIGHT_MIN
-from ipyrun.utils import template_plus_button, make_dir
+from ipyrun._utils import template_plus_button, make_dir
 
 NBFDIR = os.path.dirname(os.path.realpath('__file__'))
 

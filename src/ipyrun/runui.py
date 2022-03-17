@@ -38,7 +38,7 @@ from ipyautoui.custom import Dictionary, LoadProject
 
 # from this repo
 from ipyrun.actions import RunActions, BatchActions, DefaultRunActions
-from ipyrun.utils import make_dir, del_matching, validate
+from ipyrun._utils import make_dir, del_matching, validate
 from ipyrun.constants import (
     BUTTON_WIDTH_MIN,
     BUTTON_WIDTH_MEDIUM,
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 # -
 
 if __name__ == "__main__":
-    from ipyrun.utils import display_ui_tooltips
+    from ipyrun._utils import display_ui_tooltips
     uiobj = UiComponents()
     display(display_ui_tooltips(uiobj))
 
