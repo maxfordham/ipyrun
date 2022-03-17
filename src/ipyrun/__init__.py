@@ -12,7 +12,7 @@ Overview:
     - runui.py : builds the generic UI classes. the actions associated to the buttons are programable. 
         the intention is that the classes in here are generic, the UI can be easily reprommaned to different 
         uses without editing these base classes. 
-    - utils.py : helper functions.
+    - _utils.py : helper functions.
 
 """
 import sys
