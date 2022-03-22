@@ -17,13 +17,17 @@
             "ext": ".lg.json"
         }
     ],
-    "displayfile_inputs_kwargs": {},
-    "displayfile_outputs_kwargs": {},
+    "displayfile_inputs_kwargs": {
+        "patterns": "*"
+    },
+    "displayfile_outputs_kwargs": {
+        "patterns": "*.plotly.json"
+    },
     "fpths_inputs": [
         "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/in-00-linegraph.lg.json"
     ],
     "fpths_outputs": [
-        "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/output-linegraph.csv",
+        "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.csv",
         "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.plotly.json"
     ],
     "fpth_params": null,
@@ -33,5 +37,5 @@
     "call": "python -O",
     "params": {},
     "shell_template": "{{ call }} {{ fpth_script }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-    "shell": "python -O /mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/script_linegraph.py /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/in-00-linegraph.lg.json /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/output-linegraph.csv /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.plotly.json"
+    "shell": "python -O /mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/script_linegraph.py /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/in-00-linegraph.lg.json /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.csv /mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph/out-linegraph.plotly.json"
 }
