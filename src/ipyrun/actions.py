@@ -69,7 +69,7 @@ class RunActions(BaseModel):
     deactivate: Optional[Callable] = lambda: "deactivate"
     show: Optional[Callable] = lambda : 'show'
     hide: Optional[Callable] = lambda : 'hide'
-    load: Optional[Callable] = lambda: "load"  # ????
+    load: Optional[Callable] = None # lambda: "load"  # ????
     
 def display_runui_tooltips(runui):
     """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
@@ -142,7 +142,7 @@ class BatchActions(RunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-    load_project: Optional[Callable] = lambda: "load_project"
+    #load_project: Optional[Callable] = lambda: "load_project"
 
     
 class DefaultBatchActions(DefaultRunActions):
@@ -164,4 +164,4 @@ class DefaultBatchActions(DefaultRunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-    load_project: Optional[Callable] = lambda: "load_project"
+    #load_project: Optional[Callable] = lambda: "load_project"
