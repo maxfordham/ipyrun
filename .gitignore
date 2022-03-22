@@ -133,3 +133,8 @@ ipyrun/run.ipynb
 /docs/_templates
 /docs/_static
 /docs/_build
+/examples/linegraph/out-test.csv
+/examples/linegraph/in-test.lg.json
+/examples/linegraph/linegraph_appdata
+/examples/linegraph/.ipynb_checkpoints
+/examples/linegraph/out-test.plotly.json
