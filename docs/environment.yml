@@ -44,6 +44,7 @@ dependencies:
   - sphinx # for docs
   - sphinx-book-theme # for docs
   - sphinx-autoapi
+  - nbsphinx-link
   - autodoc-pydantic # for docs
   - pytest
   - pip
