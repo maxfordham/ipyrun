@@ -8,11 +8,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.6
+#       jupytext_version: 1.11.5
 #   kernelspec:
-#     display_name: Python [conda env:ipyautoui]
+#     display_name: Python 3 (ipykernel)
 #     language: python
-#     name: conda-env-ipyautoui-py
+#     name: python3
 # ---
 
 """
@@ -74,9 +74,16 @@ from ipyrun.constants import DI_STATUS_MAP
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
+
+
 # -
+class DisplayfileDefinition(BaseModel):
+    ftype: FiletypeEnum = None
+    ext: str
+    
 
 
+# ?AutoUiConfig
 
 # +
 class FiletypeEnum(str, Enum):
@@ -106,8 +113,8 @@ class ConfigShell(BaseModel):
 
     index: int = 0
     fpth_script: pathlib.Path = "script.py"
-    name: str = None  # change to name?
-    long_name: str = None  # change to title?
+    name: str = None
+    long_name: str = None
     key: str = None
     fdir_appdata: pathlib.Path = Field(
         default=None,
@@ -149,21 +156,41 @@ class ConfigShell(BaseModel):
 
 
 class DefaultConfigShell(ConfigShell):
-    """extends ConfigShell with validators only. 
+    """
+    a config object. all the definitions required to create the RunActions for a shell running tools are here.
+    
+    extends ConfigShell with validators only. 
     this creates opinionated relationships between the variables that dont necessarily have to exist.
     
     A likely way that this would need extending is to generate fpth_outputs based on other fields here. 
-    This is very application specific, but could be done like this:
+    This is very application specific, but could be done as shown in the Example.
     
+    The validators, in some cases overwrite the parameters based on other parameters (so they are effectively
+    no longer user editable), or they default to something sensible. This reduces the amount of inputs that 
+    need providing by the User. 
+    
+    Notes:
+        - validators can be overwritten, allowing users to keep the majority of default behaviour but overwrite 
+        some of it. 
+        - in Args below the minimum number of input vars are given
+    
+    Args: 
+        index (int):
+        fpth_script (pathlib.Path): 
+        fdir_appdata (pathlib.Path): defaults to dir of fpth_script if not given
+        displayfile_definitions (List[DisplayfileDefinition]): used to generate custom input and output forms
+            using ipyautoui
+            
     Example:
         ::
 
             class LineGraphConfigShell(DefaultConfigShell):
+                # script specific outputs defined by custom ConfigShell class
                 @validator("fpths_outputs", always=True)
                 def _fpths_outputs(cls, v, values):
                     fdir = values['fdir_appdata']
                     nm = values['name']
-                    paths = [fdir / ('output-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
+                    paths = [fdir / ('out-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
     """
 
@@ -435,7 +462,7 @@ if __name__ == "__main__":
             fdir = values["fdir_appdata"]
             nm = values["name"]
             paths = [
-                fdir / ("output-" + nm + ".csv"),
+                fdir / ("out-" + nm + ".csv"),
                 fdir / ("out-" + nm + ".plotly.json"),
             ]
             return paths
