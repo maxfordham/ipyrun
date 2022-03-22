@@ -25,6 +25,7 @@ By default it is used for running python scripts on the command line.
 
 # +
 # core libs
+import sys
 import io
 import shutil
 import pathlib
@@ -74,17 +75,6 @@ from ipyrun.constants import DI_STATUS_MAP
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
-
-
-# -
-class DisplayfileDefinition(BaseModel):
-    ftype: FiletypeEnum = None
-    ext: str
-    
-
-
-# ?AutoUiConfig
-
 # +
 class FiletypeEnum(str, Enum):
     input = "in"
@@ -93,7 +83,9 @@ class FiletypeEnum(str, Enum):
 
 
 class DisplayfileDefinition(PyObj):
-    ftype: FiletypeEnum = None
+    ftype: FiletypeEnum = Field(
+        None, description='valid inputs are: "in", "out", "wip"'
+    )
     ext: str
 
 
@@ -238,7 +230,7 @@ class DefaultConfigShell(ConfigShell):
         if v is None:
             v = values["fpth_script"].parent  # put next to script
         else:
-            if v.stem == values["key"]:  # folder with key name alread exists
+            if values["key"] in str(v):  # folder with key name alread exists
                 return v
             else:  # create a folder with key name for run
                 v = v / values["key"]
@@ -359,7 +351,9 @@ def run_shell(app=None):
 
 
 class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects"""
+    """extends RunActions by creating Callables based on data within the app or the config objects. 
+    TODO: currently this full filepaths and does not work with relative paths. make it work with relative paths! 
+    """
 
     config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
 
@@ -432,6 +426,7 @@ class RunShellActions(DefaultRunActions):
         return None  # TODO: add logging!
 
 
+# extend RunApp to make a default RunShell
 # -
 if __name__ == "__main__":
     from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
@@ -443,14 +438,6 @@ if __name__ == "__main__":
     display(config.dict())
 
 if __name__ == "__main__":
-
-    # example run app
-
-    from ipyrun.constants import (
-        FPTH_EXAMPLE_SCRIPT,
-        FPTH_EXAMPLE_INPUTSCHEMA,
-        load_test_constants,
-    )
 
     class LineGraphConfigShell(DefaultConfigShell):
         @validator("fpth_script", always=True, pre=True)
@@ -478,17 +465,16 @@ if __name__ == "__main__":
                 )
             ]
 
-    class LineGraphShellActions(RunShellActions):
-        @validator("inputs_show", always=True)
-        def _inputs_show_update(cls, v, values):
-            return functools.partial(v, patterns="*")
+        @validator("displayfile_inputs_kwargs", always=True)
+        def _displayfile_inputs_kwargs(cls, v, values):
+            return dict(patterns="*")
 
-        @validator("outputs_show", always=True)
-        def _outputs_show_update(cls, v, values):
-            return functools.partial(v, patterns="*.plotly.json")
+        @validator("displayfile_outputs_kwargs", always=True)
+        def _displayfile_outputs_kwargs(cls, v, values):
+            return dict(patterns="*.plotly.json")
 
     config = LineGraphConfigShell(fdir_appdata=test_constants.FDIR_APPDATA)
-    run_app = RunApp(config, cls_actions=LineGraphShellActions)  # cls_ui=RunUi,
+    run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
 
 
