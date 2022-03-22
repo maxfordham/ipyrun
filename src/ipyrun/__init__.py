@@ -25,11 +25,12 @@ sys.path.append("/mnt/c/engDev/git_mf/ipyautoui/src")
 sys.path.append("/mnt/c/engDev/git_mf/MFFileUtilities")
 # ^ for dev only. delete in production.
 
-__author__ = """John Gunstone"""
-__email__ = "gunstone.john@gmail.com"
+
 
 from ipyrun._version import get_versions
-
 __version__ = get_versions()["version"]
 del get_versions
 
+from ipyrun.runui import RunApp, BatchApp
+from ipyrun.actions import RunActions, DefaultRunActions, BatchActions, DefaultBatchActions
+from ipyrun.runshell import RunShellActions, ConfigShell, DefaultConfigShell
