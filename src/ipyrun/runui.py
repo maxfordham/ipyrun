@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.6
+#       jupytext_version: 1.13.7
 #   kernelspec:
-#     display_name: Python [conda env:ipyautoui]
+#     display_name: Python [conda env:ipyrun]
 #     language: python
-#     name: conda-env-ipyautoui-xpython
+#     name: conda-env-ipyrun-xpython
 # ---
 
 """

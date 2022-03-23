@@ -1,0 +1,41 @@
+name: ipyrun
+# channels priority
+# see https://bioconda.github.io/
+# conda-forge has highest prioriy
+channels:
+  - defaults
+  - conda-forge
+  - file:///mnt/conda-bld/
+dependencies:
+  - python>=3.8,<3.10
+  - numpy
+  - pandas
+  - jupyterlab>=3.0.14
+  - xeus-python
+  - ipywidgets
+  - ipysheet>=0.5.0
+  - ipyfilechooser
+  - ipyrun>=v0.1.9
+  - voila>=0.2.11
+  - plotly
+  - halo
+  - jupytext
+  - markdown
+  - nodejs
+  - altair
+  - pydantic
+  - dacite
+  - xmltodict
+  - pyyaml
+  - pillow
+  - pip
+  - click
+  - openpyxl
+  - xlsxwriter 
+  - xlsxtemplater 
+  - black
+  - nb_black
+  - mf_file_utilities 
+  - mfom
+  - pip:
+    - mydocstring
