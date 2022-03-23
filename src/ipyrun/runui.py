@@ -938,44 +938,44 @@ if __name__ == "__main__":
     display(batch_app)
 
 # +
-import pandas as pd
-import getpass
-import pathlib
+# import pandas as pd
+# import getpass
+# import pathlib
 
-def runlog(path_runlog):  # TODO: do runlogging!
-    if type(path_runlog) == str:
-        path_runlog = pathlib.Path(path_runlog)
-    if path_runlog.is_file:
-        self.df_runlog = del_matching(pd.read_csv(self.fpth_runlog), "Unnamed")
-    else:
-        di = {
-            "processName": [],
-            "user": [],
-            "datetime": [],
-            "formalIssue": [],
-            "tags": [],
-            "fpthInputs": [],
-        }
-        self.df_runlog = pd.DataFrame(di).rename_axis("index")
+# def runlog(path_runlog):  # TODO: do runlogging!
+#     if type(path_runlog) == str:
+#         path_runlog = pathlib.Path(path_runlog)
+#     if path_runlog.is_file:
+#         self.df_runlog = del_matching(pd.read_csv(self.fpth_runlog), "Unnamed")
+#     else:
+#         di = {
+#             "processName": [],
+#             "user": [],
+#             "datetime": [],
+#             "formalIssue": [],
+#             "tags": [],
+#             "fpthInputs": [],
+#         }
+#         self.df_runlog = pd.DataFrame(di).rename_axis("index")
 
-    user = getpass.getuser()
-    timestamp = str(pd.to_datetime("today"))
-    timestamp = timestamp[:-7]
+#     user = getpass.getuser()
+#     timestamp = str(pd.to_datetime("today"))
+#     timestamp = timestamp[:-7]
 
-    tmp = pd.DataFrame(
-        {
-            "processName": [self.name],
-            "user": [user],
-            "datetime": [timestamp],
-            "formalIssue": [""],
-            "tags": [""],
-            "fpthInputs": [self.fpth_inputs_archive],
-        }
-    )
-    self.df_runlog = self.df_runlog.append(tmp).reset_index(drop=True)
-    make_dir(self.fdir_runlog)
-    self.df_runlog.to_csv(self.fpth_runlog)
-    return
+#     tmp = pd.DataFrame(
+#         {
+#             "processName": [self.name],
+#             "user": [user],
+#             "datetime": [timestamp],
+#             "formalIssue": [""],
+#             "tags": [""],
+#             "fpthInputs": [self.fpth_inputs_archive],
+#         }
+#     )
+#     self.df_runlog = self.df_runlog.append(tmp).reset_index(drop=True)
+#     make_dir(self.fdir_runlog)
+#     self.df_runlog.to_csv(self.fpth_runlog)
+#     return
 
 
 # path_runlog = '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/runlog/runlog-expansion_vessel_sizing.csv'

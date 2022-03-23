@@ -2,20 +2,12 @@
 
 """Tests for `ipyrun` package."""
 
-
-import unittest
-
 from ipyrun import ipyrun
 
 
-class TestIpyrun(unittest.TestCase):
+class TestIpyrun:
     """Tests for `ipyrun` package."""
-
-    def setUp(self):
-        """Set up test fixtures, if any."""
-
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
 
     def test_000_something(self):
         """Test something."""
+        pass
