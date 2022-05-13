@@ -1,1 +1,1 @@
-pipreqs --savepath requirements.txt --force --debug ipyrun/
+pipreqs --savepath requirements.txt --force --debug src/

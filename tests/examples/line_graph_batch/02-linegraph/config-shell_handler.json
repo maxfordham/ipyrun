@@ -17,8 +17,12 @@
             "ext": ".lg.json"
         }
     ],
-    "displayfile_inputs_kwargs": {},
-    "displayfile_outputs_kwargs": {},
+    "displayfile_inputs_kwargs": {
+        "patterns": "*"
+    },
+    "displayfile_outputs_kwargs": {
+        "patterns": "*.plotly.json"
+    },
     "fpths_inputs": [
         "/mnt/c/engDev/git_mf/ipyrun/tests/examples/line_graph_batch/02-linegraph/in-02-linegraph.lg.json"
     ],

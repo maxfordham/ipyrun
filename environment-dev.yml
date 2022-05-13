@@ -1,0 +1,22 @@
+name: ipyrun-dev
+# channels priority
+# see https://bioconda.github.io/
+# conda-forge has highest prioriy
+channels:
+  - defaults
+  - conda-forge
+  - file:///mnt/conda-bld/
+dependencies:
+  - python=3.9
+  - ipyautoui
+  - jupytext
+  - jupyterlab-lsp
+  - python-lsp-server
+  - nb_black
+  - traitlets
+  - voila
+  - pip
+  - pip:
+    - traitlets-paths
+    - seedir
+    - devtools[pygments]

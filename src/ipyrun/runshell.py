@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.5
+#       jupytext_version: 1.13.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -66,8 +66,8 @@ from ipyrun.actions import (
 )
 from ipyrun.basemodel import BaseModel
 from ipyrun._utils import get_status
-from ipyrun.constants import FNM_CONFIG_FILE
-from ipyrun.constants import DI_STATUS_MAP
+from ipyrun.constants import FNM_CONFIG_FILE, FPTH_EXAMPLE_INPUTSCHEMA, DI_STATUS_MAP
+
 
 # display_template_ui_model()  # TODO: add this to docs
 
@@ -707,7 +707,7 @@ if __name__ == "__main__":
         @validator("cls_actions", always=True)
         def _cls_actions(cls, v, values):
             """bundles RunApp up as a single argument callable"""
-            return LineGraphShellActions
+            return RunShellActions
 
         @validator("cls_config", always=True)
         def _cls_config(cls, v, values):
