@@ -298,7 +298,7 @@ def uncheck(config: ConfigShell, fn_saveconfig):
     fn_saveconfig()
 
 
-def show_files(fpths, class_autodisplay=AutoDisplay, kwargs_autodisplay={}):
+def show_files(fpths, class_autodisplay=AutoDisplay.from_paths, kwargs_autodisplay={}):
     return class_autodisplay([f for f in fpths], **kwargs_autodisplay)
 
 
@@ -315,7 +315,9 @@ def update_AutoDisplay(config, fn_onsave=None):
     user_file_renderers = {}
     for d in config.autodisplay_definitions:
         user_file_renderers.update(create_autodisplay_renderer(d, fn_onsave=fn_onsave))
-    return functools.partial(AutoDisplay, user_file_renderers=user_file_renderers)
+    return functools.partial(
+        AutoDisplay.from_paths, user_file_renderers=user_file_renderers
+    )
 
 
 def run_shell(app=None):
@@ -385,7 +387,7 @@ class RunShellActions(DefaultRunActions):
     @validator("help_run_show", always=True)
     def _help_run_show(cls, v, values):
         return functools.partial(
-            AutoDisplay, [values["config"].fpth_script], patterns="*"
+            AutoDisplay.from_paths, [values["config"].fpth_script], patterns="*"
         )
 
     @validator("help_config_show", always=True)
