@@ -14,7 +14,7 @@
             "in_batch": false,
             "status": null,
             "update_config_at_runtime": false,
-            "displayfile_definitions": [
+            "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
                     "obj_name": "LineGraph",
@@ -23,10 +23,10 @@
                     "ext": ".lg.json"
                 }
             ],
-            "displayfile_inputs_kwargs": {
+            "autodisplay_inputs_kwargs": {
                 "patterns": "*"
             },
-            "displayfile_outputs_kwargs": {
+            "autodisplay_outputs_kwargs": {
                 "patterns": "*.plotly.json"
             },
             "fpths_inputs": [
@@ -55,7 +55,7 @@
             "in_batch": false,
             "status": null,
             "update_config_at_runtime": false,
-            "displayfile_definitions": [
+            "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
                     "obj_name": "LineGraph",
@@ -64,10 +64,10 @@
                     "ext": ".lg.json"
                 }
             ],
-            "displayfile_inputs_kwargs": {
+            "autodisplay_inputs_kwargs": {
                 "patterns": "*"
             },
-            "displayfile_outputs_kwargs": {
+            "autodisplay_outputs_kwargs": {
                 "patterns": "*.plotly.json"
             },
             "fpths_inputs": [
@@ -96,7 +96,7 @@
             "in_batch": false,
             "status": null,
             "update_config_at_runtime": false,
-            "displayfile_definitions": [
+            "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
                     "obj_name": "LineGraph",
@@ -105,10 +105,10 @@
                     "ext": ".lg.json"
                 }
             ],
-            "displayfile_inputs_kwargs": {
+            "autodisplay_inputs_kwargs": {
                 "patterns": "*"
             },
-            "displayfile_outputs_kwargs": {
+            "autodisplay_outputs_kwargs": {
                 "patterns": "*.plotly.json"
             },
             "fpths_inputs": [
@@ -137,7 +137,7 @@
             "in_batch": false,
             "status": null,
             "update_config_at_runtime": false,
-            "displayfile_definitions": [
+            "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
                     "obj_name": "LineGraph",
@@ -146,10 +146,10 @@
                     "ext": ".lg.json"
                 }
             ],
-            "displayfile_inputs_kwargs": {
+            "autodisplay_inputs_kwargs": {
                 "patterns": "*"
             },
-            "displayfile_outputs_kwargs": {
+            "autodisplay_outputs_kwargs": {
                 "patterns": "*.plotly.json"
             },
             "fpths_inputs": [

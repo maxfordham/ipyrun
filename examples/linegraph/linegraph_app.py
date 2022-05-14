@@ -19,25 +19,35 @@
 import sys
 import pathlib
 
-sys.path.append(str(pathlib.Path('../../src').resolve())) # append ipyrun. TODO: for dev only. remove at build time.
-#sys.path.append(str(pathlib.Path('../../../ipyautoui/src').resolve())) # append ipyautoui. TODO: for dev only. remove at build time.
+sys.path.append(
+    str(pathlib.Path("../../src").resolve())
+)  # append ipyrun. TODO: for dev only. remove at build time.
+# sys.path.append(str(pathlib.Path('../../../ipyautoui/src').resolve())) # append ipyautoui. TODO: for dev only. remove at build time.
 
 import subprocess
 from pydantic import validator
 
-from ipyrun import RunApp, BatchApp, ConfigShell, DefaultConfigShell, RunShellActions 
-from ipyrun.runshell import DisplayfileDefinition, create_displayfile_renderer, ConfigBatch, DefaultConfigShell, DefaultBatchActions, BatchShellActions
+from ipyrun import RunApp, BatchApp, ConfigShell, DefaultConfigShell, RunShellActions
+from ipyrun.runshell import (
+    AutoDisplayDefinition,
+    create_autodisplay_renderer,
+    ConfigBatch,
+    DefaultConfigShell,
+    DefaultBatchActions,
+    BatchShellActions,
+)
 
 from ipyautoui import AutoUi, AutoUiConfig
-from ipyautoui import DisplayFiles
-from ipyautoui.displayfile import display_python_file
+from ipyautoui import AutoDisplay
+from ipyautoui.autodisplay import display_python_file
 
-DIR_CORE = pathlib.Path('./linegraph_core').resolve()
-FPTH_SCRIPT = DIR_CORE / 'script_linegraph.py'
-FPTH_INPUTS_SCHEMA = DIR_CORE / 'input_schema_linegraph.py'
-DIR_APPDATA = pathlib.Path('./linegraph_appdata').resolve()
+DIR_CORE = pathlib.Path("./linegraph_core").resolve()
+FPTH_SCRIPT = DIR_CORE / "script_linegraph.py"
+FPTH_INPUTS_SCHEMA = DIR_CORE / "input_schema_linegraph.py"
+DIR_APPDATA = pathlib.Path("./linegraph_appdata").resolve()
 
 # extend DefaultConfigShell to LineGraphConfigShell
+
 
 class LineGraphConfigShell(DefaultConfigShell):
     @validator("fpth_script", always=True, pre=True)
@@ -54,33 +64,35 @@ class LineGraphConfigShell(DefaultConfigShell):
         ]
         return paths
 
-    @validator("displayfile_definitions", always=True)
-    def _displayfile_definitions(cls, v, values):
+    @validator("autodisplay_definitions", always=True)
+    def _autodisplay_definitions(cls, v, values):
         return [
-            DisplayfileDefinition(
+            AutoDisplayDefinition(
                 path=FPTH_INPUTS_SCHEMA,
                 obj_name="LineGraph",
                 ext=".lg.json",
-                ftype='in',
+                ftype="in",
             )
         ]
 
-    @validator("displayfile_inputs_kwargs", always=True)
-    def _displayfile_inputs_kwargs(cls, v, values):
+    @validator("autodisplay_inputs_kwargs", always=True)
+    def _autodisplay_inputs_kwargs(cls, v, values):
         return dict(patterns="*")
 
-    @validator("displayfile_outputs_kwargs", always=True)
-    def _displayfile_outputs_kwargs(cls, v, values):
+    @validator("autodisplay_outputs_kwargs", always=True)
+    def _autodisplay_outputs_kwargs(cls, v, values):
         return dict(patterns="*.plotly.json")
-    
-    
+
+
 # extend ConfigBatch to LineGraphConfigBatch
-    
+
+
 class LineGraphConfigBatch(ConfigBatch):
     @validator("cls_config", always=True)
     def _cls_config(cls, v, values):
         """bundles RunApp up as a single argument callable"""
         return LineGraphConfigShell
+
 
 class LineGraphBatchActions(BatchShellActions):
     @validator("config", always=True)
@@ -94,6 +106,7 @@ class LineGraphBatchActions(BatchShellActions):
     def _runlog_show(cls, v, values):
         return None
 
+
 config_batch = LineGraphConfigBatch(
     fdir_root=DIR_APPDATA,
     # cls_config=MyConfigShell,
@@ -105,5 +118,4 @@ app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
 display(app)
 
 # -
-
 

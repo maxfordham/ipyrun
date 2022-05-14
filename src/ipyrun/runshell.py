@@ -47,7 +47,7 @@ import ipywidgets as widgets
 from halo import HaloNotebook
 
 # core mf_modules
-from ipyautoui import AutoUi, DisplayFiles, AutoUiConfig
+from ipyautoui import AutoUi, AutoDisplay, AutoUiConfig
 from ipyautoui._utils import (
     PyObj,
     load_PyObj,
@@ -75,6 +75,8 @@ from ipyrun.constants import FNM_CONFIG_FILE, FPTH_EXAMPLE_INPUTSCHEMA, DI_STATU
 def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
+
+
 # +
 class FiletypeEnum(str, Enum):
     input = "in"
@@ -82,24 +84,25 @@ class FiletypeEnum(str, Enum):
     wip = "wip"
 
 
-class DisplayfileDefinition(PyObj):
+class AutoDisplayDefinition(PyObj):
     ftype: FiletypeEnum = Field(
         None, description='valid inputs are: "in", "out", "wip"'
     )
     ext: str
 
 
-def create_displayfile_renderer(
-    ddf: DisplayfileDefinition, fn_onsave: Callable = lambda: None
+def create_autodisplay_renderer(
+    ddf: AutoDisplayDefinition, fn_onsave: Callable = lambda: None
 ):
     model = load_PyObj(ddf)
     config_ui = AutoUiConfig(ext=ddf.ext, pydantic_model=model)
-    return AutoUi.create_displayfile_renderer(
+    return AutoUi.create_autodisplay_renderer(
         config_autoui=config_ui, fn_onsave=fn_onsave
     )
 
 
 class ConfigShell(BaseModel):
+
     """a config object. all the definitions required to create the RunActions for a shell running tools are here.
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
@@ -118,12 +121,12 @@ class ConfigShell(BaseModel):
         default=False,
         description="updates config before running shell command. useful if for example outputs filepaths defined within the input filepaths",
     )
-    displayfile_definitions: List[DisplayfileDefinition] = Field(
+    autodisplay_definitions: List[AutoDisplayDefinition] = Field(
         default_factory=list,
         description="autoui definitions for displaying files. see ipyautui",
     )
-    displayfile_inputs_kwargs: Dict = Field(default_factory=dict)
-    displayfile_outputs_kwargs: Dict = Field(default_factory=dict)
+    autodisplay_inputs_kwargs: Dict = Field(default_factory=dict)
+    autodisplay_outputs_kwargs: Dict = Field(default_factory=dict)
     fpths_inputs: Optional[List[pathlib.Path]] = None
     fpths_outputs: Optional[List[pathlib.Path]] = None
     fpth_params: pathlib.Path = None
@@ -170,7 +173,7 @@ class DefaultConfigShell(ConfigShell):
         index (int):
         fpth_script (pathlib.Path): 
         fdir_appdata (pathlib.Path): defaults to dir of fpth_script if not given
-        displayfile_definitions (List[DisplayfileDefinition]): used to generate custom input and output forms
+        autodisplay_definitions (List[AutoDisplayDefinition]): used to generate custom input and output forms
             using ipyautoui
             
     Example:
@@ -241,10 +244,10 @@ class DefaultConfigShell(ConfigShell):
     def _fpths_inputs(cls, v, values):
         if v is None:
             v = []
-            if values["displayfile_definitions"] is not None:
+            if values["autodisplay_definitions"] is not None:
                 ddfs = [
                     v_
-                    for v_ in values["displayfile_definitions"]
+                    for v_ in values["autodisplay_definitions"]
                     if v_.ftype.value == "in"
                 ]
                 paths = [
@@ -295,8 +298,8 @@ def uncheck(config: ConfigShell, fn_saveconfig):
     fn_saveconfig()
 
 
-def show_files(fpths, class_displayfiles=DisplayFiles, kwargs_displayfiles={}):
-    return class_displayfiles([f for f in fpths], **kwargs_displayfiles)
+def show_files(fpths, class_autodisplay=AutoDisplay, kwargs_autodisplay={}):
+    return class_autodisplay([f for f in fpths], **kwargs_autodisplay)
 
 
 def update_status(app, fn_saveconfig):
@@ -308,11 +311,11 @@ def update_status(app, fn_saveconfig):
     fn_saveconfig()
 
 
-def update_DisplayFiles(config, fn_onsave=None):
+def update_AutoDisplay(config, fn_onsave=None):
     user_file_renderers = {}
-    for d in config.displayfile_definitions:
-        user_file_renderers.update(create_displayfile_renderer(d, fn_onsave=fn_onsave))
-    return functools.partial(DisplayFiles, user_file_renderers=user_file_renderers)
+    for d in config.autodisplay_definitions:
+        user_file_renderers.update(create_autodisplay_renderer(d, fn_onsave=fn_onsave))
+    return functools.partial(AutoDisplay, user_file_renderers=user_file_renderers)
 
 
 def run_shell(app=None):
@@ -382,7 +385,7 @@ class RunShellActions(DefaultRunActions):
     @validator("help_run_show", always=True)
     def _help_run_show(cls, v, values):
         return functools.partial(
-            DisplayFiles, [values["config"].fpth_script], patterns="*"
+            AutoDisplay, [values["config"].fpth_script], patterns="*"
         )
 
     @validator("help_config_show", always=True)
@@ -392,13 +395,13 @@ class RunShellActions(DefaultRunActions):
     @validator("inputs_show", always=True)
     def _inputs_show(cls, v, values):
         if values["config"] is not None:
-            DisplayFilesInputs = update_DisplayFiles(
+            AutoDisplayInputs = update_AutoDisplay(
                 values["config"], fn_onsave=values["update_status"]
             )
             return functools.partial(
-                DisplayFilesInputs,
+                AutoDisplayInputs,
                 values["config"].fpths_inputs,
-                **values["config"].displayfile_inputs_kwargs,
+                **values["config"].autodisplay_inputs_kwargs,
             )
         else:
             return None
@@ -406,13 +409,11 @@ class RunShellActions(DefaultRunActions):
     @validator("outputs_show", always=True)
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
-            DisplayFilesOutputs = update_DisplayFiles(
-                values["config"]
-            )  # , values["app"]
+            AutoDisplayOutputs = update_AutoDisplay(values["config"])  # , values["app"]
             return functools.partial(
-                DisplayFilesOutputs,
+                AutoDisplayOutputs,
                 values["config"].fpths_outputs,
-                **values["config"].displayfile_outputs_kwargs,
+                **values["config"].autodisplay_outputs_kwargs,
             )
         else:
             return None
@@ -454,10 +455,10 @@ if __name__ == "__main__":
             ]
             return paths
 
-        @validator("displayfile_definitions", always=True)
-        def _displayfile_definitions(cls, v, values):
+        @validator("autodisplay_definitions", always=True)
+        def _autodisplay_definitions(cls, v, values):
             return [
-                DisplayfileDefinition(
+                AutoDisplayDefinition(
                     path=FPTH_EXAMPLE_INPUTSCHEMA,
                     obj_name="LineGraph",
                     ext=".lg.json",
@@ -465,12 +466,12 @@ if __name__ == "__main__":
                 )
             ]
 
-        @validator("displayfile_inputs_kwargs", always=True)
-        def _displayfile_inputs_kwargs(cls, v, values):
+        @validator("autodisplay_inputs_kwargs", always=True)
+        def _autodisplay_inputs_kwargs(cls, v, values):
             return dict(patterns="*")
 
-        @validator("displayfile_outputs_kwargs", always=True)
-        def _displayfile_outputs_kwargs(cls, v, values):
+        @validator("autodisplay_outputs_kwargs", always=True)
+        def _autodisplay_outputs_kwargs(cls, v, values):
             return dict(patterns="*.plotly.json")
 
     config = LineGraphConfigShell(fdir_appdata=test_constants.FDIR_APPDATA)
@@ -735,5 +736,4 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
 
