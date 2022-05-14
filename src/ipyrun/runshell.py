@@ -21,7 +21,7 @@ By default it is used for running python scripts on the command line.
 """
 # %run __init__.py
 #  ^ this means that the local imports still work when running as a notebook
-# %load_ext lab_black
+# #%load_ext lab_black
 
 # +
 # core libs
@@ -47,7 +47,7 @@ import ipywidgets as widgets
 from halo import HaloNotebook
 
 # core mf_modules
-from ipyautoui import AutoUi, AutoDisplay, AutoUiConfig
+from ipyautoui import AutoUi, AutoDisplay
 from ipyautoui._utils import (
     PyObj,
     load_PyObj,
@@ -77,6 +77,10 @@ def get_mfuser_initials():
     return user[0] + user[2]
 
 
+# -
+
+# ?AutoUi.create_autodisplay_map
+
 # +
 class FiletypeEnum(str, Enum):
     input = "in"
@@ -94,9 +98,9 @@ class AutoDisplayDefinition(PyObj):
 def create_autodisplay_map(
     ddf: AutoDisplayDefinition, fn_onsave: Callable = lambda: None
 ):
-    model = load_PyObj(ddf)
-    config_ui = AutoUiConfig(ext=ddf.ext, pydantic_model=model)
-    return AutoUi.create_autodisplay_map(config_autoui=config_ui, fn_onsave=fn_onsave)
+    model = load_PyObj(ddf) 
+    
+    return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, fn_onsave=fn_onsave)
 
 
 class ConfigShell(BaseModel):
@@ -314,9 +318,6 @@ def update_AutoDisplay(config, fn_onsave=None):
     for d in config.autodisplay_definitions:
         file_renderers.update(create_autodisplay_map(d, fn_onsave=fn_onsave))
     return functools.partial(AutoDisplay.from_paths, file_renderers=file_renderers)
-
-
-file_renderers
 
 
 def run_shell(app=None):
@@ -701,6 +702,7 @@ class BatchShellActions(DefaultBatchActions):
 
 if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
+    # TODO: configure so that the value of the RunApp is the config
     from ipyrun.constants import load_test_constants
 
     test_constants = load_test_constants()
@@ -737,4 +739,6 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
 

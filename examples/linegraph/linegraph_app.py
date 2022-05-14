@@ -37,7 +37,7 @@ from ipyrun.runshell import (
     BatchShellActions,
 )
 
-from ipyautoui import AutoUi, AutoUiConfig
+from ipyautoui import AutoUi
 from ipyautoui import AutoDisplay
 from ipyautoui.autodisplay import display_python_file
 
