@@ -310,12 +310,13 @@ def update_status(app, fn_saveconfig):
 
 
 def update_AutoDisplay(config, fn_onsave=None):
-    user_file_renderers = {}
+    file_renderers = {}
     for d in config.autodisplay_definitions:
-        user_file_renderers.update(create_autodisplay_map(d, fn_onsave=fn_onsave))
-    return functools.partial(
-        AutoDisplay.from_paths, user_file_renderers=user_file_renderers
-    )
+        file_renderers.update(create_autodisplay_map(d, fn_onsave=fn_onsave))
+    return functools.partial(AutoDisplay.from_paths, file_renderers=file_renderers)
+
+
+file_renderers
 
 
 def run_shell(app=None):
