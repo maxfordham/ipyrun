@@ -6,7 +6,7 @@ class BaseModel(BaseModel):
     def file(self, path: pathlib.Path, **json_kwargs):
         """
         this is a method that is added to the pydantic BaseModel within AutoUi using 
-        "setattr". i.e. setattr(self.config_autoui.pydantic_model, 'file', file)
+        "setattr"
         Args:
             self (pydantic.BaseModel): instance
             path (pathlib.Path): to write file to 
