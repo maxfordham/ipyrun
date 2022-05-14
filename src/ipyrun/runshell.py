@@ -91,14 +91,12 @@ class AutoDisplayDefinition(PyObj):
     ext: str
 
 
-def create_autodisplay_renderer(
+def create_autodisplay_map(
     ddf: AutoDisplayDefinition, fn_onsave: Callable = lambda: None
 ):
     model = load_PyObj(ddf)
     config_ui = AutoUiConfig(ext=ddf.ext, pydantic_model=model)
-    return AutoUi.create_autodisplay_renderer(
-        config_autoui=config_ui, fn_onsave=fn_onsave
-    )
+    return AutoUi.create_autodisplay_map(config_autoui=config_ui, fn_onsave=fn_onsave)
 
 
 class ConfigShell(BaseModel):
@@ -314,7 +312,7 @@ def update_status(app, fn_saveconfig):
 def update_AutoDisplay(config, fn_onsave=None):
     user_file_renderers = {}
     for d in config.autodisplay_definitions:
-        user_file_renderers.update(create_autodisplay_renderer(d, fn_onsave=fn_onsave))
+        user_file_renderers.update(create_autodisplay_map(d, fn_onsave=fn_onsave))
     return functools.partial(
         AutoDisplay.from_paths, user_file_renderers=user_file_renderers
     )

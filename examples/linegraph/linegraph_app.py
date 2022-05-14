@@ -30,7 +30,7 @@ from pydantic import validator
 from ipyrun import RunApp, BatchApp, ConfigShell, DefaultConfigShell, RunShellActions
 from ipyrun.runshell import (
     AutoDisplayDefinition,
-    create_autodisplay_renderer,
+    create_autodisplay_map,
     ConfigBatch,
     DefaultConfigShell,
     DefaultBatchActions,
