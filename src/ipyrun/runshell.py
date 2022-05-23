@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.11.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,7 +24,11 @@ By default it is used for running python scripts on the command line.
 # #%load_ext lab_black
 
 # +
+#  TODO: make the config shell commands relative rather than absolute (improves readability)
+
+# +
 # core libs
+import os
 import sys
 import io
 import shutil
@@ -76,10 +80,6 @@ def get_mfuser_initials():
     user = getpass.getuser()
     return user[0] + user[2]
 
-
-# -
-
-# ?AutoUi.create_autodisplay_map
 
 # +
 class FiletypeEnum(str, Enum):
@@ -353,6 +353,7 @@ def run_shell(app=None):
     except subprocess.CalledProcessError as e:
         spinner.fail("Error with Process")
     app.actions.update_status()
+    
 
 
 class RunShellActions(DefaultRunActions):
@@ -361,10 +362,17 @@ class RunShellActions(DefaultRunActions):
     """
 
     config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
+    
+
+
+    @validator("hide", always=True)
+    def _hide(cls, v, values):
+        return None
 
     @validator("save_config", always=True)
     def _save_config(cls, v, values):
-        return functools.partial(values["config"].file, values["config"].fpth_config)
+        if values["config"] is not None:
+            return functools.partial(values["config"].file, values["config"].fpth_config)
 
     @validator("check", always=True)
     def _check(cls, v, values):
@@ -392,13 +400,13 @@ class RunShellActions(DefaultRunActions):
 
     @validator("help_config_show", always=True)
     def _help_config_show(cls, v, values):
-        return functools.partial(display_pydantic_json, values["config"], as_yaml=True)
+        return functools.partial(display_pydantic_json, values["config"], as_yaml=False)
 
     @validator("inputs_show", always=True)
     def _inputs_show(cls, v, values):
         if values["config"] is not None:
             AutoDisplayInputs = update_AutoDisplay(
-                values["config"], fn_onsave=values["update_status"]
+                values["config"], fn_onsave=values["update_status"] # TODO: not working! 
             )
             return functools.partial(
                 AutoDisplayInputs,
@@ -428,6 +436,24 @@ class RunShellActions(DefaultRunActions):
     def _runlog_show(cls, v, values):
         return None  # TODO: add logging!
 
+    @validator("activate", always=True)
+    def _activate_dir(cls, v, values):
+        if values['config'] is not None:
+            f = lambda: os.chdir(values['config'].fdir_appdata)
+            if v is None:
+                return f
+            else: 
+                return lambda: [f() for f in [f, v]] 
+        
+    
+    @validator("deactivate", always=True)
+    def _deactivate_dir(cls, v, values):
+        if values['config'] is not None:
+            f = lambda: os.chdir(values['config'].fdir_appdata.parent)
+            if v is None:
+                return f
+            else: 
+                return lambda: [f() for f in [f, v]] 
 
 # extend RunApp to make a default RunShell
 # -
@@ -675,7 +701,7 @@ class BatchShellActions(DefaultBatchActions):
 
     @validator("help_config_show", always=True)
     def _help_config_show(cls, v, values):
-        return functools.partial(display_pydantic_json, values["config"], as_yaml=True)
+        return functools.partial(display_pydantic_json, values["config"], as_yaml=False) # TODO: revert to as_yaml=True when tested as working in Voila
 
     @validator("run", always=True)
     def _run(cls, v, values):
@@ -739,6 +765,3 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-
-
