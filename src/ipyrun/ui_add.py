@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.6
+#       jupytext_version: 1.11.5
 #   kernelspec:
-#     display_name: Python [conda env:ipyautoui]
+#     display_name: Python 3 (ipykernel)
 #     language: python
-#     name: conda-env-ipyautoui-xpython
+#     name: python3
 # ---
 
 """
@@ -22,8 +22,8 @@ generic Add run dialogue
 # +
 import typing
 import ipywidgets as widgets
-from ipyautoui.custom import RunName
-from ipyrun.constants import BUTTON_MIN_SIZE
+from ipyautoui.custom.modelrun import RunName
+from ipyautoui.constants import BUTTON_MIN_SIZE
 from markdown import markdown
 
 
@@ -103,6 +103,111 @@ if __name__ == "__main__":
     add = AddModelRun(app=RunApps())
     display(add)
 # +
+# [naming-a-file](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
+#  FILENAME_FORBIDDEN_CHARACTERS
+# < (less than)
+# > (greater than)
+# : (colon)
+# " (double quote)
+# / (forward slash)
+# \ (backslash)
+# | (vertical bar or pipe)
+# ? (question mark)
+# * (asterisk)
+
+FILENAME_FORBIDDEN_CHARACTERS = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
+
+# +
+import traitlets
+import stringcase
+
+def modify_string(s, remove_forbidden_chars=True, remove_spaces=True, fn_on_string=stringcase.pascalcase):
+    if remove_spaces:
+        s = s.replace(" ", "")
+    if remove_forbidden_chars:
+        for c in FILENAME_FORBIDDEN_CHARACTERS:
+            s = s.replace(c, "")
+    if fn_on_string is not None:
+        s = fn_on_string(s)
+    return s
+
+
+class AddNamedRun(traitlets.HasTraits):
+    value = traitlets.Unicode()
+
+    def __init__(
+        self,
+        app: typing.Type[RunApps] = None,
+        fn_add: typing.Callable = create_runapp,
+    ):
+        """
+        a ui element for adding new runs to RunApps
+        
+        Args:
+            app (RunApps): the app that will be modified by this class
+            fn_add (typing.Callable): a function that is executed to add a new run to the "app"
+                on_click of a button. the main app is passed to the function using functools:
+        
+        Code:
+            ```
+            def _init_controls(self):
+                self.add.on_click(self._add)
+
+            def _add(self, click):
+                return functools.partial(self.fn_add, cls=self.app)()
+            ```
+        """
+        self.app = app
+        self.fn_add = fn_add
+        self._init_form()
+        self._init_controls()
+
+    def _init_form(self):
+        self.add = widgets.Button(
+            icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE)
+        )
+        self.run_name = widgets.Text()
+        self.question = widgets.HTML(self.question_value)
+        self.form = widgets.VBox(
+            [widgets.HBox([self.add, self.question]), self.run_name]
+        )
+
+    @property
+    def question_value(self):
+        return markdown(f"would you like to add new a run? `{self.value}`")
+
+    def _init_controls(self):
+        self.add.on_click(self._add)
+        self.run_name.observe(self._run_name, names=["_value", "value"])
+        self.run_name.observe(self._question, names=["_value", "value"])
+
+    def _run_name(self, on_change):
+        self.value = modify_string(self.run_name.value)
+
+    def _question(self, on_change):
+        self.question.value = self.question_value
+
+    def _add(self, click):
+        return self.fn_add(cls=self.app, name=self.value)
+
+    def display(self):
+        display(self.form)
+
+    def _ipython_display_(self):
+        self.display()
+
+
+if __name__ == "__main__":
+
+    add = AddNamedRun(app=RunApps())
+    display(add)
+# -
+
+
+
+
+
+# +
 class AddRun:
     def __init__(
         self,
@@ -159,3 +264,6 @@ if __name__ == "__main__":
 
     add = AddRun(app=RunApps())
     display(add)
+# -
+
+
