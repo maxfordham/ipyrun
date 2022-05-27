@@ -39,6 +39,7 @@ import getpass
 import stringcase
 from jinja2 import Template
 from markdown import markdown
+import json
 
 # object models
 from pydantic import BaseModel, validator, Field
@@ -113,6 +114,10 @@ class ConfigShell(BaseModel):
     name: str = None
     long_name: str = None
     key: str = None
+    fdir_root: pathlib.Path = Field(
+        default=None,
+        description="root folder. same as fdir_root within batch config. facilitates running many processes.",
+    )
     fdir_appdata: pathlib.Path = Field(
         default=None,
         description="working dir for process execution. defaults to script folder if folder not given.",
@@ -174,7 +179,7 @@ class DefaultConfigShell(ConfigShell):
     Args: 
         index (int):
         fpth_script (pathlib.Path): 
-        fdir_appdata (pathlib.Path): defaults to dir of fpth_script if not given
+        fdir_root (pathlib.Path): defaults to cwd
         autodisplay_definitions (List[AutoDisplayDefinition]): used to generate custom input and output forms
             using ipyautoui
             
@@ -230,17 +235,23 @@ class DefaultConfigShell(ConfigShell):
         else:
             return v
 
+    @validator("fdir_root", always=True)
+    def fdir_root(cls, v, values):
+        if v is None:
+            return pathlib.Path('.')
+        else:
+            return v
+
     @validator("fdir_appdata", always=True)
     def _fdir_appdata(cls, v, values):
         if v is None:
-            v = values["fpth_script"].parent  # put next to script
-        else:
-            if values["key"] in str(v):  # folder with key name alread exists
-                return v
-            else:  # create a folder with key name for run
-                v = v / values["key"]
-                v.mkdir(exist_ok=True)
-        return v
+            v = values['fdir_root'] / values["key"]
+            v.mkdir(exist_ok=True)
+            return v
+        elif values["key"] in list(v.parts) and values["fdir_root"] in v.parents:  # folder with key name already exists
+            return v
+        else:  # create a folder with key name for run
+            raise ValueError(f"{v} must be in {values['fdir_root']} with folder name == {values['key']}")
 
     @validator("fpths_inputs", always=True)
     def _fpths_inputs(cls, v, values):
@@ -271,7 +282,10 @@ class DefaultConfigShell(ConfigShell):
 
     @validator("fpth_config", always=True)
     def _fpth_config(cls, v, values):
-        return values["fdir_appdata"] / v
+        if isinstance(v, pathlib.Path) and values["fdir_appdata"] in v.parents:
+            return v
+        else:
+            return values["fdir_appdata"] / v
 
     @validator("fpth_runhistory", always=True)
     def _fpth_runhistory(cls, v, values):
@@ -439,21 +453,21 @@ class RunShellActions(DefaultRunActions):
     @validator("activate", always=True)
     def _activate_dir(cls, v, values):
         if values['config'] is not None:
-            f = lambda: os.chdir(values['config'].fdir_appdata)
+            fn = lambda: os.chdir(values['config'].fdir_appdata)
             if v is None:
-                return f
+                return fn
             else: 
-                return lambda: [f() for f in [f, v]] 
+                return lambda: [f() for f in [fn, v]] 
         
     
     @validator("deactivate", always=True)
     def _deactivate_dir(cls, v, values):
         if values['config'] is not None:
-            f = lambda: os.chdir(values['config'].fdir_appdata.parent)
+            fn = lambda: os.chdir('..')
             if v is None:
-                return f
+                return fn
             else: 
-                return lambda: [f() for f in [f, v]] 
+                return lambda: [f() for f in [fn, v]] 
 
 # extend RunApp to make a default RunShell
 # -
@@ -462,7 +476,7 @@ if __name__ == "__main__":
 
     test_constants = load_test_constants()
     config = DefaultConfigShell(
-        fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_appdata=test_constants.FDIR_APPDATA
+        fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
     )
     display(config.dict())
 
@@ -502,7 +516,7 @@ if __name__ == "__main__":
         def _autodisplay_outputs_kwargs(cls, v, values):
             return dict(patterns="*.plotly.json")
 
-    config = LineGraphConfigShell(fdir_appdata=test_constants.FDIR_APPDATA)
+    config = LineGraphConfigShell(fdir_root=test_constants.FDIR_APPDATA)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
 
@@ -582,7 +596,7 @@ def fn_add(app, **kwargs):
             kwargs["index"] = 0
         else:
             kwargs["index"] = app.config.configs[-1].index + 1
-    kwargs["fdir_appdata"] = app.config.fdir_root
+    kwargs["fdir_root"] = app.config.fdir_root
     config = cls_config(**kwargs)
     app.configs_append(config)
     app.add.value = False
