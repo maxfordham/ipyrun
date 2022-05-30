@@ -4,9 +4,10 @@
     "name": "linegraph",
     "long_name": "00 - Linegraph",
     "key": "00-linegraph",
+    "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/line_graph_batch",
     "fdir_appdata": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/line_graph_batch/00-linegraph",
     "in_batch": false,
-    "status": "up_to_date",
+    "status": "no_outputs",
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
         {
