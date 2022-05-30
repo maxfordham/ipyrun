@@ -4,11 +4,12 @@
     "name": "linegraph",
     "long_name": "00 - Linegraph",
     "key": "00-linegraph",
+    "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata",
     "fdir_appdata": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata/00-linegraph",
     "in_batch": false,
     "status": "up_to_date",
     "update_config_at_runtime": false,
-    "displayfile_definitions": [
+    "autodisplay_definitions": [
         {
             "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
             "obj_name": "LineGraph",
@@ -17,10 +18,10 @@
             "ext": ".lg.json"
         }
     ],
-    "displayfile_inputs_kwargs": {
+    "autodisplay_inputs_kwargs": {
         "patterns": "*"
     },
-    "displayfile_outputs_kwargs": {
+    "autodisplay_outputs_kwargs": {
         "patterns": "*.plotly.json"
     },
     "fpths_inputs": [

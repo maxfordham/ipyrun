@@ -112,12 +112,7 @@ appdata
 mail-merge
 raw
 interim
-/ipyrun/ipyrun_overheating.ipynb
-/ipyrun/_filecontroller.ipynb
-/ipyrun/_ipydisplayfile.ipynb
-/ipyrun/_ipyeditcsv.ipynb
-/ipyrun/_ipyeditjson.ipynb
-/ipyrun/_runconfig.ipynb
+
 /ipyrun/ipyrun.ipynb
 /ipyrun/ipyrun_archived.ipynb
 .idea/ipyrun.iml
@@ -138,3 +133,5 @@ ipyrun/run.ipynb
 /examples/linegraph/linegraph_appdata
 /examples/linegraph/.ipynb_checkpoints
 /examples/linegraph/out-test.plotly.json
+/.virtual_documents
+/junit.xml
