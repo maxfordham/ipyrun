@@ -2,10 +2,12 @@
 
 """Tests for `ipyrun` package."""
 
-
 import unittest
+import ipyrun
 
-from ipyrun import ipyrun
+#from .constants import DIR_EXAMPLE_APP
+
+import subprocess
 
 
 class TestIpyrun(unittest.TestCase):
@@ -13,9 +15,17 @@ class TestIpyrun(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures, if any."""
+        print('sdf')
+        #pass
 
     def tearDown(self):
         """Tear down test fixtures, if any."""
-
-    def test_000_something(self):
+        pass
+        
+    def test_running_app(self):
         """Test something."""
+        pass
+        #try: 
+        #    subprocess.run('python {}'.format(DIR_EXAMPLE_APP))
+        #except:
+        #    ValueError('failed to run')

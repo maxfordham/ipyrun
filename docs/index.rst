@@ -1,20 +1,20 @@
+.. ipyrun documentation master file, created by
+   sphinx-quickstart on Thu Feb  3 10:34:45 2022.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
 Welcome to ipyrun's documentation!
-======================================
+==================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
-   readme
-   installation
-   usage
-   modules
-   contributing
-   authors
-   history
+   myfile.md
 
 Indices and tables
 ==================
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

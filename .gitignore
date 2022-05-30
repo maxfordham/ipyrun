@@ -81,7 +81,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+#.env
 
 # virtualenv
 .venv
@@ -102,4 +102,36 @@ ENV/
 .mypy_cache/
 
 # IDE settings
-.vscode/
+#.vscode/
+/examples/testproject/datadriven/notebooks/appdata
+/ipyrun/appdata
+docx-mailmerge
+appdata
+appdata
+*.wbk
+mail-merge
+raw
+interim
+
+/ipyrun/ipyrun.ipynb
+/ipyrun/ipyrun_archived.ipynb
+.idea/ipyrun.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+conda.recipe/conda_build_config.yaml
+ipyrun/run.ipynb
+/src/ipyrun/*.ipynb
+/docs/source
+/docs/_templates
+/docs/_static
+/docs/_build
+/examples/linegraph/out-test.csv
+/examples/linegraph/in-test.lg.json
+/examples/linegraph/linegraph_appdata
+/examples/linegraph/.ipynb_checkpoints
+/examples/linegraph/out-test.plotly.json
+/.virtual_documents
+/junit.xml
