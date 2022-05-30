@@ -35,6 +35,7 @@ import ipywidgets as widgets
 # core mf_modules
 from ipyautoui.constants import TOGGLEBUTTON_ONCLICK_BORDER_LAYOUT
 from ipyautoui.custom import Dictionary, LoadProject
+from ipyautoui.custom import FileChooser
 
 # from this repo
 from ipyrun.actions import RunActions, BatchActions, DefaultRunActions
@@ -46,7 +47,6 @@ from ipyrun.constants import (
     DEFAULT_BUTTON_STYLES,
 )
 from ipyrun.constants import ADD, REMOVE, WIZARD
-from ipyautoui.custom import FileChooser
 
 
 # +
@@ -147,7 +147,6 @@ class RunActionsUi(UiComponents):
 
     minwidth = BUTTON_WIDTH_MIN
     medwidth = BUTTON_WIDTH_MEDIUM
-
 
     def __init__(
         self, actions: RunActions = RunActions(), di_button_styles=DEFAULT_BUTTON_STYLES
@@ -437,6 +436,7 @@ class RunUi(RunActionsUi):
         di = value.dict()
         di["app"] = self
         self._actions = cl(**di)
+
         self.update_form()
 
         # value.app = self
@@ -555,6 +555,7 @@ class RunApp(widgets.HBox, RunUi):
     - cls_actions (arg) : see args in __init__ docstring
 
     """
+
     status = traitlets.Unicode(default_value="no_outputs")  #
 
     @traitlets.validate("status")
@@ -819,13 +820,10 @@ class BatchUi(BatchActionsUi):
 
     def _update_batch_controls(self):
         self.check.observe(self.check_all, names="value")
-        
 
     def check_all(self, onchange):
         for k, v in self.runs.items.items():
             v.check.value = self.check.value
-
-
 
     def update_form(self):
         """update the form if the actions have changed"""
@@ -902,6 +900,8 @@ class BatchUi(BatchActionsUi):
         self.out_box_help = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
         self.out_box_addremove = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
         self.out_box_main = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
+
+
 # -
 if __name__ == "__main__":
     config = ConfigShell(fpth_script="script.py", long_name="00-lean-description")
@@ -927,9 +927,8 @@ if __name__ == "__main__":
     display(run_batch.batch_form)
 
 
-
 # +
-class BatchApp(widgets.VBox, BatchUi): 
+class BatchApp(widgets.VBox, BatchUi):
     status = traitlets.Unicode(default_value="no_outputs")  #
 
     @traitlets.validate("status")
@@ -971,11 +970,11 @@ class BatchApp(widgets.VBox, BatchUi):
         self._init_BatchUi(BatchActions(), title)  # runs , fn_add, cls_runs_box
         self.children = [self.batch_form]  # [self.ui.batch_form]
         self.config = config  # the setter updates the ui.actions
-        self._init_controls()
-        
-    def _init_controls(self):
+        self._BatchApp_init_controls()
+
+    def _BatchApp_init_controls(self):
         self.watch_run_statuses()
-        
+
     def _update_batch_status(self, onchange):
         self.actions.update_status()
 
