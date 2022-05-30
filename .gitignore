@@ -134,3 +134,4 @@ ipyrun/run.ipynb
 /examples/linegraph/.ipynb_checkpoints
 /examples/linegraph/out-test.plotly.json
 /.virtual_documents
+/junit.xml
