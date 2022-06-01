@@ -1,6 +1,7 @@
 from pydantic import BaseModel , Field, conint
 import typing
 import pathlib
+from ipyautoui.custom.fileupload import File
 
 class BaseModel(BaseModel):
     def file(self, path: pathlib.Path, **json_kwargs):
@@ -22,6 +23,10 @@ class LineGraph(BaseModel):
     c: float = Field(default=5, description='intercept')
     x_range: tuple[int, int] = Field(default=(0,5), ge=0, le=50, description='x-range for chart')
     y_range: tuple[int, int] = Field(default=(0,5), ge=0, le=50, description='y-range for chart')
+    references: typing.Dict[str, File] = Field(default_factory=lambda: {},
+                autoui="ipyautoui.custom.fileupload.FileUploadToDir", maximumItems=1, minimumItems=0
+            )
+
         
 if __name__ == "__main__":
     lg = LineGraph()
