@@ -82,7 +82,7 @@ class UiComponents:
         self.outputs = widgets.ToggleButton()
         self.runlog = widgets.ToggleButton()
         self.load = widgets.ToggleButton()
-        self.loaded = widgets.HTML()
+        self.loaded = widgets.HTML(layout={'width':'500px'})
         self.hbx_load = widgets.HBox([self.loaded, self.load])
         self.run = widgets.Button()
         self.show = widgets.Button()
@@ -660,9 +660,6 @@ class BatchActionsUi(RunActionsUi):
         self.add = widgets.ToggleButton(**ADD)
         self.remove = widgets.ToggleButton(**REMOVE)
         self.wizard = widgets.ToggleButton(**WIZARD)
-        # self.load = widgets.ToggleButton(**WIZARD)  # LoadProject()
-        # self.active_project = widgets.HTML()
-        # self.hbx_load = widgets.HBox([self.active_project, self.load])
         self.out_add = widgets.Output()
         self.out_remove = widgets.Output()
         self.out_wizard = widgets.Output()
@@ -810,6 +807,7 @@ class BatchUi(BatchActionsUi):
         di["app"] = self
         self._actions = cl(**di)
         self.update_form()
+        # TODO: update this like the other ones are (pydantic update?)
 
     def _init_BatchUi(
         self,
@@ -1027,6 +1025,7 @@ class BatchApp(widgets.VBox, BatchUi):
             print(f"self.config == {str(self.config)}")
         self.update_in_batch()
         self.actions.update_status()
+        self.actions.get_loaded()
 
     def update_in_batch(self):  # TODO: remove config dependent code?
         for k, v in self.runs.items.items():
