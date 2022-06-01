@@ -71,11 +71,9 @@ from ipyrun.actions import (
 )
 from ipyrun.basemodel import BaseModel
 from ipyrun._utils import get_status
-from ipyrun.constants import FNM_CONFIG_FILE, FPTH_EXAMPLE_INPUTSCHEMA, DI_STATUS_MAP
-
+from ipyrun.constants import PATH_CONFIG, PATH_RUNHISTORY, PATH_LOG, FPTH_EXAMPLE_INPUTSCHEMA, DI_STATUS_MAP
 
 # display_template_ui_model()  # TODO: add this to docs
-
 
 def get_mfuser_initials():
     user = getpass.getuser()
@@ -116,11 +114,10 @@ class ConfigShell(BaseModel):
     key: str = None
     fdir_root: pathlib.Path = Field(
         default=None,
-        description="root folder. same as fdir_root within batch config. facilitates running many processes.",
+        description="root folder. same as fdir_root within batch config. facilitates running many processes. this is the working dir.",
     )
     fdir_appdata: pathlib.Path = Field(
         default=None,
-        description="working dir for process execution. defaults to script folder if folder not given.",
     )
     in_batch: bool = False
     status: str = None
@@ -130,7 +127,7 @@ class ConfigShell(BaseModel):
     )
     autodisplay_definitions: List[AutoDisplayDefinition] = Field(
         default_factory=list,
-        description="autoui definitions for displaying files. see ipyautui",
+        description="autoui definitions for displaying files. see ipyautoui",
     )
     autodisplay_inputs_kwargs: Dict = Field(default_factory=dict)
     autodisplay_outputs_kwargs: Dict = Field(default_factory=dict)
@@ -138,11 +135,12 @@ class ConfigShell(BaseModel):
     fpths_outputs: Optional[List[pathlib.Path]] = None
     fpth_params: pathlib.Path = None
     fpth_config: pathlib.Path = Field(
-        FNM_CONFIG_FILE,
-        description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {str(FNM_CONFIG_FILE)}",
+        None,
+        description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {str(PATH_CONFIG)}",
+        #const=True
     )
-    fpth_runhistory: pathlib.Path = "runhistory.csv"
-    fpth_log: pathlib.Path = "log.csv"
+    fpth_runhistory: pathlib.Path = Field(PATH_RUNHISTORY)#,const=True
+    fpth_log: pathlib.Path = Field(None)#,const=True
     call: str = "python -O"
     params: Dict = {}
     shell_template: str = """\
@@ -155,7 +153,6 @@ class ConfigShell(BaseModel):
 
 
 # -
-
 
 class DefaultConfigShell(ConfigShell):
     """
@@ -236,22 +233,17 @@ class DefaultConfigShell(ConfigShell):
             return v
 
     @validator("fdir_root", always=True)
-    def fdir_root(cls, v, values):
+    def _fdir_root(cls, v, values):
         if v is None:
-            return pathlib.Path('.')
-        else:
-            return v
+            v = pathlib.Path('.')
+        os.chdir(str(v))
+        return v
 
     @validator("fdir_appdata", always=True)
     def _fdir_appdata(cls, v, values):
-        if v is None:
-            v = values['fdir_root'] / values["key"]
-            v.mkdir(exist_ok=True)
-            return v
-        elif values["key"] in list(v.parts) and values["fdir_root"] in v.parents:  # folder with key name already exists
-            return v
-        else:  # create a folder with key name for run
-            raise ValueError(f"{v} must be in {values['fdir_root']} with folder name == {values['key']}")
+        v = values['fdir_root'] / values["key"]
+        v.mkdir(exist_ok=True)
+        return pathlib.Path(values["key"])
 
     @validator("fpths_inputs", always=True)
     def _fpths_inputs(cls, v, values):
@@ -264,13 +256,14 @@ class DefaultConfigShell(ConfigShell):
                     if v_.ftype.value == "in"
                 ]
                 paths = [
-                    values["fdir_appdata"] / ("in-" + values["key"] + ddf.ext)
+                    values["fdir_root"] / values["fdir_appdata"] / ("in-" + values["key"] + ddf.ext)
                     for ddf in ddfs
-                ]  # +str(values['index']).zfill(2)+'-'
+                ]  
                 for ddf, path in zip(ddfs, paths):
                     if not path.is_file():
-                        create_pydantic_json_file(ddf, path)
-                v = paths
+                        create_pydantic_json_file(ddf, path) # TODO: remove from here? 
+                        
+                v = [p.relative_to(values["fdir_root"]) for p in paths]
         assert type(v) == list, "type(v)!=list"
         return v
 
@@ -282,14 +275,19 @@ class DefaultConfigShell(ConfigShell):
 
     @validator("fpth_config", always=True)
     def _fpth_config(cls, v, values):
-        if isinstance(v, pathlib.Path) and values["fdir_appdata"] in v.parents:
-            return v
-        else:
-            return values["fdir_appdata"] / v
+        v = values["fdir_root"] / values["fdir_appdata"] / PATH_CONFIG 
+        return v.relative_to(values["fdir_root"])
+
 
     @validator("fpth_runhistory", always=True)
     def _fpth_runhistory(cls, v, values):
-        return values["fdir_appdata"] / v
+        v = values["fdir_root"] / values["fdir_appdata"] / PATH_RUNHISTORY
+        return v.relative_to(values["fdir_root"])
+    
+    @validator("fpth_log", always=True)
+    def _fpth_log(cls, v, values):
+        v = values["fdir_root"] / values["fdir_appdata"] / PATH_LOG
+        return v.relative_to(values["fdir_root"])
 
     @validator("params", always=True)
     def _params(cls, v, values):
@@ -301,6 +299,15 @@ class DefaultConfigShell(ConfigShell):
     @validator("shell", always=True)
     def _shell(cls, v, values):
         return Template(values["shell_template"]).render(**values)
+
+if __name__ == "__main__":
+    from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
+
+    test_constants = load_test_constants()
+    config = DefaultConfigShell(
+        fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
+    )
+    display(config.dict())
 
 
 # +
@@ -377,8 +384,6 @@ class RunShellActions(DefaultRunActions):
 
     config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
     
-
-
     @validator("hide", always=True)
     def _hide(cls, v, values):
         return None
@@ -449,25 +454,29 @@ class RunShellActions(DefaultRunActions):
     @validator("runlog_show", always=True)
     def _runlog_show(cls, v, values):
         return None  # TODO: add logging!
+    
+    @validator("load_show", always=True)
+    def _load_show(cls, v, values):
+        return None  
 
-    @validator("activate", always=True)
-    def _activate_dir(cls, v, values):
-        if values['config'] is not None:
-            fn = lambda: os.chdir(values['config'].fdir_appdata)
-            if v is None:
-                return fn
-            else: 
-                return lambda: [f() for f in [fn, v]] 
+#     @validator("activate", always=True)
+#     def _activate_dir(cls, v, values):
+#         if values['config'] is not None:
+#             #fn = lambda: os.chdir(values['config'].fdir_appdata)
+#             if v is None:
+#                 return None  # fn
+#             else: 
+#                 return lambda: [f() for f in v] #[fn, v]
         
     
-    @validator("deactivate", always=True)
-    def _deactivate_dir(cls, v, values):
-        if values['config'] is not None:
-            fn = lambda: os.chdir('..')
-            if v is None:
-                return fn
-            else: 
-                return lambda: [f() for f in [fn, v]] 
+#     @validator("deactivate", always=True)
+#     def _deactivate_dir(cls, v, values):
+#         if values['config'] is not None:
+#             #fn = lambda: os.chdir('..')
+#             if v is None:
+#                 return None  # fn
+#             else: 
+#                 return lambda: [f() for f in v] #[fn, v]
 
 # extend RunApp to make a default RunShell
 # -
@@ -492,8 +501,8 @@ if __name__ == "__main__":
             fdir = values["fdir_appdata"]
             nm = values["name"]
             paths = [
-                fdir / ("out-" + nm + ".csv"),
-                fdir / ("out-" + nm + ".plotly.json"),
+                fdir / pathlib.Path("out-" + nm + ".csv"),
+                fdir / pathlib.Path("out-" + nm + ".plotly.json")
             ]
             return paths
 
@@ -521,10 +530,15 @@ if __name__ == "__main__":
     display(run_app)
 
 
+# +
+# actions = RunShellActions(config=config)
+# actions.dict()
+# -
+
 class ConfigBatch(BaseModel):
     fdir_root: pathlib.Path
     fpth_config: pathlib.Path = Field(
-        default=FNM_CONFIG_FILE, description="name of config file for batch app"
+        default=PATH_CONFIG, description="name of config file for batch app"
     )
     title: str = Field(default="", description="markdown description of BatchApp")
     # cls_ui: Callable = Field(
@@ -549,10 +563,17 @@ class ConfigBatch(BaseModel):
     configs: List = []
     # runs: List[Callable] = Field(default=lambda: [], description="a list of RunApps", exclude=True)
 
-    @validator("fpth_config", always=True, pre=True)
-    def _fpth_config(cls, v, values):
-        """bundles RunApp up as a single argument callable"""
-        return values["fdir_root"] / v
+    # @validator("fpth_config", always=True, pre=True)
+    # def _fpth_config(cls, v, values):
+    #     """bundles RunApp up as a single argument callable"""
+    #     return values["fdir_root"] / v
+    
+    @validator("fdir_root", always=True)
+    def _fdir_root(cls, v, values):
+        if v is None:
+            v = pathlib.Path('.')
+        os.chdir(str(v))
+        return v
 
     @validator("cls_app", always=True, pre=True)
     def _cls_app(cls, v, values):
@@ -565,6 +586,16 @@ class ConfigBatch(BaseModel):
     def _configs(cls, v, values):
         """bundles RunApp up as a single argument callable"""
         return [values["cls_config"](**v_) for v_ in v]
+        # li = []
+        # for v_ in v:
+        #     print(v_)
+        #     if isinstance(v_, dict):
+        #         v_ = values['cls_config'](**v_)
+        #         print("if isinstance(v_, dict):")
+        #     li.append(v_)
+            
+        # print(li)
+        # return li
 
     @validator("status")
     def _status(cls, v, values):
@@ -666,8 +697,39 @@ def batch_update_status(app=None):
     [a.update_status() for a in app.run_actions]
     app.status = app.actions.get_status()
 
+    
+def load_dir(app=None, fdir_root=None):
+    cl = type(app.config)
+    config_batch = cl(fdir_root=fdir_root)
+    if config_batch.fpth_config.is_file():
+        config_batch = cl.parse_file(config_batch.fpth_config)
+    print('loading')
+    app.config = config_batch
+    app.loaded.value = f"<b>{str(fdir_root)}</b>"
+    
+def set_loaded(app=None, value=""):
+    app.loaded.value = value
+    return value
 
 class BatchShellActions(DefaultBatchActions):
+    
+
+    @validator("load", always=True)
+    def _load(cls, v, values):
+        fn = lambda: None
+        if values["app"] is not None:
+            cl = type(values["app"].config)
+            fn = functools.partial(load_dir, app=values["app"])
+        return fn
+    
+    @validator("get_loaded", always=True)
+    def _get_loaded(cls, v, values):
+        fn = lambda: None
+        if values["app"] is not None and values["config"] is not None:
+            fdir_root = values["config"].fdir_root
+            fn = functools.partial(set_loaded, app=values["app"], value=str(fdir_root))
+        return fn
+    
     @validator("save_config", always=True)
     def _save_config(cls, v, values):
         return functools.partial(values["config"].file, values["config"].fpth_config)
@@ -736,6 +798,7 @@ class BatchShellActions(DefaultBatchActions):
     @validator("update_status", always=True)
     def _update_status(cls, v, values):
         return functools.partial(batch_update_status, app=values["app"])
+    
 
 
 # -
@@ -744,6 +807,7 @@ if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
     # TODO: configure so that the value of the RunApp is the config
     from ipyrun.constants import load_test_constants
+    from ipyautoui.custom.workingdir import WorkingDirsUi
 
     test_constants = load_test_constants()
 
@@ -757,7 +821,12 @@ if __name__ == "__main__":
         def _cls_config(cls, v, values):
             """bundles RunApp up as a single argument callable"""
             return LineGraphConfigShell
-
+        
+    def fn_loaddir_handler(value, app=None):
+        fdir_root = value["fdir"] / "06_Models"
+        app.actions.load(fdir_root=fdir_root)
+        
+        
     class LineGraphBatchActions(BatchShellActions):
         @validator("config", always=True)
         def _config(cls, v, values):
@@ -769,6 +838,10 @@ if __name__ == "__main__":
         @validator("runlog_show", always=True)
         def _runlog_show(cls, v, values):
             return None
+        
+        @validator("load_show", always=True)
+        def _load_show(cls, v, values):
+            return lambda: WorkingDirsUi(fn_onload=functools.partial(fn_loaddir_handler, app=values["app"]))
 
     config_batch = LineGraphConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
@@ -777,5 +850,9 @@ if __name__ == "__main__":
     )
     if config_batch.fpth_config.is_file():
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
+    app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
+    display(app)
+
+if __name__ == "__main__":
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
