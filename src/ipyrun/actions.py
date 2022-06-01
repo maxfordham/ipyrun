@@ -63,13 +63,16 @@ class RunActions(BaseModel):
     outputs_hide: Optional[Callable] = lambda: "outputs_hide"
     runlog_show: Optional[Callable] = lambda: "runlog_show"
     runlog_hide: Optional[Callable] = lambda: "runlog_hide"
+    load_show: Optional[Callable] = lambda: display(widgets.HTML("load_show"))
+    load_hide: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
+    load: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
+    get_loaded: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
     run: Optional[Callable] = lambda: "run"
     run_hide: Optional[Callable] = lambda: "console_hide"
     activate: Optional[Callable] = lambda: "activate"
     deactivate: Optional[Callable] = lambda: "deactivate"
     show: Optional[Callable] = lambda : 'show'
-    hide: Optional[Callable] = lambda : 'hide'
-    load: Optional[Callable] = None # lambda: "load"  # ????
+    hide: Optional[Callable] = lambda : display(widgets.HTML('hide'))
     
 def display_runui_tooltips(runui):
     """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
@@ -133,7 +136,6 @@ class BatchActions(RunActions):
 
     add: Optional[Callable] = lambda: "add"  # ????/
     remove: Optional[Callable] = lambda: "remove"  # ????
-    load: Optional[Callable] = lambda: "load"  # ????
     add_show: Optional[Callable] = lambda: "add_show"
     add_hide: Optional[Callable] = lambda: "add_hide"
     remove_show: Optional[Callable] = lambda: "remove_show"
@@ -142,7 +144,6 @@ class BatchActions(RunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-    #load_project: Optional[Callable] = lambda: "load_project"
 
     
 class DefaultBatchActions(DefaultRunActions):
@@ -164,4 +165,4 @@ class DefaultBatchActions(DefaultRunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-    #load_project: Optional[Callable] = lambda: "load_project"
+
