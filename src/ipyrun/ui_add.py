@@ -25,6 +25,9 @@ import ipywidgets as widgets
 from ipyautoui.custom.modelrun import RunName
 from ipyautoui.constants import BUTTON_MIN_SIZE
 from markdown import markdown
+from ipyrun.constants import FILENAME_FORBIDDEN_CHARACTERS
+import traitlets
+import stringcase
 
 
 class RunApps:
@@ -102,24 +105,8 @@ if __name__ == "__main__":
 
     add = AddModelRun(app=RunApps())
     display(add)
-# +
-# [naming-a-file](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
-#  FILENAME_FORBIDDEN_CHARACTERS
-# < (less than)
-# > (greater than)
-# : (colon)
-# " (double quote)
-# / (forward slash)
-# \ (backslash)
-# | (vertical bar or pipe)
-# ? (question mark)
-# * (asterisk)
 
-FILENAME_FORBIDDEN_CHARACTERS = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
 
-# +
-import traitlets
-import stringcase
 
 def modify_string(s, remove_forbidden_chars=True, remove_spaces=True, fn_on_string=stringcase.pascalcase):
     if remove_spaces:
