@@ -27,5 +27,4 @@ stringcase
 xlsxtemplater==0.1.5
 mf_file_utilities
 ipyautoui
-python-devtools
 pygments

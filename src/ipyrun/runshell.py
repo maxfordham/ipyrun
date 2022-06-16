@@ -584,9 +584,7 @@ if __name__ == "__main__":
         cls_config=ConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
-    from devtools import debug
-
-    debug(config_batch)
+    display(config_batch.dict())
 
 
 # +

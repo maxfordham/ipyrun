@@ -19,7 +19,6 @@ requirements = [r.split('==')[0] for r in requirements]
 piponly = ['mydocstring']
 requirements = diff(requirements, piponly)
 
-
 setup(
     name='ipyrun',
     author="John Gunstone",
@@ -31,7 +30,7 @@ setup(
     packages=find_packages('src'),
     install_requires=requirements,
     package_dir={'': 'src'},
-    url='https://github.com/gunstonej/ipyrun',
+    url='https://github.com/jgunstone/ipyrun',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     keywords='ipyrun',
