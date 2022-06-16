@@ -152,6 +152,18 @@ LOAD = dict(
     button_style="info",
     layout={"width": BUTTON_WIDTH_MIN},
 )
+OPEN_LOADED = dict(
+    icon="fa-folder-open",
+    tooltip="open active application directory",
+    style={"font_weight": "bold"},
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+
+BUTTONBAR_LAYOUT_KWARGS = {
+    "display": "flex",
+    "flex_flow": "row",
+    "justify_content": "space-between",
+}
 
 DEFAULT_BUTTON_STYLES = frozenmap(
     check=CHECK,
@@ -166,6 +178,7 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     show=SHOW,
     hide=HIDE,
     load=LOAD,
+    open_loaded=OPEN_LOADED,
     container=dict(layout={'width':'100%'}, selected_index=None)
 )
 

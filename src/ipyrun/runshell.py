@@ -50,6 +50,7 @@ from enum import Enum
 from IPython.display import Markdown, clear_output, display
 import ipywidgets as widgets
 from halo import HaloNotebook
+from markdown import markdown
 
 # core mf_modules
 from ipyautoui import AutoUi, AutoDisplay
@@ -58,6 +59,7 @@ from ipyautoui._utils import (
     load_PyObj,
     create_pydantic_json_file,
     display_pydantic_json,
+    check_installed
 )
 from ipyautoui.basemodel import BaseModel
 
@@ -70,8 +72,13 @@ from ipyrun.actions import (
     DefaultBatchActions,
 )
 from ipyrun.basemodel import BaseModel
-from ipyrun._utils import get_status
+from ipyrun._utils import get_status, open_file
 from ipyrun.constants import PATH_CONFIG, PATH_RUNHISTORY, PATH_LOG, FPTH_EXAMPLE_INPUTSCHEMA, DI_STATUS_MAP
+
+if check_installed('mf_file_utilities'):
+    from mf_file_utilities.applauncher_wrapper import get_fpth_win
+else:
+    get_fpth_win = lambda v: v
 
 # display_template_ui_model()  # TODO: add this to docs
 
@@ -425,11 +432,12 @@ class RunShellActions(DefaultRunActions):
     def _inputs_show(cls, v, values):
         if values["config"] is not None:
             AutoDisplayInputs = update_AutoDisplay(
-                values["config"], fn_onsave=values["update_status"] # TODO: not working! 
+                values["config"], fn_onsave=values["update_status"] 
             )
+            paths = [values["config"].fdir_root / f for f in values["config"].fpths_inputs]
             return functools.partial(
                 AutoDisplayInputs,
-                values["config"].fpths_inputs,
+                paths,
                 **values["config"].autodisplay_inputs_kwargs,
             )
         else:
@@ -438,7 +446,7 @@ class RunShellActions(DefaultRunActions):
     @validator("outputs_show", always=True)
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
-            AutoDisplayOutputs = update_AutoDisplay(values["config"])  # , values["app"]
+            AutoDisplayOutputs = update_AutoDisplay(values["config"]) 
             return functools.partial(
                 AutoDisplayOutputs,
                 values["config"].fpths_outputs,
@@ -459,24 +467,6 @@ class RunShellActions(DefaultRunActions):
     def _load_show(cls, v, values):
         return None  
 
-#     @validator("activate", always=True)
-#     def _activate_dir(cls, v, values):
-#         if values['config'] is not None:
-#             #fn = lambda: os.chdir(values['config'].fdir_appdata)
-#             if v is None:
-#                 return None  # fn
-#             else: 
-#                 return lambda: [f() for f in v] #[fn, v]
-        
-    
-#     @validator("deactivate", always=True)
-#     def _deactivate_dir(cls, v, values):
-#         if values['config'] is not None:
-#             #fn = lambda: os.chdir('..')
-#             if v is None:
-#                 return None  # fn
-#             else: 
-#                 return lambda: [f() for f in v] #[fn, v]
 
 # extend RunApp to make a default RunShell
 # -
@@ -530,22 +520,12 @@ if __name__ == "__main__":
     display(run_app)
 
 
-# +
-# actions = RunShellActions(config=config)
-# actions.dict()
-# -
-
 class ConfigBatch(BaseModel):
     fdir_root: pathlib.Path
     fpth_config: pathlib.Path = Field(
         default=PATH_CONFIG, description="name of config file for batch app"
     )
     title: str = Field(default="", description="markdown description of BatchApp")
-    # cls_ui: Callable = Field(
-    #     default=RunUi,
-    #     description="the class that defines the RunUi widget container",
-    #     exclude=True,
-    # )
     status: str = None
     cls_actions: Callable = Field(
         default=RunShellActions,
@@ -586,16 +566,6 @@ class ConfigBatch(BaseModel):
     def _configs(cls, v, values):
         """bundles RunApp up as a single argument callable"""
         return [values["cls_config"](**v_) for v_ in v]
-        # li = []
-        # for v_ in v:
-        #     print(v_)
-        #     if isinstance(v_, dict):
-        #         v_ = values['cls_config'](**v_)
-        #         print("if isinstance(v_, dict):")
-        #     li.append(v_)
-            
-        # print(li)
-        # return li
 
     @validator("status")
     def _status(cls, v, values):
@@ -634,15 +604,12 @@ def fn_add(app, **kwargs):
     app.watch_run_statuses()
     app.actions.update_status()
 
-
 def fn_add_show(app):
     clear_output()
     app.actions.add()
 
-
 def fn_add_hide(app):
     return "add hide"
-
 
 def fn_remove(app=None, key=None):
     if key is None:
@@ -659,18 +626,15 @@ def fn_remove_show(app=None):
     app.runs.add_remove_controls = "remove_only"
     return widgets.HTML(
         markdown("### 🗑️ select runs below to delete 🗑️")
-    )  # RemoveRun(app=app)
-
+    )
 
 def fn_remove_hide(app=None):
     app.runs.add_remove_controls = None
-
 
 def check_batch(app, fn_saveconfig, bool_=True):
     [setattr(v.check, "value", bool_) for k, v in app.runs.items.items()]
     [setattr(c, "in_batch", bool_) for c in app.config.configs]
     fn_saveconfig()
-
 
 def run_batch(app=None):
     sel = {c.key: c.in_batch for c in app.config.configs}
@@ -680,7 +644,6 @@ def run_batch(app=None):
         print("run the following:")
         [print(k) for k, v in sel.items() if v is True]
     [v.run() for v in app.run_actions if v.config.in_batch]
-
 
 def batch_get_status(app=None):
     st = [a.get_status() for a in app.run_actions]
@@ -705,15 +668,20 @@ def load_dir(app=None, fdir_root=None):
         config_batch = cl.parse_file(config_batch.fpth_config)
     print('loading')
     app.config = config_batch
-    app.loaded.value = f"<b>{str(fdir_root)}</b>"
+    app.loaded.value = f"{str(get_fpth_win(fdir_root))}"
+    app.load.value = False
     
 def set_loaded(app=None, value=""):
     app.loaded.value = value
     return value
 
+def open_loaded(app=None, fdir_root=None):
+    with app.out_load:
+        open_file(fdir_root)
+        clear_output()
+
 class BatchShellActions(DefaultBatchActions):
     
-
     @validator("load", always=True)
     def _load(cls, v, values):
         fn = lambda: None
@@ -727,7 +695,14 @@ class BatchShellActions(DefaultBatchActions):
         fn = lambda: None
         if values["app"] is not None and values["config"] is not None:
             fdir_root = values["config"].fdir_root
-            fn = functools.partial(set_loaded, app=values["app"], value=str(fdir_root))
+            fn = functools.partial(set_loaded, app=values["app"], value=markdown(f'`{str(get_fpth_win(fdir_root))}`'))
+        return fn
+    
+    @validator("open_loaded", always=True)
+    def _open_loaded(cls, v, values):
+        fn = lambda: None
+        if values["app"] is not None and values["config"] is not None:
+            fn = functools.partial(open_loaded, app=values["app"], fdir_root=values["config"].fdir_root)
         return fn
     
     @validator("save_config", always=True)
@@ -806,6 +781,7 @@ class BatchShellActions(DefaultBatchActions):
 if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
     # TODO: configure so that the value of the RunApp is the config
+    
     from ipyrun.constants import load_test_constants
     from ipyautoui.custom.workingdir import WorkingDirsUi
 
@@ -825,7 +801,6 @@ if __name__ == "__main__":
     def fn_loaddir_handler(value, app=None):
         fdir_root = value["fdir"] / "06_Models"
         app.actions.load(fdir_root=fdir_root)
-        
         
     class LineGraphBatchActions(BatchShellActions):
         @validator("config", always=True)
@@ -853,6 +828,110 @@ if __name__ == "__main__":
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
 
-if __name__ == "__main__":
-    app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
-    display(app)
+# +
+# if config_batch.fpth_config.is_file():
+#     config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
+# config_batch.dict()
+
+# +
+# from ipyautoui._utils import obj_to_importstr
+
+# from datetime import datetime, timedelta
+# from pydantic import BaseModel, PyObject
+# from pydantic.json import timedelta_isoformat
+
+
+# class Foo(BaseModel):
+#     obj: PyObject = 'math.cos'
+
+#     class Config:
+#         json_encoders = {
+#             PyObject: lambda v: {'obj':obj_to_importstr(v.obj)}
+#         }
+
+# m = Foo()
+# m.json(models_as_dict=True)
+
+# from datetime import datetime, timedelta
+# from pydantic import BaseModel
+# from pydantic.json import timedelta_isoformat
+
+
+# class BaseClassWithEncoders(BaseModel):
+#     dt: datetime
+#     diff: timedelta
+
+#     class Config:
+#         json_encoders = {
+#             datetime: lambda v: v.timestamp()
+#         }
+
+
+# class ChildClassWithEncoders(BaseClassWithEncoders):
+#     class Config:
+#         json_encoders = {
+#             timedelta: timedelta_isoformat
+#         }
+
+
+# m = ChildClassWithEncoders(dt=datetime(2032, 6, 1), diff=timedelta(hours=100))
+# print(m.json())
+# #> {"dt": 1969660800.0, "diff": "P4DT4H0M0.000000S"}
+
+# class MyType(BaseModel):
+#     obj: int =1
+
+# class BaseClassWithEncoders(BaseModel):
+#     my: MyType = MyType()
+
+#     class Config:
+#         json_encoders = {
+#             MyType: lambda v: {"obj": str(v.obj)}
+#         }
+# BaseClassWithEncoders.update_forward_refs()
+# m = BaseClassWithEncoders()
+# print(m.json())
+# m.json(models_as_dict=False)
+
+# from typing import List, Optional
+
+# from pydantic import BaseModel
+
+
+# class Address(BaseModel):
+#     city: str
+#     country: str
+
+
+# class User(BaseModel):
+#     name: str
+#     address: Address
+#     friends: Optional[List['User']] = None
+
+#     class Config:
+#         json_encoders = {
+#             Address: lambda a: f'{a.city} ({a.country})',
+#             'User': lambda u: f'{u.name} in {u.address.city} '
+#                               f'({u.address.country[:2].upper()})',
+#         }
+
+
+# User.update_forward_refs()
+
+# wolfgang = User(
+#     name='Wolfgang',
+#     address=Address(city='Berlin', country='Deutschland'),
+#     friends=[
+#         User(name='Pierre', address=Address(city='Paris', country='France')),
+#         User(name='John', address=Address(city='London', country='UK')),
+#     ],
+# )
+# print(wolfgang.json(models_as_dict=False))
+# #> {"name": "Wolfgang", "address": "Berlin (Deutschland)", "friends": ["Pierre
+# #> in Paris (FR)", "John in London (UK)"]}
+# -
+
+from ipyautoui.custom.fileupload import FileUploadToDir
+#from ipyautoui.custom.filesindir import FilesInDir, FileChooser, FindFiles
+
+

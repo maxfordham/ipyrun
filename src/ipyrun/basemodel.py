@@ -13,6 +13,7 @@ class BaseModel(BaseModel):
             path = pathlib.Path(path)
         if "indent" not in json_kwargs.keys():
             json_kwargs.update({"indent": 4})
+        # print(f'save path: {str(path)}')
         path.write_text(self.json(**json_kwargs), encoding="utf-8")
 
     def file_schema(self, path: pathlib.Path, **json_kwargs):
