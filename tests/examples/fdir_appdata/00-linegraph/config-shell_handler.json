@@ -7,7 +7,7 @@
     "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata",
     "fdir_appdata": "00-linegraph",
     "in_batch": false,
-    "status": "up_to_date",
+    "status": "outputs_need_updating",
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
         {

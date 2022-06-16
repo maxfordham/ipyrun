@@ -8,7 +8,7 @@ import ipyrun
 #from .constants import DIR_EXAMPLE_APP
 
 import subprocess
-
+# TODO: add tests! 
 
 class TestIpyrun(unittest.TestCase):
     """Tests for `ipyrun` package."""
@@ -16,7 +16,6 @@ class TestIpyrun(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures, if any."""
         print('sdf')
-        #pass
 
     def tearDown(self):
         """Tear down test fixtures, if any."""
