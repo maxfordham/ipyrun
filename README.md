@@ -32,7 +32,7 @@ it is possible to set up new ipyrun configurations
 | --- | ---------------------------------------- | ------------------------------------------------------ |
 | 1   | ![](docs/images/pydantic-jsonschema.png) | create an input schema                                 |
 | 2   | ![](docs/images/logo-ipyautoui.png)      | generate an input form using ipyautoui                 |
-| 3   | ![](docs/images/pythonscript-icon.svg)   | create a script or process to execute                  |
+| 3   | ![](docs/images/script-or-package.png)   | create a script or process to execute                  |
 | 4   | ![](docs/images/logo.png)                | create a RunApp instance to manage UI and data-caching |
 
 
