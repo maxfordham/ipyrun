@@ -14,6 +14,23 @@ Data inputs to scripts are defined by standard datafiles (e.g. csv, json), and d
 A timestamped record of script execution is maintained.
 An ipywdiget user interface allows users to edit script input data and view outputs of script execution.
 
+## Process
+
+The rationale behind ipyrun is that by following the simple process outlined below, the user does not need to think 
+too much about creating an interface or how to cache data, with this being templated by the ipyrun configuration. 
+
+```{note}
+it is possible to set up new ipyrun configurations 
+```
+
+|     |                                                                              |                                                        |
+| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 1   | ![](docs/images/pydantic-small-icon.png)![](docs/images/jsonschema-icon.png) | create an input schema                                 |
+| 2   | ![](docs/images/logo-ipyautoui.png)                                          | generate an input form using ipyautoui                 |
+| 3   | ![](docs/images/pythonscript-icon.svg)                                       | create a script or process to execute                  |
+| 4   | ![](docs/images/logo.svg)                                                    | create a RunApp instance to manage UI and data-caching |
+
+
 ## Install
 
 - install from network channel
