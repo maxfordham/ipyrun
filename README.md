@@ -3,7 +3,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/maxfordham/ipyrun/HEAD)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-![](docs/images/logo.svg)
+![](docs/images/logo.png)
 
 ipyrun is UI first package built on ipywidgets designed for rapidly creating an app user interface for use in a jupyter notebook / lab or voila app. To run a script or process and generate resultant output files. The app caches input, output and runtime data, such that the previous state of the app is available to the user when returning. 
 
@@ -28,7 +28,7 @@ it is possible to set up new ipyrun configurations
 | 1   | ![](docs/images/pydantic-small-icon.png)![](docs/images/jsonschema-icon.png) | create an input schema                                 |
 | 2   | ![](docs/images/logo-ipyautoui.png)                                          | generate an input form using ipyautoui                 |
 | 3   | ![](docs/images/pythonscript-icon.svg)                                       | create a script or process to execute                  |
-| 4   | ![](docs/images/logo.svg)                                                    | create a RunApp instance to manage UI and data-caching |
+| 4   | ![](docs/images/logo.png)                                                    | create a RunApp instance to manage UI and data-caching |
 
 
 ## Install
