@@ -13,15 +13,16 @@
 #     name: python3
 # ---
 
+# +
 """
 generic Add run dialogue
 """
 # %run __init__.py
 # %load_ext lab_black
 
-# +
 import typing
 import ipywidgets as widgets
+from IPython.display import display
 from ipyautoui.custom.modelrun import RunName
 from ipyautoui.constants import BUTTON_MIN_SIZE
 from markdown import markdown
@@ -30,6 +31,7 @@ import traitlets
 import stringcase
 
 
+# +
 class RunApps:
     None
 
@@ -107,8 +109,13 @@ if __name__ == "__main__":
     display(add)
 
 
-
-def modify_string(s, remove_forbidden_chars=True, remove_spaces=True, fn_on_string=stringcase.pascalcase):
+# +
+def modify_string(
+    s,
+    remove_forbidden_chars=True,
+    remove_spaces=True,
+    fn_on_string=stringcase.pascalcase,
+):
     if remove_spaces:
         s = s.replace(" ", "")
     if remove_forbidden_chars:
@@ -123,9 +130,7 @@ class AddNamedRun(traitlets.HasTraits):
     value = traitlets.Unicode()
 
     def __init__(
-        self,
-        app: typing.Type[RunApps] = None,
-        fn_add: typing.Callable = create_runapp,
+        self, app: typing.Type[RunApps] = None, fn_add: typing.Callable = create_runapp,
     ):
         """
         a ui element for adding new runs to RunApps
@@ -141,7 +146,7 @@ class AddNamedRun(traitlets.HasTraits):
                 self.add.on_click(self._add)
 
             def _add(self, click):
-                return functools.partial(self.fn_add, cls=self.app)()
+                return self.fn_add(cls=self.app, name=self.value)
             ```
         """
         self.app = app
@@ -175,7 +180,7 @@ class AddNamedRun(traitlets.HasTraits):
         self.question.value = self.question_value
 
     def _add(self, click):
-        return self.fn_add(cls=self.app, name=self.value)
+        return self.fn_add(app=self.app, name=self.value)
 
     def display(self):
         display(self.form)
@@ -188,12 +193,6 @@ if __name__ == "__main__":
 
     add = AddNamedRun(app=RunApps())
     display(add)
-# -
-
-
-
-
-
 # +
 class AddRun:
     def __init__(
