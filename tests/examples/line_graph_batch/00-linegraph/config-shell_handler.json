@@ -6,7 +6,7 @@
     "key": "00-linegraph",
     "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/line_graph_batch",
     "fdir_appdata": "00-linegraph",
-    "in_batch": true,
+    "in_batch": false,
     "status": "up_to_date",
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
