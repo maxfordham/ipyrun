@@ -24,7 +24,7 @@ from typing import Optional, Callable, Any
 from pydantic import BaseModel, Field, validator
 from markdown import markdown
 
-from IPython.display import Image, clear_output
+from IPython.display import Image, clear_output, display
 from ipywidgets import widgets
 
 from ipyrun.constants import PATH_RUNAPP_HELP
@@ -65,8 +65,9 @@ class RunActions(BaseModel):
     runlog_hide: Optional[Callable] = lambda: "runlog_hide"
     load_show: Optional[Callable] = lambda: display(widgets.HTML("load_show"))
     load_hide: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
-    load: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
-    get_loaded: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
+    load: Optional[Callable] = lambda: display(widgets.HTML("load"))
+    get_loaded: Optional[Callable] = lambda: display(widgets.HTML("get_loaded"))
+    open_loaded: Optional[Callable] = lambda: display(widgets.HTML("open_loaded"))
     run: Optional[Callable] = lambda: "run"
     run_hide: Optional[Callable] = lambda: "console_hide"
     activate: Optional[Callable] = lambda: "activate"
@@ -82,7 +83,6 @@ def display_runui_tooltips(runui):
 
 
 def show(app):
-    print('show')
     app.help_ui.value = False
     app.help_run.value = False
     app.help_config.value = False
@@ -91,7 +91,6 @@ def show(app):
     app.runlog.value = True
 
 def hide(app):
-    print('hide')
     app.help_ui.value = False
     app.help_run.value = False
     app.help_config.value = False
