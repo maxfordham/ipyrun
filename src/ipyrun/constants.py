@@ -18,9 +18,18 @@ FPTH_MXF_ICON = PATH_PACKAGE / "images" / "mxf-icon.png"
 FPTH_USER_ICON = PATH_PACKAGE / "images" / "user-icon.png"
 FPTH_EXAMPLE_SCRIPT = PATH_PACKAGE / "examplerun" / "script_linegraph.py"
 FPTH_EXAMPLE_INPUTSCHEMA = PATH_PACKAGE / "examplerun" / "input_schema_linegraph.py"
-FNM_CONFIG_FILE = pathlib.Path("config-shell_handler.json")
+
+# default names of files in RunShell
+PATH_CONFIG = pathlib.Path("config-shell_handler.json")
+PATH_RUNHISTORY = pathlib.Path("runhistory.csv")
+PATH_LOG = pathlib.Path("log.csv")
+
+FILENAME_FORBIDDEN_CHARACTERS = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
+# [naming-a-file](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
 
 JOBNO_DEFAULT = "J5001"  #  testing job
+
+
 
 # RunApp status button styles ------------------------
 STATUS_BUTTON_UPTODATE = frozenmap(
@@ -137,12 +146,24 @@ HIDE = dict(
 )
 
 LOAD = dict(
-    icon="fa-upload",
+    icon="ellipsis-v",
     tooltip="load selected",
     style={"font_weight": "bold"},
     button_style="info",
     layout={"width": BUTTON_WIDTH_MIN},
 )
+OPEN_LOADED = dict(
+    icon="fa-folder-open",
+    tooltip="open active application directory",
+    style={"font_weight": "bold"},
+    layout={"width": BUTTON_WIDTH_MIN},
+)
+
+BUTTONBAR_LAYOUT_KWARGS = {
+    "display": "flex",
+    "flex_flow": "row",
+    "justify_content": "space-between",
+}
 
 DEFAULT_BUTTON_STYLES = frozenmap(
     check=CHECK,
@@ -157,6 +178,7 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     show=SHOW,
     hide=HIDE,
     load=LOAD,
+    open_loaded=OPEN_LOADED,
     container=dict(layout={'width':'100%'}, selected_index=None)
 )
 
