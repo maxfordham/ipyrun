@@ -16,19 +16,24 @@ An ipywdiget user interface allows users to edit script input data and view outp
 
 ## Process
 
-The rationale behind ipyrun is that by following the simple process outlined below, the user does not need to think 
-too much about creating an interface or how to cache data, with this being templated by the ipyrun configuration. 
+The rationale behind ipyrun is that by following the simple process outlined below, the user does not need to think
+too much about creating an interface or how to cache data, with this being templated by the ipyrun configuration.
+
+ipyrun is "UI first",  upon which different, user-applied configurations can be attached. ipyrun ships with a
+`DefaultRunConfig` that is intended for executing python scripts or packages. New users are recommended to use
+this configuration, creating new configurations is an "advanced feature" that would require that should only be used if 
+absolutely required.
 
 ```{note}
 it is possible to set up new ipyrun configurations 
 ```
 
-|     |                                                                              |                                                        |
-| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------ |
-| 1   | ![](docs/images/pydantic-small-icon.png)![](docs/images/jsonschema-icon.png) | create an input schema                                 |
-| 2   | ![](docs/images/logo-ipyautoui.png)                                          | generate an input form using ipyautoui                 |
-| 3   | ![](docs/images/pythonscript-icon.svg)                                       | create a script or process to execute                  |
-| 4   | ![](docs/images/logo.png)                                                    | create a RunApp instance to manage UI and data-caching |
+|     |                                          |                                                        |
+| --- | ---------------------------------------- | ------------------------------------------------------ |
+| 1   | ![](docs/images/pydantic-jsonschema.png) | create an input schema                                 |
+| 2   | ![](docs/images/logo-ipyautoui.png)      | generate an input form using ipyautoui                 |
+| 3   | ![](docs/images/pythonscript-icon.svg)   | create a script or process to execute                  |
+| 4   | ![](docs/images/logo.png)                | create a RunApp instance to manage UI and data-caching |
 
 
 ## Install

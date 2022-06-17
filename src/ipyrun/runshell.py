@@ -115,7 +115,7 @@ class ConfigShell(BaseModel):
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
     index: int = 0
-    fpth_script: pathlib.Path = "script.py"
+    fpth_script: pathlib.Path = "script.py" # TODO: refactor --> path_run
     name: str = None
     long_name: str = None
     key: str = None
