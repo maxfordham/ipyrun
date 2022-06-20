@@ -424,7 +424,7 @@ class RunUi(RunActionsUi):
     #         out = [self.out_inputs, self.out_outputs, self.out_runlog]
     #         self.out_box_main.children = [o for o in out if len(o.outputs) > 0]
     # TODO: make something like this ^ work.
-    #     : use ipyflex !!!
+    #     : use ipyflex ?
     # ^ the goal is to let the inputs or outputs take full width if only 1 is selected...
 
     @property
@@ -433,17 +433,10 @@ class RunUi(RunActionsUi):
 
     @actions.setter
     def actions(self, value):
-        # cl = type(value)
-        # di = value.dict()
-        # di["app"] = self
-        # self._actions = cl(**di)
-
         value.app = self
         self._actions = value
-        self._actions.check  # (self._actions)
-        # ^ this not working
-        # ^ TODO: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
-
+        self._actions.check
+        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
     def update_form(self):
@@ -453,10 +446,10 @@ class RunUi(RunActionsUi):
             self.out_box_load,
             self.out_console,
             self.out_help_ui,
-            self.out_box_help,
+            self.out_help_run,
+            self.out_help_config,
             self.out_box_main,
         ]
-        self.out_box_help.children = [self.out_help_run, self.out_help_config]
 
         self.out_box_main.children = [
             self.out_inputs,
@@ -511,14 +504,6 @@ class RunUi(RunActionsUi):
                 align_content="stretch",
                 display="flex",
                 flex="flex-grow",
-            ),
-        )
-        self.out_box_help = widgets.HBox(
-            layout=widgets.Layout(
-                width="100%",
-                align_items="stretch",
-                justify_content="space-between",
-                align_content="stretch",
             ),
         )
         self.out_box_main = widgets.HBox(
@@ -871,10 +856,10 @@ class BatchUi(BatchActionsUi):
             self.out_box_addremove,
             self.out_console,
             self.out_help_ui,
-            self.out_box_help,
+            self.out_help_run,
+            self.out_help_config,
             self.out_box_main,
         ]
-        self.out_box_help.children = [self.out_help_run, self.out_help_config]
         self.out_box_addremove.children = [
             self.out_add,
             self.out_remove,
@@ -916,7 +901,6 @@ class BatchUi(BatchActionsUi):
 
         # out
         self.layout_out = widgets.VBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
-        self.out_box_help = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
         self.out_box_addremove = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
         self.out_box_main = widgets.HBox(layout=KWARGS_OUT_WIDGET_LAYOUT)
         self.out_box_load = widgets.HBox(

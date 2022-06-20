@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.11.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -825,111 +825,4 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-# +
-# if config_batch.fpth_config.is_file():
-#     config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
-# config_batch.dict()
-
-# +
-# from ipyautoui._utils import obj_to_importstr
-
-# from datetime import datetime, timedelta
-# from pydantic import BaseModel, PyObject
-# from pydantic.json import timedelta_isoformat
-
-
-# class Foo(BaseModel):
-#     obj: PyObject = 'math.cos'
-
-#     class Config:
-#         json_encoders = {
-#             PyObject: lambda v: {'obj':obj_to_importstr(v.obj)}
-#         }
-
-# m = Foo()
-# m.json(models_as_dict=True)
-
-# from datetime import datetime, timedelta
-# from pydantic import BaseModel
-# from pydantic.json import timedelta_isoformat
-
-
-# class BaseClassWithEncoders(BaseModel):
-#     dt: datetime
-#     diff: timedelta
-
-#     class Config:
-#         json_encoders = {
-#             datetime: lambda v: v.timestamp()
-#         }
-
-
-# class ChildClassWithEncoders(BaseClassWithEncoders):
-#     class Config:
-#         json_encoders = {
-#             timedelta: timedelta_isoformat
-#         }
-
-
-# m = ChildClassWithEncoders(dt=datetime(2032, 6, 1), diff=timedelta(hours=100))
-# print(m.json())
-# #> {"dt": 1969660800.0, "diff": "P4DT4H0M0.000000S"}
-
-# class MyType(BaseModel):
-#     obj: int =1
-
-# class BaseClassWithEncoders(BaseModel):
-#     my: MyType = MyType()
-
-#     class Config:
-#         json_encoders = {
-#             MyType: lambda v: {"obj": str(v.obj)}
-#         }
-# BaseClassWithEncoders.update_forward_refs()
-# m = BaseClassWithEncoders()
-# print(m.json())
-# m.json(models_as_dict=False)
-
-# from typing import List, Optional
-
-# from pydantic import BaseModel
-
-
-# class Address(BaseModel):
-#     city: str
-#     country: str
-
-
-# class User(BaseModel):
-#     name: str
-#     address: Address
-#     friends: Optional[List['User']] = None
-
-#     class Config:
-#         json_encoders = {
-#             Address: lambda a: f'{a.city} ({a.country})',
-#             'User': lambda u: f'{u.name} in {u.address.city} '
-#                               f'({u.address.country[:2].upper()})',
-#         }
-
-
-# User.update_forward_refs()
-
-# wolfgang = User(
-#     name='Wolfgang',
-#     address=Address(city='Berlin', country='Deutschland'),
-#     friends=[
-#         User(name='Pierre', address=Address(city='Paris', country='France')),
-#         User(name='John', address=Address(city='London', country='UK')),
-#     ],
-# )
-# print(wolfgang.json(models_as_dict=False))
-# #> {"name": "Wolfgang", "address": "Berlin (Deutschland)", "friends": ["Pierre
-# #> in Paris (FR)", "John in London (UK)"]}
-# -
-
-from ipyautoui.custom.fileupload import FileUploadToDir
-#from ipyautoui.custom.filesindir import FilesInDir, FileChooser, FindFiles
-
 

@@ -17,6 +17,7 @@ launch [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/
 ## Screenshots
 
 `# TODO: add screenshots`
+
 ## Description
 
 A generic user interface for running processes.
@@ -38,12 +39,12 @@ absolutely required.
 it is possible to set up new ipyrun configurations 
 ```
 
-|     |                                          |                                                        |
-| --- | ---------------------------------------- | ------------------------------------------------------ |
-| 1   | ![](docs/images/pydantic-jsonschema.png) | create an input schema                                 |
-| 2   | ![](docs/images/logo-ipyautoui.png)      | generate an input form using ipyautoui                 |
-| 3   | ![](docs/images/script-or-package.png)   | create a script or process to execute                  |
-| 4   | ![](docs/images/logo.png)                | create a RunApp instance to manage UI and data-caching |
+|     |                                          |                                                            |
+| --- | ---------------------------------------- | ---------------------------------------------------------- |
+| 1   | ![](docs/images/pydantic-jsonschema.png) | __create an input schema__                                 |
+| 2   | ![](docs/images/logo-ipyautoui.png)      | __generate an input form using ipyautoui__                 |
+| 3   | ![](docs/images/script-or-package.png)   | __create a script or process to execute__                  |
+| 4   | ![](docs/images/logo.png)                | __create a RunApp instance to manage UI and data-caching__ |
 
 
 ## Install
