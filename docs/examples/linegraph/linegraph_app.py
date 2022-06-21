@@ -42,7 +42,7 @@ from ipyrun.runshell import (
 
 
 DIR_CORE = pathlib.Path("./linegraph_core").resolve()
-FPTH_SCRIPT = DIR_CORE / "script_linegraph.py"
+PATH_RUN = DIR_CORE / "script_linegraph.py"
 FPTH_INPUTS_SCHEMA = DIR_CORE / "input_schema_linegraph.py"
 DIR_APPDATA = pathlib.Path("./linegraph_appdata").resolve()
 
@@ -52,7 +52,7 @@ DIR_APPDATA = pathlib.Path("./linegraph_appdata").resolve()
 class LineGraphConfigShell(DefaultConfigShell):
     @validator("path_run", always=True, pre=True)
     def _set_path_run(cls, v, values):
-        return FPTH_SCRIPT
+        return PATH_RUN
 
     @validator("fpths_outputs", always=True)
     def _fpths_outputs(cls, v, values):
