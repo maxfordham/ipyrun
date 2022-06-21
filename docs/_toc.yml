@@ -3,5 +3,15 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: api
+
+parts:  
+- caption: tutorials
+  chapters:
+  - file: examples/linegraph/linegraph_app_tutorial
+- caption: examples
+  chapters:
+  - file: examples/linegraph/linegraph_app
+- caption: under-the-hood
+  chapters:
+  - file: under-the-hood
+  - file: api
