@@ -617,7 +617,7 @@ class RunApp(widgets.HBox, RunUi):
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigShell
 
-    config = ConfigShell(fpth_script="script.py", long_name="pretty name")
+    config = ConfigShell(path_run="script.py", long_name="pretty name")
     app = RunApp(config)
     display(app)
 
@@ -910,8 +910,8 @@ class BatchUi(BatchActionsUi):
 
 # -
 if __name__ == "__main__":
-    config = ConfigShell(fpth_script="script.py", long_name="00-lean-description")
-    config = ConfigShell(fpth_script="script.py", long_name="01-lean-description")
+    config = ConfigShell(path_run="script.py", long_name="00-lean-description")
+    config = ConfigShell(path_run="script.py", long_name="01-lean-description")
     run0 = RunApp(config)
     run1 = RunApp(config)
 
@@ -1037,7 +1037,7 @@ class BatchApp(widgets.VBox, BatchUi):
 if __name__ == "__main__":
     from ipyrun.runshell import ConfigBatch
 
-    config_batch = ConfigBatch(fdir_root=".", fpth_script="script.py", title="# title")
+    config_batch = ConfigBatch(fdir_root=".", path_run="script.py", title="# title")
     batch_app = BatchApp(config_batch)
     display(batch_app)
 # -
@@ -1046,7 +1046,7 @@ if __name__ == "__main__":
     from ipyrun.runshell import ConfigBatch
 
     config_batch = ConfigBatch(
-        fdir_root=".", fpth_script="script.py", configs=[config.dict()], title="# title"
+        fdir_root=".", path_run="script.py", configs=[config.dict()], title="# title"
     )  # TODO: sort out "title" (and how its named in the back)
     batch_app = BatchApp(None)
     display(batch_app)

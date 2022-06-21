@@ -50,8 +50,8 @@ DIR_APPDATA = pathlib.Path("./linegraph_appdata").resolve()
 
 
 class LineGraphConfigShell(DefaultConfigShell):
-    @validator("fpth_script", always=True, pre=True)
-    def _set_fpth_script(cls, v, values):
+    @validator("path_run", always=True, pre=True)
+    def _set_path_run(cls, v, values):
         return FPTH_SCRIPT
 
     @validator("fpths_outputs", always=True)
