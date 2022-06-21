@@ -3,7 +3,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/maxfordham/ipyrun/HEAD)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-![ipyrun-logo](docs/images/logo.png)
+![ipyrun-logo](images/logo.png)
 
 ipyrun is UI first package built on ipywidgets designed for rapidly creating an app user interface for use in a
 jupyter notebook / lab or voila app. To run a script or process and generate resultant output files.
@@ -12,7 +12,6 @@ The app caches input, output and runtime data, such that the previous state of t
 ## Try it online!
 
 launch [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/maxfordham/ipyrun/HEAD).
-
 
 ## Screenshots
 
@@ -39,12 +38,12 @@ absolutely required.
 it is possible to set up new ipyrun configurations 
 ```
 
-|     |                                          |                                                            |
-| --- | ---------------------------------------- | ---------------------------------------------------------- |
-| 1   | ![](docs/images/pydantic-jsonschema.png) | __create an input schema__                                 |
-| 2   | ![](docs/images/logo-ipyautoui.png)      | __generate an input form using ipyautoui__                 |
-| 3   | ![](docs/images/script-or-package.png)   | __create a script or process to execute__                  |
-| 4   | ![](docs/images/logo.png)                | __create a RunApp instance to manage UI and data-caching__ |
+|     |                                     |                                                            |
+| --- | ----------------------------------- | ---------------------------------------------------------- |
+| 1   | ![](images/pydantic-jsonschema.png) | __create an input schema__                                 |
+| 2   | ![](images/logo-ipyautoui.png)      | __generate an input form using ipyautoui__                 |
+| 3   | ![](images/script-or-package.png)   | __create a script or process to execute__                  |
+| 4   | ![](images/logo.png)                | __create a RunApp instance to manage UI and data-caching__ |
 
 
 ## Install
