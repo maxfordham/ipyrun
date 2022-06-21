@@ -17,12 +17,7 @@ dependencies:
   - pandas
   - matplotlib
   - jupyterlab>=3.0.14
-  - xeus-python
-  - ipywidgets
-  - ipysheet>=0.5.0
-  - ipyfilechooser
-  - ipydatagrid
-#  - ipyrun>=v0.1.9
+  - ipyautoui
   - voila>=0.2.11
   - plotly
   - halo
@@ -31,8 +26,6 @@ dependencies:
   - nodejs
   - altair
   - pydantic
-  - dacite
-  - xmltodict
   - pyyaml
   - pillow
 #  - click
@@ -40,6 +33,7 @@ dependencies:
   - black
   - nb_black
   - immutables
+  - stringcase
   - jupyter-book # for docs
   - sphinx # for docs
   - sphinx-book-theme # for docs

@@ -1,9 +1,0 @@
-[
-    {
-        "name": "File Chooser",
-        "label": "test",
-        "options": null,
-        "value": null,
-        "widget": "FileChooser"
-    }
-]

@@ -42,7 +42,7 @@ from markdown import markdown
 import json
 
 # object models
-from pydantic import BaseModel, validator, Field
+from pydantic import validator, Field
 from typing import Optional, List, Dict, Type, Callable, Union, Any
 from enum import Enum
 
@@ -61,7 +61,7 @@ from ipyautoui._utils import (
     display_pydantic_json,
     check_installed
 )
-from ipyautoui.basemodel import BaseModel
+
 
 # from this repo
 from ipyrun.runui import RunUi, RunApp, BatchApp
@@ -104,8 +104,7 @@ class AutoDisplayDefinition(PyObj):
 def create_autodisplay_map(
     ddf: AutoDisplayDefinition, fn_onsave: Callable = lambda: None
 ):
-    model = load_PyObj(ddf) 
-    
+    model = load_PyObj(ddf)
     return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, fn_onsave=fn_onsave)
 
 
