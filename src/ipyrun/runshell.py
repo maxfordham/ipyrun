@@ -242,7 +242,7 @@ class DefaultConfigShell(ConfigShell):
     def _fdir_root(cls, v, values):
         if v is None:
             v = pathlib.Path('.')
-        os.chdir(str(v))
+        os.chdir(str(v)) # TODO: this will fail if the code is run twice...? 
         return v
 
     @validator("fdir_appdata", always=True)
@@ -551,7 +551,7 @@ class ConfigBatch(BaseModel):
     def _fdir_root(cls, v, values):
         if v is None:
             v = pathlib.Path('.')
-        os.chdir(str(v))
+        os.chdir(str(v)) # TODO: this will fail if the code is run twice...? 
         return v
 
     @validator("cls_app", always=True, pre=True)
