@@ -114,7 +114,9 @@ class ConfigShell(BaseModel):
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
     index: int = 0
-    path_run: pathlib.Path = "script.py" # TODO: refactor --> path_run
+    path_run: pathlib.Path = "script.py" 
+    pythonpath: pathlib.Path = None
+    run: str = None
     name: str = None
     long_name: str = None
     key: str = None
@@ -150,7 +152,7 @@ class ConfigShell(BaseModel):
     call: str = "python -O"
     params: Dict = {}
     shell_template: str = """\
-{{ call }} {{ path_run }}\
+{{ call }} {{ run }}\
 {% for f in fpths_inputs %} {{f}}{% endfor %}\
 {% for f in fpths_outputs %} {{f}}{% endfor %}\
 {% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
@@ -206,9 +208,31 @@ class DefaultConfigShell(ConfigShell):
             ValueError(f"status must be in {str(li)}")
         return v
 
-    @validator("path_run")
+    @validator("path_run", always=True)
     def validate_path_run(cls, v):
         assert " " not in str(v.stem), "must be alphanumeric"
+        return v
+
+    @validator("pythonpath", always=True)
+    def _pythonpath(cls, v, values):
+        # then we are executing a package rather than a script
+        # so we need to add the package to the PYTHONPATH
+        v = values['path_run'].parent
+        return v
+
+    @validator("run", always=True)
+    def _run(cls, v, values):
+        prun = values['path_run']
+        if prun.is_dir():
+            # then we are executing a package rather than a script
+            # and we just assigned the PYTHONPATH
+            # so no we remove the parent to create the shell cmd
+            v = prun.stem
+        elif prun.is_file():
+            # then we are excuting a script
+            v = prun.name
+        else:
+            raise ValueError(f'{str(prun)} must be python package dir or python script')
         return v
 
     @validator("name", always=True)
@@ -302,6 +326,13 @@ class DefaultConfigShell(ConfigShell):
                 v = json.load(f)
         return v
 
+    @validator("call", always=True)
+    def _call(cls, v, values):
+        p = values['path_run']
+        if p.is_dir() and '-m' not in str(p):
+            v = v + ' -m'
+        return v
+
     @validator("shell", always=True)
     def _shell(cls, v, values):
         return Template(values["shell_template"]).render(**values)
@@ -352,9 +383,9 @@ def run_shell(app=None):
     app=None
     """
     if app.config.update_config_at_runtime:
-        app.config = (
-            app.config
-        )  #  this updates config and remakes run actions. useful if, for example, output fpths dependent on contents of input files
+        app.config = app.config
+        # ^  this updates config and remakes run actions using the setter. 
+        #    useful if, for example, output fpths dependent on contents of input files
     print(f"run { app.config.key}")
     if app.status == "up_to_date":
         print(f"already up-to-date")
@@ -367,11 +398,16 @@ def run_shell(app=None):
     )
     display(Markdown(f"{pr}"))
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
+    env = None
+    if app.config.pythonpath is not None:
+        myenv = os.environ.copy()
+        myenv["PYTHONPATH"] = str(app.config.pythonpath)
+        env = myenv
     try:
         spinner.start()
         save = sys.stdout
         sys.stdout = io.StringIO()
-        proc = subprocess.Popen(shell)
+        proc = subprocess.Popen(shell, env=env)
         proc.wait()
         in_stdout = sys.stdout.getvalue()
         sys.stdout = save

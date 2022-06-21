@@ -1,7 +1,5 @@
-import sys
+
 from pydantic import BaseModel , Field, conint
-import typing
-import pathlib
 
 #sys.path.append(pathlib.Path(__file__).parents[3])
 
