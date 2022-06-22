@@ -6,9 +6,9 @@
     "configs": [
         {
             "index": 0,
-            "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
-            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph",
-            "run": "linegraph_core",
+            "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/script_linegraph.py",
+            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
+            "run": "script_linegraph.py",
             "name": "linegraph_core",
             "long_name": "00 - Linegraph Core",
             "key": "00-linegraph_core",
@@ -46,20 +46,20 @@
             "call": "python -O -m",
             "params": {},
             "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-            "shell": "python -O -m linegraph_core 00-linegraph_core/in-00-linegraph_core.lg.json 00-linegraph_core/out-00-linegraph_core.csv 00-linegraph_core/out-00-linegraph_core.plotly.json"
+            "shell": "python -O -m script_linegraph.py 00-linegraph_core/in-00-linegraph_core.lg.json 00-linegraph_core/out-00-linegraph_core.csv 00-linegraph_core/out-00-linegraph_core.plotly.json"
         },
         {
             "index": 1,
-            "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
-            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph",
-            "run": "linegraph_core",
+            "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/script_linegraph.py",
+            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
+            "run": "script_linegraph.py",
             "name": "linegraph_core",
             "long_name": "01 - Linegraph Core",
             "key": "01-linegraph_core",
             "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_appdata",
             "fdir_appdata": "01-linegraph_core",
             "in_batch": false,
-            "status": "no_outputs",
+            "status": "up_to_date",
             "update_config_at_runtime": false,
             "autodisplay_definitions": [
                 {
@@ -90,7 +90,51 @@
             "call": "python -O -m",
             "params": {},
             "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-            "shell": "python -O -m linegraph_core 01-linegraph_core/in-01-linegraph_core.lg.json 01-linegraph_core/out-01-linegraph_core.csv 01-linegraph_core/out-01-linegraph_core.plotly.json"
+            "shell": "python -O -m script_linegraph.py 01-linegraph_core/in-01-linegraph_core.lg.json 01-linegraph_core/out-01-linegraph_core.csv 01-linegraph_core/out-01-linegraph_core.plotly.json"
+        },
+        {
+            "index": 2,
+            "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/script_linegraph.py",
+            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
+            "run": "script_linegraph.py",
+            "name": "linegraph_core",
+            "long_name": "02 - Linegraph Core",
+            "key": "02-linegraph_core",
+            "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_appdata",
+            "fdir_appdata": "02-linegraph_core",
+            "in_batch": false,
+            "status": "up_to_date",
+            "update_config_at_runtime": false,
+            "autodisplay_definitions": [
+                {
+                    "path": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/input_schema_linegraph.py",
+                    "obj_name": "LineGraph",
+                    "module_name": "input_schema_linegraph",
+                    "ftype": "in",
+                    "ext": ".lg.json"
+                }
+            ],
+            "autodisplay_inputs_kwargs": {
+                "patterns": "*"
+            },
+            "autodisplay_outputs_kwargs": {
+                "patterns": "*.plotly.json"
+            },
+            "fpths_inputs": [
+                "02-linegraph_core/in-02-linegraph_core.lg.json"
+            ],
+            "fpths_outputs": [
+                "02-linegraph_core/out-02-linegraph_core.csv",
+                "02-linegraph_core/out-02-linegraph_core.plotly.json"
+            ],
+            "fpth_params": null,
+            "fpth_config": "02-linegraph_core/config-shell_handler.json",
+            "fpth_runhistory": "02-linegraph_core/runhistory.csv",
+            "fpth_log": "02-linegraph_core/log.csv",
+            "call": "python -O -m",
+            "params": {},
+            "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
+            "shell": "python -O -m script_linegraph.py 02-linegraph_core/in-02-linegraph_core.lg.json 02-linegraph_core/out-02-linegraph_core.csv 02-linegraph_core/out-02-linegraph_core.plotly.json"
         }
     ]
 }
