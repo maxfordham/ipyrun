@@ -393,16 +393,16 @@ def run_shell(app=None):
         return
     shell = app.config.shell.split(" ")
     pr = """
-    """.join(
-        shell
-    )
+    """.join(shell)
     display(Markdown(f"{pr}"))
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
     env = None
     if app.config.pythonpath is not None:
-        myenv = os.environ.copy()
-        myenv["PYTHONPATH"] = str(app.config.pythonpath)
-        env = myenv
+        env = os.environ.copy()
+        if not "PYTHONPATH" in env.keys():
+            env["PYTHONPATH"] = str(app.config.pythonpath)
+        else:
+            env["PYTHONPATH"] = env["PYTHONPATH"] + f';{str(app.config.pythonpath)}'
     try:
         spinner.start()
         save = sys.stdout
