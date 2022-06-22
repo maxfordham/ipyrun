@@ -1,10 +1,10 @@
 {
-    "title": "line equation",
-    "m": 2,
-    "c": 5,
+    "title": "a different straight line",
+    "m": 2.0,
+    "c": 1.0,
     "x_range": [
         0,
-        5
+        16
     ],
     "y_range": [
         0,

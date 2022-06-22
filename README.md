@@ -15,7 +15,11 @@ launch [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/
 
 ## Screenshots
 
-`# TODO: add screenshots`
+The example below shows the simple example of using the `ipyrun` to create an App for plotting straight line
+graphs, storing the input and output data for multiple runs. This is a useless example, but `ipyrun` can be
+programmed to complete any process creating user-defined input files and output files.
+
+![simple-linegraph-app](images/simple-linegraph-app.gif)
 
 ## Description
 
@@ -24,7 +28,7 @@ Data inputs to the process are defined by standard datafiles (e.g. csv, json), a
 A timestamped record of script execution is maintained.
 An ipywdiget user interface allows users to edit script input data and view outputs of script execution.
 
-## Process
+## User Journey to Creating an App with the DefaultAppConfig
 
 The rationale behind ipyrun is that by following the simple process outlined below, the user does not need to think
 too much about creating an interface or how to cache data, with this being templated by the ipyrun configuration.
@@ -35,7 +39,8 @@ this configuration, creating new configurations is an "advanced feature" that wo
 absolutely required.
 
 ```{note}
-it is possible to set up new ipyrun configurations 
+it is possible to set up new ipyrun configurations, that might have different execute commands. 
+for example it would be great to create a `RunSnake` app for executing SnakeMake commands... 
 ```
 
 |     |                                     |                                                            |
@@ -45,8 +50,9 @@ it is possible to set up new ipyrun configurations
 | 3   | ![](images/script-or-package.png)   | __create a script or process to execute__                  |
 | 4   | ![](images/logo.png)                | __create a RunApp instance to manage UI and data-caching__ |
 
-
 ## Install
+
+TODO: publish publicly and update the install commands below
 
 - install from network channel
 
