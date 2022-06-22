@@ -114,7 +114,9 @@ class ConfigShell(BaseModel):
     it is anticipated that this class will be inherited and validators added to create application specific relationships between variables."""
 
     index: int = 0
-    fpth_script: pathlib.Path = "script.py" # TODO: refactor --> path_run
+    path_run: pathlib.Path = "script.py" 
+    pythonpath: pathlib.Path = None
+    run: str = None
     name: str = None
     long_name: str = None
     key: str = None
@@ -150,7 +152,7 @@ class ConfigShell(BaseModel):
     call: str = "python -O"
     params: Dict = {}
     shell_template: str = """\
-{{ call }} {{ fpth_script }}\
+{{ call }} {{ run }}\
 {% for f in fpths_inputs %} {{f}}{% endfor %}\
 {% for f in fpths_outputs %} {{f}}{% endfor %}\
 {% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
@@ -181,7 +183,7 @@ class DefaultConfigShell(ConfigShell):
     
     Args: 
         index (int):
-        fpth_script (pathlib.Path): 
+        path_run (pathlib.Path): 
         fdir_root (pathlib.Path): defaults to cwd
         autodisplay_definitions (List[AutoDisplayDefinition]): used to generate custom input and output forms
             using ipyautoui
@@ -206,15 +208,37 @@ class DefaultConfigShell(ConfigShell):
             ValueError(f"status must be in {str(li)}")
         return v
 
-    @validator("fpth_script")
-    def validate_fpth_script(cls, v):
+    @validator("path_run", always=True)
+    def validate_path_run(cls, v):
         assert " " not in str(v.stem), "must be alphanumeric"
+        return v
+
+    @validator("pythonpath", always=True)
+    def _pythonpath(cls, v, values):
+        # then we are executing a package rather than a script
+        # so we need to add the package to the PYTHONPATH
+        v = values['path_run'].parent
+        return v
+
+    @validator("run", always=True)
+    def _run(cls, v, values):
+        prun = values['path_run']
+        if prun.is_dir():
+            # then we are executing a package rather than a script
+            # and we just assigned the PYTHONPATH
+            # so no we remove the parent to create the shell cmd
+            v = prun.stem
+        elif prun.is_file():
+            # then we are excuting a script
+            v = prun.name
+        else:
+            raise ValueError(f'{str(prun)} must be python package dir or python script')
         return v
 
     @validator("name", always=True)
     def _name(cls, v, values):
         if v is None:
-            return values["fpth_script"].stem.replace("script_", "")
+            return values["path_run"].stem.replace("script_", "")
         else:
             if " " in v:
                 raise ValueError("the name must not contain any spaces")
@@ -242,7 +266,7 @@ class DefaultConfigShell(ConfigShell):
     def _fdir_root(cls, v, values):
         if v is None:
             v = pathlib.Path('.')
-        os.chdir(str(v))
+        os.chdir(str(v)) # TODO: this will fail if the code is run twice...? 
         return v
 
     @validator("fdir_appdata", always=True)
@@ -302,6 +326,13 @@ class DefaultConfigShell(ConfigShell):
                 v = json.load(f)
         return v
 
+    @validator("call", always=True)
+    def _call(cls, v, values):
+        p = values['path_run']
+        if p.is_dir() and '-m' not in str(p):
+            v = v + ' -m'
+        return v
+
     @validator("shell", always=True)
     def _shell(cls, v, values):
         return Template(values["shell_template"]).render(**values)
@@ -311,7 +342,7 @@ if __name__ == "__main__":
 
     test_constants = load_test_constants()
     config = DefaultConfigShell(
-        fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
+        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
     )
     display(config.dict())
 
@@ -352,9 +383,9 @@ def run_shell(app=None):
     app=None
     """
     if app.config.update_config_at_runtime:
-        app.config = (
-            app.config
-        )  #  this updates config and remakes run actions. useful if, for example, output fpths dependent on contents of input files
+        app.config = app.config
+        # ^  this updates config and remakes run actions using the setter. 
+        #    useful if, for example, output fpths dependent on contents of input files
     print(f"run { app.config.key}")
     if app.status == "up_to_date":
         print(f"already up-to-date")
@@ -362,16 +393,21 @@ def run_shell(app=None):
         return
     shell = app.config.shell.split(" ")
     pr = """
-    """.join(
-        shell
-    )
+    """.join(shell)
     display(Markdown(f"{pr}"))
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
+    env = None
+    if app.config.pythonpath is not None:
+        env = os.environ.copy()
+        if not "PYTHONPATH" in env.keys():
+            env["PYTHONPATH"] = str(app.config.pythonpath)
+        else:
+            env["PYTHONPATH"] = env["PYTHONPATH"] + f';{str(app.config.pythonpath)}'
     try:
         spinner.start()
         save = sys.stdout
         sys.stdout = io.StringIO()
-        proc = subprocess.Popen(shell)
+        proc = subprocess.Popen(shell, env=env)
         proc.wait()
         in_stdout = sys.stdout.getvalue()
         sys.stdout = save
@@ -420,7 +456,7 @@ class RunShellActions(DefaultRunActions):
     @validator("help_run_show", always=True)
     def _help_run_show(cls, v, values):
         return functools.partial(
-            AutoDisplay.from_paths, [values["config"].fpth_script], patterns="*"
+            AutoDisplay.from_paths, [values["config"].path_run], patterns="*"
         )
 
     @validator("help_config_show", always=True)
@@ -474,15 +510,15 @@ if __name__ == "__main__":
 
     test_constants = load_test_constants()
     config = DefaultConfigShell(
-        fpth_script=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
+        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
     )
     display(config.dict())
 
 if __name__ == "__main__":
 
     class LineGraphConfigShell(DefaultConfigShell):
-        @validator("fpth_script", always=True, pre=True)
-        def _set_fpth_script(cls, v, values):
+        @validator("path_run", always=True, pre=True)
+        def _set_path_run(cls, v, values):
             return FPTH_EXAMPLE_SCRIPT
 
         @validator("fpths_outputs", always=True)
@@ -536,7 +572,7 @@ class ConfigBatch(BaseModel):
     )
     cls_config: Union[Type, Callable] = Field(
         default=DefaultConfigShell,
-        description="the class that defines the config of a RunApp. this has can have fpth_script baked in",
+        description="the class that defines the config of a RunApp. this has can have path_run baked in",
         exclude=True,
     )
     configs: List = []
@@ -551,7 +587,7 @@ class ConfigBatch(BaseModel):
     def _fdir_root(cls, v, values):
         if v is None:
             v = pathlib.Path('.')
-        os.chdir(str(v))
+        os.chdir(str(v)) # TODO: this will fail if the code is run twice...? 
         return v
 
     @validator("cls_app", always=True, pre=True)

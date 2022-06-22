@@ -185,7 +185,7 @@ if __name__ == '__main__':
         import os
         fpth_config = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\config\config-expansion_vessel_sizing.json'#sys.argv[1]
         fpth_inputs = r'C:\engDev\git_mf\ipyrun\examples\notebooks\appdata\inputs\inputs-expansion_vessel_sizing.json'# sys.argv[2]
-        print('fpth_script: {0}'.format(sys.argv[0]))
+        print('path_run: {0}'.format(sys.argv[0]))
         print('fpth_config: {0}'.format(fpth_config))
         print('fpth_inputs: {0}'.format(fpth_inputs))
         from mf_modules.pydtype_operations import read_json
@@ -213,7 +213,7 @@ if __name__ == '__main__':
         import os
         fpth_config = sys.argv[1]
         fpth_inputs = sys.argv[2]
-        print('fpth_script: {0}'.format(sys.argv[0]))
+        print('path_run: {0}'.format(sys.argv[0]))
         print('fpth_config: {0}'.format(fpth_config))
         print('fpth_inputs: {0}'.format(fpth_inputs))
         from mf_modules.pydtype_operations import read_json
