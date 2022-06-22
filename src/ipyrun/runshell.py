@@ -329,7 +329,7 @@ class DefaultConfigShell(ConfigShell):
     @validator("call", always=True)
     def _call(cls, v, values):
         p = values['path_run']
-        if p.is_dir() and '-m' not in str(p):
+        if p.is_dir() and '-m' not in str(v):
             v = v + ' -m'
         return v
 
@@ -377,6 +377,13 @@ def update_AutoDisplay(config, fn_onsave=None):
         file_renderers.update(create_autodisplay_map(d, fn_onsave=fn_onsave))
     return functools.partial(AutoDisplay.from_paths, file_renderers=file_renderers)
 
+def get_env(append_to_pythonpath:str): 
+    env = os.environ.copy()
+    if not "PYTHONPATH" in env.keys():
+        env["PYTHONPATH"] = str(append_to_pythonpath)
+    else:
+        env["PYTHONPATH"] = env["PYTHONPATH"] + f'{os.pathsep}{str(append_to_pythonpath)}'
+    return env
 
 def run_shell(app=None):
     """
@@ -398,11 +405,7 @@ def run_shell(app=None):
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
     env = None
     if app.config.pythonpath is not None:
-        env = os.environ.copy()
-        if not "PYTHONPATH" in env.keys():
-            env["PYTHONPATH"] = str(app.config.pythonpath)
-        else:
-            env["PYTHONPATH"] = env["PYTHONPATH"] + f';{str(app.config.pythonpath)}'
+        env = get_env(app.config.pythonpath)
     try:
         spinner.start()
         save = sys.stdout
