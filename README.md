@@ -35,8 +35,8 @@ too much about creating an interface or how to cache data, with this being templ
 
 ipyrun is "UI first",  upon which different, user-applied configurations can be attached. ipyrun ships with a
 `DefaultRunConfig` that is intended for executing python scripts or packages. New users are recommended to use
-this configuration, creating new configurations is an "advanced feature" that would require that should only be used if 
-absolutely required.
+this configuration, creating new configurations is an "advanced feature" that would require digging around the 
+source code to ensure understand the relationships between the `config`, `actions` and `ui`.
 
 ```{note}
 it is possible to set up new ipyrun configurations, that might have different execute commands. 
