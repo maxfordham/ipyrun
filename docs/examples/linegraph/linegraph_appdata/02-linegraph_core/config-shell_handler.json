@@ -1,14 +1,14 @@
 {
-    "index": 1,
+    "index": 2,
     "path_run": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core",
     "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph",
     "run": "linegraph_core",
     "name": "linegraph_core",
-    "long_name": "01 - Linegraph Core",
-    "key": "01-linegraph_core",
+    "long_name": "02 - Linegraph Core",
+    "key": "02-linegraph_core",
     "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_appdata",
-    "fdir_appdata": "01-linegraph_core",
-    "in_batch": false,
+    "fdir_appdata": "02-linegraph_core",
+    "in_batch": true,
     "status": "up_to_date",
     "update_config_at_runtime": true,
     "autodisplay_definitions": [
@@ -27,18 +27,18 @@
         "patterns": "*.plotly.json"
     },
     "fpths_inputs": [
-        "01-linegraph_core/in-01-linegraph_core.lg.json"
+        "02-linegraph_core/in-02-linegraph_core.lg.json"
     ],
     "fpths_outputs": [
-        "01-linegraph_core/out-01-linegraph_core.csv",
-        "01-linegraph_core/out-01-linegraph_core.plotly.json"
+        "02-linegraph_core/out-02-linegraph_core.csv",
+        "02-linegraph_core/out-02-linegraph_core.plotly.json"
     ],
     "fpth_params": null,
-    "fpth_config": "01-linegraph_core/config-shell_handler.json",
-    "fpth_runhistory": "01-linegraph_core/runhistory.csv",
-    "fpth_log": "01-linegraph_core/log.csv",
+    "fpth_config": "02-linegraph_core/config-shell_handler.json",
+    "fpth_runhistory": "02-linegraph_core/runhistory.csv",
+    "fpth_log": "02-linegraph_core/log.csv",
     "call": "python -O -m",
     "params": {},
     "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-    "shell": "python -O -m linegraph_core 01-linegraph_core/in-01-linegraph_core.lg.json 01-linegraph_core/out-01-linegraph_core.csv 01-linegraph_core/out-01-linegraph_core.plotly.json"
+    "shell": "python -O -m linegraph_core 02-linegraph_core/in-02-linegraph_core.lg.json 02-linegraph_core/out-02-linegraph_core.csv 02-linegraph_core/out-02-linegraph_core.plotly.json"
 }

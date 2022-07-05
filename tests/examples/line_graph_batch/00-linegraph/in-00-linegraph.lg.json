@@ -1,10 +1,10 @@
 {
     "title": "line equation",
-    "m": 2,
-    "c": 5,
+    "m": 2.0,
+    "c": 5.0,
     "x_range": [
         0,
-        5
+        9
     ],
     "y_range": [
         0,

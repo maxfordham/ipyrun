@@ -1,7 +1,7 @@
 {
-    "title": "line equation",
-    "m": 2,
-    "c": 5,
+    "title": "line equation fg",
+    "m": 2.0,
+    "c": 5.0,
     "x_range": [
         0,
         5
@@ -9,6 +9,5 @@
     "y_range": [
         0,
         5
-    ],
-    "references": {}
+    ]
 }
