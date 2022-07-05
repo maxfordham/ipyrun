@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.5
+#       jupytext_version: 1.13.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -223,14 +223,11 @@ class DefaultConfigShell(ConfigShell):
     @validator("run", always=True)
     def _run(cls, v, values):
         prun = values['path_run']
-        if prun.is_dir():
+        if prun.is_dir() or prun.is_file():
             # then we are executing a package rather than a script
             # and we just assigned the PYTHONPATH
             # so no we remove the parent to create the shell cmd
             v = prun.stem
-        elif prun.is_file():
-            # then we are excuting a script
-            v = prun.name
         else:
             raise ValueError(f'{str(prun)} must be python package dir or python script')
         return v
@@ -328,8 +325,7 @@ class DefaultConfigShell(ConfigShell):
 
     @validator("call", always=True)
     def _call(cls, v, values):
-        p = values['path_run']
-        if p.is_dir() and '-m' not in str(v):
+        if '-m' not in str(v):
             v = v + ' -m'
         return v
 
@@ -558,6 +554,17 @@ if __name__ == "__main__":
     display(run_app)
 
 
+# +
+# import subprocess
+# import os
+# env = os.environ
+# env['PYTHONPATH'] = '/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun'
+# subprocess.call('python -O -m script_linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json',
+#                 shell=True, # i.e. run on the command line
+#                 cwd='/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata', # in this directory
+#                 env=env) # with with this PYTHONPATH in the env vars
+# -
+
 class ConfigBatch(BaseModel):
     fdir_root: pathlib.Path
     fpth_config: pathlib.Path = Field(
@@ -696,7 +703,6 @@ def batch_update_status(app=None):
     [a.update_status() for a in app.run_actions]
     app.status = app.actions.get_status()
 
-    
 def load_dir(app=None, fdir_root=None):
     cl = type(app.config)
     config_batch = cl(fdir_root=fdir_root)
@@ -706,7 +712,7 @@ def load_dir(app=None, fdir_root=None):
     app.config = config_batch
     app.loaded.value = f"{str(get_fpth_win(fdir_root))}"
     app.load.value = False
-    
+
 def set_loaded(app=None, value=""):
     app.loaded.value = value
     return value
@@ -717,7 +723,6 @@ def open_loaded(app=None, fdir_root=None):
         clear_output()
 
 class BatchShellActions(DefaultBatchActions):
-    
     @validator("load", always=True)
     def _load(cls, v, values):
         fn = lambda: None
@@ -725,7 +730,7 @@ class BatchShellActions(DefaultBatchActions):
             cl = type(values["app"].config)
             fn = functools.partial(load_dir, app=values["app"])
         return fn
-    
+
     @validator("get_loaded", always=True)
     def _get_loaded(cls, v, values):
         fn = lambda: None
@@ -733,14 +738,14 @@ class BatchShellActions(DefaultBatchActions):
             fdir_root = values["config"].fdir_root
             fn = functools.partial(set_loaded, app=values["app"], value=markdown(f'`{str(get_fpth_win(fdir_root))}`'))
         return fn
-    
+
     @validator("open_loaded", always=True)
     def _open_loaded(cls, v, values):
         fn = lambda: None
         if values["app"] is not None and values["config"] is not None:
             fn = functools.partial(open_loaded, app=values["app"], fdir_root=values["config"].fdir_root)
         return fn
-    
+
     @validator("save_config", always=True)
     def _save_config(cls, v, values):
         return functools.partial(values["config"].file, values["config"].fpth_config)
@@ -809,7 +814,6 @@ class BatchShellActions(DefaultBatchActions):
     @validator("update_status", always=True)
     def _update_status(cls, v, values):
         return functools.partial(batch_update_status, app=values["app"])
-    
 
 
 # -
