@@ -297,13 +297,6 @@ class RunActionsUi(UiComponents):
     def _run(self, on_change):
         with self.out_console:
             clear_output()
-            self.run_hide = widgets.Button(
-                layout={"width": BUTTON_WIDTH_MIN},
-                icon="fa-times",
-                button_style="danger",
-            )
-            self.run_hide.on_click(self._run_hide)
-            display(self.run_hide)
             self.actions.run()
             # reload outputs
             self.outputs.value = False
@@ -435,11 +428,11 @@ class RunUi(RunActionsUi):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check
+        self._actions.check_validators()
         # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
-    def update_form(self):
+    def update_form(self):  # TODO 🐛: form updates if "update_config_at_runtime" == True
         """update the form if the actions have changed"""
         # self._layout_out()
         self.layout_out.children = [
@@ -450,7 +443,6 @@ class RunUi(RunActionsUi):
             self.out_help_config,
             self.out_box_main,
         ]
-
         self.out_box_main.children = [
             self.out_inputs,
             self.out_outputs,
@@ -459,8 +451,8 @@ class RunUi(RunActionsUi):
         self.out_box_load.children = [
             self.out_load,
         ]
-
-        self.container.children = [widgets.VBox([self.button_bar, self.layout_out])]
+        self.vbx_main.children = [self.button_bar, self.layout_out]
+        self.container.children = [self.vbx_main]
         self.button_bar_left.children = self.get_buttons(
             [
                 "help_ui",
@@ -496,7 +488,7 @@ class RunUi(RunActionsUi):
         )
         self.button_bar.children = [self.button_bar_left, self.button_bar_right]
 
-        # out # update the output to use ipyflex
+        # update the output to use ipyflex
         self.layout_out = widgets.VBox(
             layout=widgets.Layout(
                 width="100%",
@@ -517,6 +509,7 @@ class RunUi(RunActionsUi):
         self.out_box_load = widgets.HBox(
             layout=widgets.Layout(width="100%", justify_content="flex-end",),
         )
+        self.vbx_main = widgets.VBox()
 
 
 if __name__ == "__main__":

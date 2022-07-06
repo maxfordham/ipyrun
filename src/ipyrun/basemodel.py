@@ -48,7 +48,7 @@ def file_mdschema(self:Type[BaseModel], path: pathlib.Path, **json_kwargs):
     self.file_schema(path_schema, **json_kwargs)
     subprocess.run(["jsonschema2md", str(path_schema), str(path)])
     
-def check(self:Type[BaseModel]):
+def check_validators(self:Type[BaseModel]):
     values, fields_set, validation_error = validate_model(
         self.__class__, self.__dict__
     )
@@ -74,4 +74,4 @@ class BaseModel(BaseModel):
 setattr(BaseModel, 'file', file)
 setattr(BaseModel, 'file_schema', file_schema)
 setattr(BaseModel, 'file_mdschema', file_mdschema)
-setattr(BaseModel, 'check', check)
+setattr(BaseModel, 'check_validators', check_validators)
