@@ -16,7 +16,7 @@
             "fdir_appdata": "00-linegraph_core",
             "in_batch": true,
             "status": "up_to_date",
-            "update_config_at_runtime": true,
+            "update_config_at_runtime": false,
             "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/input_schema_linegraph.py",
@@ -60,7 +60,7 @@
             "fdir_appdata": "01-linegraph_core",
             "in_batch": true,
             "status": "up_to_date",
-            "update_config_at_runtime": true,
+            "update_config_at_runtime": false,
             "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/input_schema_linegraph.py",
@@ -104,7 +104,7 @@
             "fdir_appdata": "02-linegraph_core",
             "in_batch": false,
             "status": "no_outputs",
-            "update_config_at_runtime": true,
+            "update_config_at_runtime": false,
             "autodisplay_definitions": [
                 {
                     "path": "/mnt/c/engDev/git_mf/ipyrun/docs/examples/linegraph/linegraph_core/input_schema_linegraph.py",

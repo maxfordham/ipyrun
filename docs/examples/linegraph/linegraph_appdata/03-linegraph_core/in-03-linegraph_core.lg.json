@@ -1,7 +1,7 @@
 {
     "title": "line equation",
-    "m": 5.0,
-    "c": 5.0,
+    "m": 2,
+    "c": 5,
     "x_range": [
         0,
         5
