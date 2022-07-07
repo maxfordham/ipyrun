@@ -160,7 +160,7 @@ class RunActionsUi(UiComponents):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check
+        self._actions.check_validators()
         # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
 
     def _status_indicator(self, onclick):
@@ -413,7 +413,7 @@ class RunUi(RunActionsUi):
     #         self.out_outputs.observe(self._update_out, names='outputs')
     #         self.out_runlog.observe(self._update_out, names='outputs')
 
-    #     def _update_out(self, on_change): # TODO: this isnt working properly
+    #     def _update_out(self, on_change):
     #         out = [self.out_inputs, self.out_outputs, self.out_runlog]
     #         self.out_box_main.children = [o for o in out if len(o.outputs) > 0]
     # TODO: make something like this ^ work.
@@ -432,7 +432,7 @@ class RunUi(RunActionsUi):
         # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
-    def update_form(self):  # TODO 🐛: form updates if "update_config_at_runtime" == True
+    def update_form(self):
         """update the form if the actions have changed"""
         # self._layout_out()
         self.layout_out.children = [
@@ -600,6 +600,7 @@ class RunApp(widgets.HBox, RunUi):
 
     @config.setter
     def config(self, value):
+        value.check_validators()
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
@@ -635,7 +636,7 @@ class BatchActionsUi(RunActionsUi):
         self._init_RunActionsUi(actions, di_button_styles=DEFAULT_BUTTON_STYLES)
         self._update_controls()
 
-    def _update_objects(self):  # TODO: define updated batch objects better...
+    def _update_objects(self):
         self.add = widgets.ToggleButton(**ADD)
         self.remove = widgets.ToggleButton(**REMOVE)
         self.wizard = widgets.ToggleButton(**WIZARD)
@@ -781,12 +782,11 @@ class BatchUi(BatchActionsUi):
 
     @actions.setter
     def actions(self, value):
-        cl = type(value)
-        di = value.dict()
-        di["app"] = self
-        self._actions = cl(**di)
+        value.app = self
+        self._actions = value
+        self._actions.check_validators()
+        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
-        # TODO: update this like the other ones are (pydantic update?)
 
     def _init_BatchUi(
         self,
@@ -991,13 +991,14 @@ class BatchApp(widgets.VBox, BatchUi):
 
     @config.setter
     def config(self, value):
+        # value.check_validators() # TODO: consider removing the run config data from the batch config
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
         try:
             self.runs.items = {
                 c.key: self.make_run(c) for c in self.config.configs
-            }  # TODO: this code isn't generic!
+            }  # TODO: remove config dependent code?
         except:
             print("error building runs fron config")
             print(f"self.config == {str(self.config)}")
@@ -1040,7 +1041,7 @@ if __name__ == "__main__":
 
     config_batch = ConfigBatch(
         fdir_root=".", path_run="script.py", configs=[config.dict()], title="# title"
-    )  # TODO: sort out "title" (and how its named in the back)
+    )
     batch_app = BatchApp(None)
     display(batch_app)
 

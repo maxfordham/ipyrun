@@ -24,7 +24,7 @@ By default it is used for running python scripts on the command line.
 # #%load_ext lab_black
 
 # +
-#  TODO: make the config shell commands relative rather than absolute (improves readability)
+
 
 # +
 # core libs
@@ -61,6 +61,7 @@ from ipyautoui._utils import (
     display_pydantic_json,
     check_installed,
 )
+from ipyrun.constants import BUTTON_WIDTH_MIN
 
 
 # from this repo
@@ -85,8 +86,6 @@ if check_installed("mf_file_utilities"):
     from mf_file_utilities.applauncher_wrapper import get_fpth_win
 else:
     get_fpth_win = lambda v: v
-
-# display_template_ui_model()  # TODO: add this to docs
 
 
 def get_mfuser_initials():
@@ -393,10 +392,15 @@ def get_env(append_to_pythonpath: str):
     return env
 
 
-from ipyrun.constants import BUTTON_WIDTH_MIN
+def make_run_hide(fn_on_click):
+    run_hide = widgets.Button(
+        layout={"width": BUTTON_WIDTH_MIN}, icon="fa-times", button_style="danger",
+    )
+    run_hide.on_click(fn_on_click)
+    return run_hide
 
 
-def run_shell(app=None):
+def run_shell(app=None, display_hide_btn=True):
     """
     app=None
     """
@@ -404,12 +408,9 @@ def run_shell(app=None):
         app.config = app.config
         # ^  this updates config and remakes run actions using the setter.
         #    useful if, for example, output fpths dependent on contents of input files
-
-    run_hide = widgets.Button(
-        layout={"width": BUTTON_WIDTH_MIN}, icon="fa-times", button_style="danger",
-    )
-    run_hide.on_click(app._run_hide)
-    display(run_hide)
+    if display_hide_btn:
+        run_hide = make_run_hide(app._run_hide)  # button to hide the run console
+        display(run_hide)
     print(f"run { app.config.key}")
     if app.status == "up_to_date":
         print(f"already up-to-date")
@@ -709,13 +710,18 @@ def check_batch(app, fn_saveconfig, bool_=True):
 
 
 def run_batch(app=None):
+    run_hide = make_run_hide(app._run_hide)  # button to hide the run console
+    display(run_hide)
+    # TODO: add remove run button
     sel = {c.key: c.in_batch for c in app.config.configs}
     if True not in sel.values():
         print("no runs selected")
     else:
         print("run the following:")
         [print(k) for k, v in sel.items() if v is True]
-    [v.run() for v in app.run_actions if v.config.in_batch]
+    [
+        v.run(display_hide_btn=False) for v in app.run_actions if v.config.in_batch
+    ]  # TODO add "hide_button" arg
 
 
 def batch_get_status(app=None):
@@ -862,7 +868,7 @@ class BatchShellActions(DefaultBatchActions):
 
 if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
-    # TODO: configure so that the value of the RunApp is the config
+    # TODO: configure so that the value of the RunApp is the config?
 
     from ipyrun.constants import load_test_constants
     from ipyautoui.custom.workingdir import WorkingDirsUi
@@ -885,13 +891,6 @@ if __name__ == "__main__":
         app.actions.load(fdir_root=fdir_root)
 
     class LineGraphBatchActions(BatchShellActions):
-        @validator("config", always=True)
-        def _config(cls, v, values):
-            """bundles RunApp up as a single argument callable"""
-            if type(v) == dict:
-                v = LineGraphConfigBatch(**v)
-            return v
-
         @validator("runlog_show", always=True)
         def _runlog_show(cls, v, values):
             return None
