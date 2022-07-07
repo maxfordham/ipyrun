@@ -191,14 +191,14 @@ ADD = dict(
 )
 REMOVE = dict(
     icon="minus",
-    tooltip="add a run",
+    tooltip="remove a run",
     style={"font_weight": "bold"},
     button_style="danger",
     layout={"width": BUTTON_WIDTH_MIN},
 )
 WIZARD = dict(
     icon="exchange-alt",
-    tooltip="add a run",
+    tooltip="add remove wizard",
     style={"font_weight": "bold"},
     button_style="warning",
     layout={"width": BUTTON_WIDTH_MIN},
