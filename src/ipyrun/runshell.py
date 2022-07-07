@@ -381,7 +381,7 @@ def update_AutoDisplay(config, fn_onsave=None):
     return functools.partial(AutoDisplay.from_paths, file_renderers=file_renderers)
 
 
-def get_env(append_to_pythonpath: str):
+def udpate_env(append_to_pythonpath: str):
     env = os.environ.copy()
     if not "PYTHONPATH" in env.keys():
         env["PYTHONPATH"] = str(append_to_pythonpath)
@@ -425,7 +425,7 @@ def run_shell(app=None, display_hide_btn=True):
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
     env = None
     if app.config.pythonpath is not None:
-        env = get_env(app.config.pythonpath)
+        env = udpate_env(app.config.pythonpath)
     try:
         spinner.start()
         save = sys.stdout
@@ -443,7 +443,6 @@ def run_shell(app=None, display_hide_btn=True):
 
 class RunShellActions(DefaultRunActions):
     """extends RunActions by creating Callables based on data within the app or the config objects. 
-    TODO: currently this full filepaths and does not work with relative paths. make it work with relative paths! 
     """
 
     config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
@@ -506,9 +505,12 @@ class RunShellActions(DefaultRunActions):
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
             AutoDisplayOutputs = update_AutoDisplay(values["config"])
+            paths = [
+                values["config"].fdir_root / f for f in values["config"].fpths_outputs
+            ]
             return functools.partial(
                 AutoDisplayOutputs,
-                values["config"].fpths_outputs,
+                paths,
                 **values["config"].autodisplay_outputs_kwargs,
             )
         else:
