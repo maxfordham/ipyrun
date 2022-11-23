@@ -5,17 +5,20 @@ name: ipyrun-dev
 channels:
   - defaults
   - conda-forge
-  - file:///mnt/conda-bld/
 dependencies:
   - python=3.9
-  - ipyautoui
   - jupytext
   - jupyterlab-lsp
   - python-lsp-server
+  - ipywidgets<8  
+  - plotly
   - nb_black
+  - halo
   - traitlets
   - voila
+  - emoji
   - pip
   - pip:
     - traitlets-paths
     - seedir
+    - git+https://git@github.com/maxfordham/ipyautoui@main
