@@ -43,4 +43,4 @@ dependencies:
   - pip:
     - traitlets-paths
     - seedir
-    - git+https://git@github.com/maxfordham/ipyautoui@main
+    - git+https://git@github.com/maxfordham/ipyautoui
