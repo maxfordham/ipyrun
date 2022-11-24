@@ -10,10 +10,13 @@ dependencies:
   - jupytext
   - jupyterlab-lsp
   - python-lsp-server
+  - ipywidgets<8  
+  - plotly
   - nb_black
   - halo
   - traitlets
   - voila
+  - emoji
   - pip
   - pip:
     - traitlets-paths
