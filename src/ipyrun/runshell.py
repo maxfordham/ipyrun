@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.14.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -21,9 +21,7 @@ By default it is used for running python scripts on the command line.
 """
 # %run __init__.py
 #  ^ this means that the local imports still work when running as a notebook
-# #%load_ext lab_black
-
-# +
+# %load_ext lab_black
 
 
 # +
@@ -114,6 +112,30 @@ def create_autodisplay_map(
     return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, fn_onsave=fn_onsave)
 
 
+class BaseConfigShell(BaseModel):
+
+    fdir_root: pathlib.Path = Field(
+        default=None,
+        description="root folder. same as fdir_root within batch config."
+        " facilitates running many processes. this is the working dir.",
+    )
+    fpths_inputs: Optional[List[pathlib.Path]] = None
+    fpths_outputs: Optional[List[pathlib.Path]] = None
+    path_run: pathlib.Path = "script.py"
+    pythonpath: pathlib.Path = None
+    run: str = None
+    call: str = "python -O"
+    params: Dict = {}
+    params: Dict = {}
+    shell_template: str = """\
+{{ call }} {{ run }}\
+{% for f in fpths_inputs %} {{f}}{% endfor %}\
+{% for f in fpths_outputs %} {{f}}{% endfor %}\
+{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
+"""
+    shell: str = ""
+
+
 class ConfigShell(BaseModel):
 
     """a config object. all the definitions required to create the RunActions for a shell running tools are here.
@@ -128,14 +150,16 @@ class ConfigShell(BaseModel):
     key: str = None
     fdir_root: pathlib.Path = Field(
         default=None,
-        description="root folder. same as fdir_root within batch config. facilitates running many processes. this is the working dir.",
+        description="root folder. same as fdir_root within batch config."
+        " facilitates running many processes. this is the working dir.",
     )
-    fdir_appdata: pathlib.Path = Field(default=None,)
+    fdir_appdata: pathlib.Path = Field(default=None)
     in_batch: bool = False
     status: str = None
     update_config_at_runtime: bool = Field(
         default=False,
-        description="updates config before running shell command. useful if for example outputs filepaths defined within the input filepaths",
+        description="updates config before running shell command."
+        " useful if for example outputs filepaths defined within the input filepaths",
     )
     autodisplay_definitions: List[AutoDisplayDefinition] = Field(
         default_factory=list,
@@ -148,7 +172,8 @@ class ConfigShell(BaseModel):
     fpth_params: pathlib.Path = None
     fpth_config: pathlib.Path = Field(
         None,
-        description=f"there is a single unique folder and config file for each RunApp. the config filename is fixed as {str(PATH_CONFIG)}",
+        description="there is a single unique folder and config file for each RunApp."
+        f" the config filename is fixed as {str(PATH_CONFIG)}",
         # const=True
     )
     fpth_runhistory: pathlib.Path = Field(PATH_RUNHISTORY)  # ,const=True
@@ -170,29 +195,29 @@ class ConfigShell(BaseModel):
 class DefaultConfigShell(ConfigShell):
     """
     a config object. all the definitions required to create the RunActions for a shell running tools are here.
-    
-    extends ConfigShell with validators only. 
+
+    extends ConfigShell with validators only.
     this creates opinionated relationships between the variables that dont necessarily have to exist.
-    
-    A likely way that this would need extending is to generate fpth_outputs based on other fields here. 
+
+    A likely way that this would need extending is to generate fpth_outputs based on other fields here.
     This is very application specific, but could be done as shown in the Example.
-    
+
     The validators, in some cases overwrite the parameters based on other parameters (so they are effectively
-    no longer user editable), or they default to something sensible. This reduces the amount of inputs that 
-    need providing by the User. 
-    
+    no longer user editable), or they default to something sensible. This reduces the amount of inputs that
+    need providing by the User.
+
     Notes:
-        - validators can be overwritten, allowing users to keep the majority of default behaviour but overwrite 
-        some of it. 
+        - validators can be overwritten, allowing users to keep the majority of default behaviour but overwrite
+        some of it.
         - in Args below the minimum number of input vars are given
-    
-    Args: 
+
+    Args:
         index (int):
-        path_run (pathlib.Path): 
+        path_run (pathlib.Path):
         fdir_root (pathlib.Path): defaults to cwd
         autodisplay_definitions (List[AutoDisplayDefinition]): used to generate custom input and output forms
             using ipyautoui
-            
+
     Example:
         ::
 
@@ -222,6 +247,9 @@ class DefaultConfigShell(ConfigShell):
     def _pythonpath(cls, v, values):
         # then we are executing a package rather than a script
         # so we need to add the package to the PYTHONPATH
+        # TODO: Tasks pending completion -@jovyan at 9/29/2022, 9:31:39 AM
+        #       this should append the parent to allow users to also specify
+        #       a PYTHONPATH
         v = values["path_run"].parent
         return v
 
@@ -270,6 +298,8 @@ class DefaultConfigShell(ConfigShell):
             v = pathlib.Path(".")
         os.chdir(str(v))  # TODO: this will fail if the code is run twice...?
         return v
+        # TODO: Tasks pending completion -@jovyan at 9/29/2022, 11:51:24 AM
+        #       rename to `cwd`
 
     @validator("fdir_appdata", always=True)
     def _fdir_appdata(cls, v, values):
@@ -298,7 +328,7 @@ class DefaultConfigShell(ConfigShell):
                         create_pydantic_json_file(ddf, path)  # TODO: remove from here?
 
                 v = [p.relative_to(values["fdir_root"]) for p in paths]
-        assert type(v) == list, "type(v)!=list"
+        assert type(v) == list, "type(v) != list"
         return v
 
     @validator("fpths_outputs", always=True)
@@ -338,6 +368,31 @@ class DefaultConfigShell(ConfigShell):
     @validator("shell", always=True)
     def _shell(cls, v, values):
         return Template(values["shell_template"]).render(**values)
+
+
+def udpate_env(append_to_pythonpath: str):
+    env = os.environ.copy()
+    if not "PYTHONPATH" in env.keys():
+        env["PYTHONPATH"] = str(append_to_pythonpath)
+    else:
+        env["PYTHONPATH"] = (
+            env["PYTHONPATH"] + f"{os.pathsep}{str(append_to_pythonpath)}"
+        )
+    return env
+
+
+def run(config: Type[ConfigShell]):
+    save = sys.stdout
+    sys.stdout = io.StringIO()
+    # subprocess.call('python -O -m script_linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json',
+    #                 shell=True, # i.e. run on the command line
+    #                 cwd='/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata', # in this directory
+    #                 env=env) # with with this PYTHONPATH in the env vars
+    env = udpate_env(config.pythonpath)
+    proc = subprocess.check_output(config.shell, env=env, shell=True)
+    in_stdout = sys.stdout.getvalue()
+    sys.stdout = save
+    return proc
 
 
 if __name__ == "__main__":
@@ -381,20 +436,11 @@ def update_AutoDisplay(config, fn_onsave=None):
     return functools.partial(AutoDisplay.from_paths, file_renderers=file_renderers)
 
 
-def udpate_env(append_to_pythonpath: str):
-    env = os.environ.copy()
-    if not "PYTHONPATH" in env.keys():
-        env["PYTHONPATH"] = str(append_to_pythonpath)
-    else:
-        env["PYTHONPATH"] = (
-            env["PYTHONPATH"] + f"{os.pathsep}{str(append_to_pythonpath)}"
-        )
-    return env
-
-
 def make_run_hide(fn_on_click):
     run_hide = widgets.Button(
-        layout={"width": BUTTON_WIDTH_MIN}, icon="fa-times", button_style="danger",
+        layout={"width": BUTTON_WIDTH_MIN},
+        icon="fa-times",
+        button_style="danger",
     )
     run_hide.on_click(fn_on_click)
     return run_hide
@@ -442,10 +488,11 @@ def run_shell(app=None, display_hide_btn=True):
 
 
 class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects. 
-    """
+    """extends RunActions by creating Callables based on data within the app or the config objects."""
 
-    config: DefaultConfigShell = None  # not a config type is defined - get pydantic to validate it
+    config: DefaultConfigShell = (
+        None  # not a config type is defined - get pydantic to validate it
+    )
 
     @validator("hide", always=True)
     def _hide(cls, v, values):
@@ -496,7 +543,9 @@ class RunShellActions(DefaultRunActions):
                 values["config"].fdir_root / f for f in values["config"].fpths_inputs
             ]
             return functools.partial(
-                AutoDisplayInputs, paths, **values["config"].autodisplay_inputs_kwargs,
+                AutoDisplayInputs,
+                paths,
+                **values["config"].autodisplay_inputs_kwargs,
             )
         else:
             return None
@@ -580,6 +629,18 @@ if __name__ == "__main__":
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
 
+
+# +
+# fpths_inputs = run_app.config.fpths_inputs
+# fpths_outputs = run_app.config.fpths_outputs
+
+# in_max = max([f.lstat().st_mtime for f in fpths_inputs])
+# out_max = max([f.lstat().st_mtime for f in fpths_outputs])
+# in_max
+# out_max
+
+# if in_max > out_max:
+#     print("outputs_need_updating")
 
 # +
 # import subprocess
@@ -912,4 +973,6 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
 
