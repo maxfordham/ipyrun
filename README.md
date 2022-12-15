@@ -11,7 +11,7 @@ The app caches input, output and runtime data, such that the previous state of t
 
 ## Try it online!
 
-launch [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/maxfordham/ipyrun/HEAD) <-- TODO: make this work!
+launch [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/maxfordham/ipyrun/HEAD) <-- TODO: make this work! (need to build ipyautoui)
 
 ## Screenshots
 
