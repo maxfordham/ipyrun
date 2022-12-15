@@ -9,9 +9,11 @@ channels:
 dependencies:
   - python=3.9
   - ipyautoui
+  - halo
   - jupytext
   - jupyterlab-lsp
   - python-lsp-server
+  - black
   - nb_black
   - traitlets
   - voila
