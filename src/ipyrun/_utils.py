@@ -26,7 +26,7 @@ from ipyautoui._utils import open_file
 #  ------------------------------------------------------------------------------------------------
 def del_cols(df, cols):
     """delete a pandas column if it is in
-    the column index otherwise ignore it. """
+    the column index otherwise ignore it."""
     if type(cols) == str:
         try:
             del df[cols]
@@ -48,76 +48,6 @@ def del_matching(df, string):
     matching = [s for s in list(df) if string in s]
     df = del_cols(df, matching)
     return df
-
-
-#  from mf_modules.jupyter_formatting import md_fromfile, display_python_file
-#  ------------------------------------------------------------------------------------------------
-def md_fromfile(fpth):
-    """
-    read an md file and display in jupyter notebook
-
-    Note:
-        the markdown content (e.g. images) needs to be pathed relative to the jupyter notebook 
-        that you're displaying from rather than the to the markdown file that you're displaying. 
-        this can be confusing! 
-        
-    Args:
-        fpth:
-
-    Returns:
-        displays in IPython notebook
-    """
-    file = open(fpth, mode="r", encoding="utf-8")  # Open a file: file
-    all_of_it = file.read()  # read all lines at once
-    file.close()  # close the file
-    display(Markdown(all_of_it))
-
-
-def display_python_file(fpth):
-    """
-    pass the fpth of a python file and get a
-    rendered view of the code.
-    """
-    with open(fpth, "r") as myfile:
-        data = myfile.read()
-    return Markdown("\n```Python\n" + data + "\n```")
-
-
-def recursive_glob(rootdir=".", pattern="*", recursive=True):
-    """ 
-    Search recursively for files matching a specified pattern.
-    
-    name: 
-        20180506~3870~code~pyfnctn~jg~recursive_glob~A~0
-    tags: 
-        rootdir, pattern, finding-files
-    Reference: 
-        Adapted from: http://stackoverflow.com/questions/2186525/use-a-glob-to-find-files-recursively-in-python
-        string pattern matching: https://jakevdp.github.io/WhirlwindTourOfPython/14-strings-and-regular-expressions.html
-    Args:
-        **rootdir (string): the directory that you would like to recursively search. 
-            recursive means it will automatically look in all folders within this directory
-        **pattern (string): the filename pattern that you are looking for.
-        **recursive (bool): define if you want to search recursively (in sub-folders) or not. 
-        
-    Returns:
-        matches(list): list of filedirectories that match the pattern
-    Example:
-        rootdir='J:\J'+'J9999'
-        pattern='????????_????_?*_?*_?*_?*_?*_?*'
-        recursive_glob(rootdir=rootdir, pattern=pattern, recursive=True)
-    """
-    matches = []
-    if recursive == True:
-        for root, dirnames, filenames in os.walk(rootdir):
-            for filename in fnmatch.filter(filenames, pattern):
-                matches.append(os.path.join(root, filename))
-
-    else:
-        for filename in glob.glob1(rootdir, pattern):
-            matches.append(os.path.join(rootdir, filename))
-
-    return matches
 
 
 def string_of_time(t):
@@ -209,14 +139,14 @@ def make_dir(directory):
 #  from mf_modules.pydtype_operations flatten_list, import read_json, read_txt, read_yaml
 #  ------------------------------------------------------------------------------------------------
 def flatten_list(list_of_lists: list) -> list:
-    """Flatten a list of (lists of (lists of strings)) for any level 
+    """Flatten a list of (lists of (lists of strings)) for any level
     of nesting
-    
+
     Args:
         list_of_lists: with mix of lists and other
     Returns:
         rt: list with no nested lists
-        
+
     """
     rt = []
     for i in list_of_lists:
@@ -239,7 +169,7 @@ def read_json(fpth, encoding="utf8"):
 def read_txt(fpth, encoding="utf-8", delim=None, read_lines=True):
     """
     read a .txt file
-    
+
     Args:
         fpth(string): filepath
         encoding(string): https://docs.python.org/3/library/codecs.html, examples:
@@ -269,7 +199,8 @@ def read_yaml(fpth, encoding="utf8"):
     read yaml file.
 
     Ref:
-        https://stackoverflow.com/questions/1773805/how-can-i-parse-a-yaml-file-in-python"""
+        https://stackoverflow.com/questions/1773805/how-can-i-parse-a-yaml-file-in-python
+    """
     with open(fpth, encoding=encoding) as stream:
         try:
             data = yaml.safe_load(stream)
@@ -293,7 +224,7 @@ def write_json(
         ** fpth='data.json'
         ** print_fpth=True
         ** openFile=False
-        
+
     Code:
         out=json.dumps(data, sort_keys=sort_keys, indent=indent)
         f = open(fpth,"w")
@@ -345,14 +276,14 @@ def di_from_li_of_di(li_of_di, key, value):
         {l[key]: l[value] for l in li_of_di}
 
     Example:
-    
+
         li_of_di = [
          { "name": "Tom", "age": 10 },
          { "name": "Tom", "age": 5 },
          { "name": "Pam", "age": 7 },
          { "name": "Dick", "age": 12 }
          ]
-         
+
          di_from_li_of_di(li_of_di,"name","Tom")
          >>> {'name': 'Tom', 'age': 10}
     """
@@ -410,10 +341,10 @@ def find_fdir_keys(di):
 
 def make_dirs_from_fdir_keys(di: dict):
     """
-    creates a folder structure based on a ProjectDirs object. 
-    simply, the script turns the ProjectDirs object into a dict and 
+    creates a folder structure based on a ProjectDirs object.
+    simply, the script turns the ProjectDirs object into a dict and
     searches for keys that begin with "fdir" (includes nested elements)
-    and creates those dirs using Pathlib. 
+    and creates those dirs using Pathlib.
 
     Args:
         projectdirs: ProjectDirs, data object defining project setup with standard dirs
@@ -494,17 +425,17 @@ def template_checkbox(value=False):
 
 
 def get_status(fpths_inputs, fpths_outputs):
-    """check `st_mtime` for fpths_inputs and fpths_outputs and if any inputs 
-    returns 'no_outputs', 'outputs_need_updating' and 'up_to_date' depending of 
+    """check `st_mtime` for fpths_inputs and fpths_outputs and if any inputs
+    returns 'no_outputs', 'outputs_need_updating' and 'up_to_date' depending of
     dates of last modification
-    
+
     Args:
         fpths_inputs (List[pathlib.Path]): list of input files
         fpths_outputs (List[pathlib.Path]): list of output files
-        
+
     Returns:
-        str: 'no_outputs', 'outputs_need_updating' or 'up_to_date' 
-        """
+        str: 'no_outputs', 'outputs_need_updating' or 'up_to_date'
+    """
     # ['no_outputs', 'up_to_date', 'outputs_need_updating']
     if len(fpths_inputs) == 0:
         return "error"
@@ -518,16 +449,20 @@ def get_status(fpths_inputs, fpths_outputs):
     else:
         return "up_to_date"
 
-    
+
 from pydantic import BaseModel, validate_model
+
+
 def validate(model: BaseModel):
     """validate pydantic model after initialiation. NOT IN USE"""
     *_, validation_error = validate_model(model.__class__, model.__dict__)
     if validation_error:
         raise validation_error
-        
+
+
 def display_ui_tooltips(uiobj):
-    """pass a ui object and display all items that contain tooltips with the tooltips exposed. NOT IN USE"""
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed. NOT IN USE
+    """
     li = []
     for k, v in uiobj.__dict__.items():
         try:
