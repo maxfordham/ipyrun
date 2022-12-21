@@ -607,7 +607,7 @@ class RunShellActions(DefaultRunActions):
                 fns_onsave=[values["update_status"]],
             )
             paths = [
-                values["config"].fdir_root / f for f in values["config"].fpths_inputs
+                f for f in values["config"].fpths_inputs
             ]
             return wrapped_partial(
                 AutoDisplayInputs,
@@ -622,7 +622,7 @@ class RunShellActions(DefaultRunActions):
         if values["config"] is not None and values["app"] is not None:
             AutoDisplayOutputs = update_AutoDisplay(values["config"])
             paths = [
-                values["config"].fdir_root / f for f in values["config"].fpths_outputs
+                f for f in values["config"].fpths_outputs
             ]
             return wrapped_partial(
                 AutoDisplayOutputs,
