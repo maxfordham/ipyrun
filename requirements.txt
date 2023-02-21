@@ -6,7 +6,7 @@ numpy==1.22.0
 dataclasses==0.8
 halo==0.0.31
 immutables==0.16
-ipython==8.1.1
+ipython==8.10.0
 Markdown==3.3.6
 pydantic==1.9.0
 PyYAML==6.0

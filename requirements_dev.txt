@@ -20,7 +20,7 @@ ipyfilechooser==0.4.3
 ipywidgets==7.6.3
 dacite==1.6.0
 dataclasses==0.8
-ipython==7.24.1
+ipython==8.10.0
 PyYAML==5.4.1
 mydocstring
 stringcase
