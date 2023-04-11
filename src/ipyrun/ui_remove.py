@@ -16,6 +16,7 @@
 """
 generic Add run dialogue
 """
+# %run _dev_sys_path_append.py
 # %run __init__.py
 # %load_ext lab_black
 
@@ -42,12 +43,12 @@ class RemoveRun:
     ):
         """
         a ui element for adding new runs to RunApps
-        
+
         Args:
             app (RunApps): the app that will be modified by this class
             add_cmd (typing.Callable): a function that is executed to add a new run to the "app"
                 on_click of a button. the main app is passed to the function using functools:
-        
+
         Code:
             ```
             def _init_controls(self):
@@ -76,7 +77,10 @@ class RemoveRun:
             ),
         )
         self.form = widgets.HBox(
-            [self.delete_data, widgets.HTML(markdown(self.md_question)),]
+            [
+                self.delete_data,
+                widgets.HTML(markdown(self.md_question)),
+            ]
         )
 
     def _init_controls(self):

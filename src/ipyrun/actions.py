@@ -14,8 +14,8 @@
 #     name: conda-env-ipyautoui-xpython
 # ---
 
+# %run _dev_sys_path_append.py
 # %run __init__.py
-#  ^ this means that the local imports still work when running as a notebook
 # %load_ext lab_black
 
 # +
@@ -78,7 +78,8 @@ class RunActions(BaseModel):
 
 
 def display_runui_tooltips(runui):
-    """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed
+    """
     li = [k for k, v in runui.map_actions.items() if v is not None]
     li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
     return widgets.VBox(
@@ -170,4 +171,3 @@ class DefaultBatchActions(DefaultRunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-

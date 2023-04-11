@@ -15,13 +15,8 @@ Overview:
     - _utils.py : helper functions.
 
 """
-import sys
-
-sys.path.append("/mnt/c/engDev/git_mf/ipyrun/src")
-sys.path.append("/mnt/c/engDev/git_mf/ipyautoui/src")
-# ^ for dev only. delete in production.
-
-
+# %run _dev_sys_path_append.py
+# %load_ext lab_black
 from ipyrun._version import get_versions
 
 __version__ = get_versions()["version"]

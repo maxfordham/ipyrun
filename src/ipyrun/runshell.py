@@ -19,10 +19,9 @@
 A configuration of the ipyrun App for running shell commands scripts. 
 By default it is used for running python scripts on the command line.
 """
+# %run _dev_sys_path_append.py
 # %run __init__.py
-#  ^ this means that the local imports still work when running as a notebook
 # %load_ext lab_black
-
 
 # +
 # core libs
@@ -606,9 +605,7 @@ class RunShellActions(DefaultRunActions):
                 values["config"],
                 fns_onsave=[values["update_status"]],
             )
-            paths = [
-                f for f in values["config"].fpths_inputs
-            ]
+            paths = [f for f in values["config"].fpths_inputs]
             return wrapped_partial(
                 AutoDisplayInputs,
                 paths,
@@ -621,9 +618,7 @@ class RunShellActions(DefaultRunActions):
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
             AutoDisplayOutputs = update_AutoDisplay(values["config"])
-            paths = [
-                f for f in values["config"].fpths_outputs
-            ]
+            paths = [f for f in values["config"].fpths_outputs]
             return wrapped_partial(
                 AutoDisplayOutputs,
                 paths,
