@@ -32,7 +32,6 @@ import shutil
 import pathlib
 import functools
 import subprocess
-import getpass
 import stringcase
 from jinja2 import Template
 from markdown import markdown
@@ -41,7 +40,7 @@ import logging
 
 # object models
 from pydantic import validator, Field
-from typing import Optional, List, Dict, Type, Callable, Union, Any
+from typing import Optional, List, Dict, Type, Callable, Union
 from enum import Enum
 
 # widget stuff
@@ -50,7 +49,6 @@ import ipywidgets as widgets
 from halo import HaloNotebook
 from markdown import markdown
 
-
 from ipyautoui import AutoUi, AutoDisplay
 from ipyautoui._utils import (
     PyObj,
@@ -58,20 +56,21 @@ from ipyautoui._utils import (
     create_pydantic_json_file,
     display_pydantic_json,
     check_installed,
+    # get_user
 )
 
 
 # from this repo
-from ipyrun.runui import RunUi, RunApp, BatchApp
+from ipyrun.runui import RunApp, BatchApp
 from ipyrun.constants import BUTTON_WIDTH_MIN
 from ipyrun.actions import (
-    RunActions,
-    BatchActions,
+    # RunActions,
+    # BatchActions,
     DefaultRunActions,
     DefaultBatchActions,
 )
 from ipyrun.basemodel import BaseModel
-from ipyrun._utils import get_status, open_file
+from ipyrun._utils import get_status
 from ipyrun.constants import (
     PATH_CONFIG,
     PATH_RUNHISTORY,
@@ -94,16 +93,6 @@ def wrapped_partial(func, *args, **kwargs):
 
 
 # +
-def get_mfuser_initials():
-    user = getpass.getuser()
-    return user[0] + user[2]
-
-
-from enum import Enum
-from pydantic import Field
-import typing as ty
-from ipyautoui._utils import obj_from_importstr
-
 
 class FiletypeEnum(str, Enum):
     input = "in"
@@ -111,40 +100,26 @@ class FiletypeEnum(str, Enum):
     wip = "wip"
 
 
-class JsonablePyObject(BaseModel):
-    """a definition of a python object"""
-
-    pyobject: str
-    object: ty.Callable = Field(None, exclude=True)
-
-    @validator("object", always=True)
-    def _object(cls, v, values):
-        return obj_from_importstr(values["pyobject"])
+# class JsonablePyObject(BaseModel):
+#     """a definition of a python object"""
+#     pyobject: str
+#     object: ty.Callable = Field(None, exclude=True)
+#     @validator("object", always=True)
+#     def _object(cls, v, values):
+#         return obj_from_importstr(values["pyobject"])
 
 
-class AutoDisplayDefinition(JsonablePyObject):
+class AutoDisplayDefinition(PyObj):
     ftype: FiletypeEnum = Field(
         None, description='valid inputs are: "in", "out", "wip"'
     )
     ext: str
 
-    @validator("object", always=True)
-    def _object(cls, v, values):
-        obj = obj_from_importstr(values["pyobject"])
-        if isinstance(obj, dict) or issubclass(obj, BaseModel):
-            obj = AutoUi.create_autodisplay_map(
-                schema=obj, ext=values["ext"], fns_onsave=fns_onsave
-            )
-        return obj
 
-
-def create_autodisplay_map(
-    ddf: AutoDisplayDefinition, fns_onsave: Callable = lambda: None
-):
+def create_autodisplay_map(ddf: AutoDisplayDefinition, **kwargs):
     model = load_PyObj(ddf)
-    return AutoUi.create_autodisplay_map(
-        schema=model, ext=ddf.ext, fns_onsave=fns_onsave
-    )
+    kwargs = kwargs | dict(show_savebuttonbar=True)
+    return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
 
 
 class BaseConfigShell(BaseModel):
@@ -232,8 +207,6 @@ class ConfigShell(BaseModel):
 
 
 # -
-
-
 class DefaultConfigShell(ConfigShell):
     """
     a config object. all the definitions required to create the RunActions for a shell running tools are here.
@@ -355,23 +328,23 @@ class DefaultConfigShell(ConfigShell):
     def _fpths_inputs(cls, v, values):
         if v is None:
             v = []
-            # if values["autodisplay_definitions"] is not None:
-            #     ddfs = [
-            #         v_
-            #         for v_ in values["autodisplay_definitions"]
-            #         if v_.ftype.value == "in"
-            #     ]
-            #     paths = [
-            #         values["fdir_root"]
-            #         / values["fdir_appdata"]
-            #         / ("in-" + values["key"] + ddf.ext)
-            #         for ddf in ddfs
-            #     ]
-            #     for ddf, path in zip(ddfs, paths):
-            #         if not path.is_file():
-            #             create_pydantic_json_file(ddf, path)  # TODO: remove from here?
-            #     v = [p.relative_to(values["fdir_root"]) for p in paths]
-            #
+            if values["autodisplay_definitions"] is not None:
+                ddfs = [
+                    v_
+                    for v_ in values["autodisplay_definitions"]
+                    if v_.ftype.value == "in"
+                ]
+                paths = [
+                    values["fdir_root"]
+                    / values["fdir_appdata"]
+                    / ("in-" + values["key"] + ddf.ext)
+                    for ddf in ddfs
+                ]
+                for ddf, path in zip(ddfs, paths):
+                    if not path.is_file():
+                        create_pydantic_json_file(ddf, path)  # TODO: remove from here?
+                v = [p.relative_to(values["fdir_root"]) for p in paths]
+
             # ^ NOTE: while generic-ish, this code is probs not generic enough to be in the
             #   root default definition
         assert type(v) == list, "type(v) != list"
@@ -476,30 +449,6 @@ def update_status(app, fn_saveconfig):
     fn_saveconfig()
 
 
-def update_AutoDisplay(config, fns_onsave=None):
-    def apply_fns_onsave(obj, fns_onsave):
-        try:
-            return wrapped_partial(obj, fns_onsave=fns_onsave)
-        except:
-            from inspect import getfullargspec
-
-            if "fns_onsave" not in getfullargspec(obj):
-                raise ValueError(
-                    "'fns_onsave' not and arg for AutoDisplay UI. It must be for to add"
-                    " commands to the save button."
-                )
-            else:
-                pass
-
-    file_renderers = {
-        d.ext: apply_fns_onsave(d.object, fns_onsave)
-        for d in config.autodisplay_definitions
-    }
-    #  TODO: a tidier, more robust, more universal method to update the status on save
-    #        would be to use watchdog. how to let it run in the background... ?
-    return wrapped_partial(AutoDisplay.from_paths, file_renderers=file_renderers)
-
-
 def make_run_hide(fn_on_click):
     run_hide = widgets.Button(
         layout={"width": BUTTON_WIDTH_MIN},
@@ -559,6 +508,15 @@ class RunShellActions(DefaultRunActions):
         None  # not a config type is defined - get pydantic to validate it
     )
 
+    @validator("renderers", always=True)
+    def _renderers(cls, v, values):
+        renderers = {}
+        for d in values["config"].autodisplay_definitions:
+            renderers = renderers | create_autodisplay_map(
+                d, fns_onsave=[values["update_status"]]
+            )
+        return renderers
+
     @validator("hide", always=True)
     def _hide(cls, v, values):
         return None
@@ -601,14 +559,11 @@ class RunShellActions(DefaultRunActions):
         if values["config"] is not None:
             if values["update_status"].__name__ != "update_status":
                 raise ValueError("update_status error")
-            AutoDisplayInputs = update_AutoDisplay(
-                values["config"],
-                fns_onsave=[values["update_status"]],
-            )
             paths = [f for f in values["config"].fpths_inputs]
             return wrapped_partial(
-                AutoDisplayInputs,
+                AutoDisplay.from_paths,
                 paths,
+                renderers=values["renderers"],
                 **values["config"].autodisplay_inputs_kwargs,
             )
         else:
@@ -617,12 +572,12 @@ class RunShellActions(DefaultRunActions):
     @validator("outputs_show", always=True)
     def _outputs_show(cls, v, values):
         if values["config"] is not None and values["app"] is not None:
-            AutoDisplayOutputs = update_AutoDisplay(values["config"])
             paths = [f for f in values["config"].fpths_outputs]
             return wrapped_partial(
-                AutoDisplayOutputs,
+                AutoDisplay.from_paths,
                 paths,
-                **values["config"].autodisplay_outputs_kwargs,
+                renderers=values["renderers"],
+                **values["config"].autodisplay_inputs_kwargs,
             )
         else:
             return None
@@ -1045,20 +1000,3 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-# + active=""
-# def hi(a, b="b", c="c", *args, **kwargs):
-#     print(inspect.getfullargspec(hi))
-#     print(kwargs)
-
-
-# + active=""
-# hi("a", d=3)
-
-# + active=""
-# import inspect
-#
-# inspect.getfullargspec(hi)
-
-# + active=""
-#

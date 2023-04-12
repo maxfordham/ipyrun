@@ -20,7 +20,7 @@
 
 # +
 import functools
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Dict, Callable
 from pydantic import Field, validator
 from markdown import markdown
 
@@ -52,6 +52,7 @@ class RunActions(BaseModel):
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
     update_status: Optional[Callable] = lambda: "update_status"
+    renderers: Dict[str, Callable] = Field(None, description="renderer UI objects that get attached to AutoDisplay", exclude=True)
     help_ui_show: Optional[Callable] = lambda: "help_ui_show"  # Image(PATH_RUNAPP_HELP)
     help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
     help_run_show: Optional[Callable] = lambda: "help_run_show"
