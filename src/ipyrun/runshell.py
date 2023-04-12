@@ -824,9 +824,9 @@ def fn_remove(app=None, key=None):
         key = app.runs.iterable[-1].key
     fdir = [i.fdir_appdata for i in app.config.configs if i.key == key][0]
     app.configs_remove(key)
-    shutil.rmtree(fdir)
     app.watch_run_statuses()
     app.actions.update_status()
+    shutil.rmtree(fdir)
 
 
 def fn_remove_show(app=None):
