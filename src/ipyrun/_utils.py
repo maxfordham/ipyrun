@@ -388,7 +388,7 @@ def template_plus_button(description="", tooltip="add"):
         description=description,
         tooltip=tooltip,
         button_style="primary",
-        icon="fa-plus",
+        icon="plus",
         style={"font_weight": "bold"},
         layout=widgets.Layout(width=BUTTON_WIDTH_MIN),
     )
@@ -399,7 +399,7 @@ def template_minus_button(description="", tooltip="remove"):
         description=description,
         tooltip=tooltip,
         button_style="danger",
-        icon="fa-minus",
+        icon="minus",
         style={"font_weight": "bold"},
         layout=widgets.Layout(width=BUTTON_WIDTH_MIN),
     )

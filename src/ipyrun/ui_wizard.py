@@ -116,13 +116,13 @@ def style_widget_row(row: SelectWidgetRow, s: SelectProcess, debug: bool = False
 
     def check_remove_only(row: SelectWidgetRow, create_tooltip=""):
         # create
-        row.create.icon = "fa-check"
+        row.create.icon = "check"
         row.create.tooltip = "already exists in project"
         row.create.button_style = "success"
         row.create.disabled = True
         # remove
         row.remove.tooltip = "remove from project"
-        row.remove.icon = "fa-trash"
+        row.remove.icon = "trash"
         row.remove.button_style = "danger"
         row.remove.style.button_color = None
         row.remove.disabled = False
@@ -163,7 +163,7 @@ def style_widget_row(row: SelectWidgetRow, s: SelectProcess, debug: bool = False
         row.long_name.disabled = True
         # create
         row.create.disabled = False
-        row.create.icon = "fa-plus"
+        row.create.icon = "plus"
         row.create.button_style = "warning"
         row.create.tooltip = "add {} to project. MXF standard schedule.".format(
             s.long_name
@@ -172,7 +172,7 @@ def style_widget_row(row: SelectWidgetRow, s: SelectProcess, debug: bool = False
         row.remove.tooltip = "cannot remove template processes from list"
         row.remove.button_style = ""
         row.remove.icon = (  #  this icon doesn't exist. but removes the old one to leave it blank (desired).
-            "fa-full"
+            "full"
         )
         row.remove.disabled = True
         row.remove.style.button_color = "white"
@@ -185,14 +185,14 @@ def style_widget_row(row: SelectWidgetRow, s: SelectProcess, debug: bool = False
             print("                       --> row removed")
         # create
         row.create.disabled = False
-        row.create.icon = "fa-plus"
+        row.create.icon = "plus"
         row.create.button_style = "warning"
         row.create.tooltip = "add {} to project. Project defined schedule.".format(
             s.long_name
         )
         # remove
         row.remove.tooltip = "remove from list"
-        row.remove.icon = "fa-minus"
+        row.remove.icon = "minus"
         row.remove.button_style = ""
         row.fromTemplate.value = FROM_TEMPLATE_IMG[False]
         row.long_name.disabled = False

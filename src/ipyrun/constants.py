@@ -30,41 +30,40 @@ FILENAME_FORBIDDEN_CHARACTERS = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
 JOBNO_DEFAULT = "J5001"  #  testing job
 
 
-
 # RunApp status button styles ------------------------
 STATUS_BUTTON_UPTODATE = frozenmap(
-    icon="fa-check",
+    icon="check",
     style={},
     button_style="success",
     tooltip="up-to-date",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    #disabled=True,
+    # disabled=True,
 )
 
 STATUS_BUTTON_NOOUTPUTS = frozenmap(
-    icon="fa-circle",
+    icon="circle",
     style={"button_color": "LightYellow"},
     button_style="",
     tooltip="no-outputs",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    #disabled=True,
+    # disabled=True,
 )
 
 STATUS_BUTTON_NEEDSRERUN = frozenmap(
-    icon="fa-refresh",
+    icon="refresh",
     style={},
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    #disabled=True,
+    # disabled=True,
 )
 STATUS_BUTTON_ERROR = frozenmap(
-    icon="fa-exclamation-triangle",
+    icon="exclamation-triangle",
     style={},
     button_style="danger",
     tooltip="outputs out-of-date. needs re-run",
     layout={"width": BUTTON_WIDTH_MIN, "height": "40px"},
-    #disabled=True,
+    # disabled=True,
 )
 
 DI_STATUS_MAP = frozenmap(
@@ -80,7 +79,11 @@ CHECK = dict(
     value=False,  # self.checked
     disabled=False,
     indent=False,
-    layout=dict(max_width="20px", height="40px", padding="3px",),
+    layout=dict(
+        max_width="20px",
+        height="40px",
+        padding="3px",
+    ),
 )
 HELP_UI = dict(
     icon="question-circle",
@@ -96,7 +99,10 @@ HELP_RUN = dict(
 )
 HELP_CONFIG = dict(
     icon="cog",
-    tooltip="the config of the Run. i.e. where is the process getting data from and saving results to?",
+    tooltip=(
+        "the config of the Run. i.e. where is the process getting data from and saving"
+        " results to?"
+    ),
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
 )
@@ -118,7 +124,10 @@ OUTPUTS = dict(
 )
 RUNLOG = dict(
     description="runlog",
-    tooltip="show a runlog of when the script was executed to generate the outputs, and by who",
+    tooltip=(
+        "show a runlog of when the script was executed to generate the outputs, and"
+        " by who"
+    ),
     button_style="info",
     icon="scroll",
     style={"font_weight": "bold"},
@@ -126,20 +135,20 @@ RUNLOG = dict(
 )
 RUN = dict(
     description=" run",
-    icon="fa-play",
+    icon="play",
     tooltip="execute the process based on the defined user inputs",
     button_style="success",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MEDIUM},
 )
 SHOW = dict(
-    icon="fa-eye",
+    icon="eye",
     tooltip="default show",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
 )
 HIDE = dict(
-    icon="fa-eye-slash",
+    icon="eye-slash",
     tooltip="default show",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
@@ -153,7 +162,7 @@ LOAD = dict(
     layout={"width": BUTTON_WIDTH_MIN},
 )
 OPEN_LOADED = dict(
-    icon="fa-folder-open",
+    icon="folder-open",
     tooltip="open active application directory",
     style={"font_weight": "bold"},
     layout={"width": BUTTON_WIDTH_MIN},
@@ -179,7 +188,7 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     hide=HIDE,
     load=LOAD,
     open_loaded=OPEN_LOADED,
-    container=dict(layout={'width':'100%'}, selected_index=None)
+    container=dict(layout={"width": "100%"}, selected_index=None),
 )
 
 ADD = dict(
@@ -212,7 +221,7 @@ def load_test_constants():
 
     Returns:
         module: test_constants object
-        
+
     Example:
         DIR_TESTS
         DIR_EXAMPLE_PROCESS

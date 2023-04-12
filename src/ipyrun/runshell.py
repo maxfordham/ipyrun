@@ -94,6 +94,7 @@ def wrapped_partial(func, *args, **kwargs):
 
 # +
 
+
 class FiletypeEnum(str, Enum):
     input = "in"
     output = "out"
@@ -452,7 +453,7 @@ def update_status(app, fn_saveconfig):
 def make_run_hide(fn_on_click):
     run_hide = widgets.Button(
         layout={"width": BUTTON_WIDTH_MIN},
-        icon="fa-times",
+        icon="times",
         button_style="danger",
     )
     run_hide.on_click(fn_on_click)
