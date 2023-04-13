@@ -16,7 +16,7 @@ PATH_RUNAPP_HELP = PATH_PACKAGE / "images" / "RunApp.png"
 PATH_RUNAPPS_HELP = PATH_PACKAGE / "images" / "RunBatch.png"
 FPTH_MXF_ICON = PATH_PACKAGE / "images" / "mxf-icon.png"
 FPTH_USER_ICON = PATH_PACKAGE / "images" / "user-icon.png"
-FPTH_EXAMPLE_SCRIPT = PATH_PACKAGE / "examplerun" / "script_linegraph.py"
+FPTH_EXAMPLE_SCRIPT = PATH_PACKAGE / "examplerun"
 FPTH_EXAMPLE_INPUTSCHEMA = PATH_PACKAGE / "examplerun" / "input_schema_linegraph.py"
 
 # default names of files in RunShell
