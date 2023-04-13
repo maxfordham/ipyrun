@@ -93,8 +93,6 @@ def wrapped_partial(func, *args, **kwargs):
 
 
 # +
-
-
 class FiletypeEnum(str, Enum):
     input = "in"
     output = "out"
@@ -109,7 +107,10 @@ class FiletypeEnum(str, Enum):
 #     def _object(cls, v, values):
 #         return obj_from_importstr(values["pyobject"])
 
-
+# TODO:
+# if we make a rule that is the input schema must be imported into `path_run`
+# then all we need is the class name (e.g. InputSchema) and we can import the
+# object from path_run
 class AutoDisplayDefinition(PyObj):
     ftype: FiletypeEnum = Field(
         None, description='valid inputs are: "in", "out", "wip"'
@@ -208,6 +209,7 @@ class ConfigShell(BaseModel):
 
 
 # -
+
 class DefaultConfigShell(ConfigShell):
     """
     a config object. all the definitions required to create the RunActions for a shell running tools are here.
@@ -246,8 +248,6 @@ class DefaultConfigShell(ConfigShell):
                     paths = [fdir / ('out-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
     """
-
-    # add_display_renderer  # TODO: add this as a way to push in a renderer without needing to use AutoUi?
 
     @validator("status")
     def _status(cls, v, values):
@@ -404,10 +404,6 @@ def udpate_env(append_to_pythonpath: str):
 def run(config: Type[ConfigShell]):
     save = sys.stdout
     sys.stdout = io.StringIO()
-    # subprocess.call('python -O -m script_linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json',
-    #                 shell=True, # i.e. run on the command line
-    #                 cwd='/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata', # in this directory
-    #                 env=env) # with with this PYTHONPATH in the env vars
     env = udpate_env(config.pythonpath)
     proc = subprocess.check_output(config.shell, env=env, shell=True)
     in_stdout = sys.stdout.getvalue()
@@ -502,8 +498,7 @@ def run_shell(app=None, display_hide_btn=True):
 
 
 class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects.
-    """
+    """extends RunActions by creating Callables based on data within the app or the config objects."""
 
     config: DefaultConfigShell = (
         None  # not a config type is defined - get pydantic to validate it
@@ -646,33 +641,6 @@ if __name__ == "__main__":
     config = LineGraphConfigShell(fdir_root=test_constants.FDIR_APPDATA)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
-
-
-# +
-# run_app.actions.update_status()
-
-# +
-# fpths_inputs = run_app.config.fpths_inputs
-# fpths_outputs = run_app.config.fpths_outputs
-
-# in_max = max([f.lstat().st_mtime for f in fpths_inputs])
-# out_max = max([f.lstat().st_mtime for f in fpths_outputs])
-# in_max
-# out_max
-
-# if in_max > out_max:
-#     print("outputs_need_updating")
-
-# +
-# import subprocess
-# import os
-# env = os.environ
-# env['PYTHONPATH'] = '/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun'
-# subprocess.call('python -O -m script_linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json',
-#                 shell=True, # i.e. run on the command line
-#                 cwd='/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata', # in this directory
-#                 env=env) # with with this PYTHONPATH in the env vars
-# -
 
 
 class ConfigBatch(BaseModel):
@@ -1001,3 +969,5 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
