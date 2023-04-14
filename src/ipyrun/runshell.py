@@ -56,6 +56,7 @@ from ipyautoui._utils import (
     create_pydantic_json_file,
     display_pydantic_json,
     check_installed,
+    open_path,
     # get_user
 )
 
@@ -499,7 +500,8 @@ def run_shell(app=None, display_hide_btn=True):
 
 
 class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects."""
+    """extends RunActions by creating Callables based on data within the app or the config objects.
+    """
 
     config: DefaultConfigShell = (
         None  # not a config type is defined - get pydantic to validate it
@@ -970,7 +972,3 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-
-
-
