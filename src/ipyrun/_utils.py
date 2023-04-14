@@ -19,7 +19,7 @@ import fnmatch
 
 import ipywidgets as widgets
 from ipyrun.constants import BUTTON_WIDTH_MIN
-from ipyautoui._utils import open_file
+from ipyautoui._utils import open_path
 
 
 #  from mf_modules.pandas_operations import del_matching
@@ -233,7 +233,7 @@ def write_json(
         if print_fpth ==True:
             print(fpth)
         if openFile==True:
-            open_file(fpth)
+            open_path(fpth)
         return fpth
     """
     out = json.dumps(data, sort_keys=sort_keys, indent=indent)
@@ -243,7 +243,7 @@ def write_json(
     if print_fpth == True:
         print(fpth)
     if openFile == True:
-        open_file(fpth)
+        open_path(fpth)
     return fpth
 
 
@@ -264,7 +264,7 @@ def write_yaml(
     if print_fpth == True:
         print(fpth)
     if openFile == True:
-        open_file(fpth)
+        open_path(fpth)
     return fpth
 
 

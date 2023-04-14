@@ -210,6 +210,7 @@ class ConfigShell(BaseModel):
 
 # -
 
+
 class DefaultConfigShell(ConfigShell):
     """
     a config object. all the definitions required to create the RunActions for a shell running tools are here.
@@ -817,7 +818,7 @@ def set_loaded(app=None, value=""):
 
 def open_loaded(app=None, fdir_root=None):
     with app.out_load:
-        open_file(fdir_root)
+        open_path(fdir_root)
         clear_output()
 
 
@@ -969,5 +970,7 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
 
 
