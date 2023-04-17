@@ -6,8 +6,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9
-  - ipyautoui
+  - python
   - halo
   - jupytext
   - jupyterlab-lsp
@@ -20,4 +19,4 @@ dependencies:
   - pip:
     - traitlets-paths
     - seedir
-    - git+ssh://git@github.com/maxfordham/ipyautoui.git@0.4.8
+    - ipyautoui>=0.5.0
