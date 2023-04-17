@@ -6,12 +6,12 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9
+  - python
+  - halo
   - jupytext
   - jupyterlab-lsp
   - python-lsp-server
-  - ipywidgets<8  
-  - plotly
+  - black
   - nb_black
   - halo
   - traitlets
@@ -21,4 +21,4 @@ dependencies:
   - pip:
     - traitlets-paths
     - seedir
-    - git+https://git@github.com/maxfordham/ipyautoui
+    - ipyautoui>=0.5.0

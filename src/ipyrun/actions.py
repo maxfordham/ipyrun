@@ -14,13 +14,13 @@
 #     name: conda-env-ipyautoui-xpython
 # ---
 
+# %run _dev_sys_path_append.py
 # %run __init__.py
-#  ^ this means that the local imports still work when running as a notebook
 # %load_ext lab_black
 
 # +
 import functools
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Dict, Callable
 from pydantic import Field, validator
 from markdown import markdown
 
@@ -52,6 +52,7 @@ class RunActions(BaseModel):
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
     update_status: Optional[Callable] = lambda: "update_status"
+    renderers: Dict[str, Callable] = Field(None, description="renderer UI objects that get attached to AutoDisplay", exclude=True)
     help_ui_show: Optional[Callable] = lambda: "help_ui_show"  # Image(PATH_RUNAPP_HELP)
     help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
     help_run_show: Optional[Callable] = lambda: "help_run_show"
@@ -78,7 +79,8 @@ class RunActions(BaseModel):
 
 
 def display_runui_tooltips(runui):
-    """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed
+    """
     li = [k for k, v in runui.map_actions.items() if v is not None]
     li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
     return widgets.VBox(
@@ -170,4 +172,3 @@ class DefaultBatchActions(DefaultRunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
-

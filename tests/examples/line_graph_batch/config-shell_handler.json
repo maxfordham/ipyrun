@@ -6,16 +6,16 @@
     "configs": [
         {
             "index": 0,
-            "path_run": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/script_linegraph.py",
-            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun",
-            "run": "script_linegraph",
+            "path_run": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun",
+            "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun",
+            "run": "examplerun",
             "name": "linegraph",
             "long_name": "00 - Linegraph",
             "key": "00-linegraph",
             "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/line_graph_batch",
             "fdir_appdata": "00-linegraph",
             "in_batch": true,
-            "status": "no_outputs",
+            "status": "up_to_date",
             "update_config_at_runtime": false,
             "autodisplay_definitions": [
                 {
@@ -46,7 +46,7 @@
             "call": "python -O -m",
             "params": {},
             "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-            "shell": "python -O -m script_linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json"
+            "shell": "python -O -m examplerun 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json"
         }
     ]
 }

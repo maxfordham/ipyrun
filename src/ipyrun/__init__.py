@@ -15,17 +15,8 @@ Overview:
     - _utils.py : helper functions.
 
 """
-import sys
-
-sys.path.append("/mnt/c/engDev/git_mf/ipyrun/src")
-# sys.path.append('/mnt/c/engDev/git_mf/ipypdt')
-# sys.path.append('/mnt/c/engDev/git_mf/ipyword')
-# sys.path.append("/mnt/c/engDev/git_mf/mfom")
-sys.path.append("/mnt/c/engDev/git_mf/ipyautoui/src")
-# sys.path.append("/mnt/c/engDev/git_mf/MFFileUtilities")
-# ^ for dev only. delete in production.
-
-
+# %run _dev_sys_path_append.py
+# %load_ext lab_black
 from ipyrun._version import get_versions
 
 __version__ = get_versions()["version"]
