@@ -10,14 +10,12 @@ name: ipyrun-docs
 channels:
   - defaults
   - conda-forge
-#  - http://10.10.30.125:8000
 dependencies:
   - python>=3.7,<3.10
   - numpy
   - pandas
   - matplotlib
   - jupyterlab>=3.0.14
-  - ipyautoui
   - voila>=0.2.11
   - plotly
   - halo
@@ -28,12 +26,12 @@ dependencies:
   - pydantic
   - pyyaml
   - pillow
-#  - click
   - openpyxl
   - black
   - nb_black
   - immutables
   - stringcase
+  - emoji
   - jupyter-book # for docs
   - sphinx # for docs
   - sphinx-book-theme # for docs
@@ -45,7 +43,4 @@ dependencies:
   - pip:
     - traitlets-paths
     - seedir
-#  - xlsxwriter 
-#  - xlsxtemplater 
-#  - mf_file_utilities 
-#  - mfom
+    - git+https://git@github.com/maxfordham/ipyautoui

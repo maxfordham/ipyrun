@@ -118,6 +118,7 @@ def modify_string(
     fn_on_string=stringcase.pascalcase,
 ):
     if remove_spaces:
+        s = stringcase.titlecase(s)
         s = s.replace(" ", "")
     if remove_forbidden_chars:
         for c in FILENAME_FORBIDDEN_CHARACTERS:
@@ -167,7 +168,7 @@ class AddNamedRun(traitlets.HasTraits):
 
     @property
     def question_value(self):
-        return markdown(f"would you like to add new a run? `{self.value}`")
+        return markdown(f"Would you like to add new a run? `{self.value}`")
 
     def _init_controls(self):
         self.add.on_click(self._add)
@@ -181,7 +182,7 @@ class AddNamedRun(traitlets.HasTraits):
         self.question.value = self.question_value
 
     def _add(self, click):
-        return self.fn_add(app=self.app, name=self.value)
+        return self.fn_add(name=self.value)
 
     def display(self):
         display(self.form)
