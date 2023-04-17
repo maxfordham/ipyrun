@@ -500,8 +500,7 @@ def run_shell(app=None, display_hide_btn=True):
 
 
 class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects.
-    """
+    """extends RunActions by creating Callables based on data within the app or the config objects."""
 
     config: DefaultConfigShell = (
         None  # not a config type is defined - get pydantic to validate it
@@ -644,6 +643,9 @@ if __name__ == "__main__":
     config = LineGraphConfigShell(fdir_root=test_constants.FDIR_APPDATA)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
+
+if __name__ == "__main__":
+    pr = run(config)
 
 
 class ConfigBatch(BaseModel):
@@ -972,3 +974,7 @@ if __name__ == "__main__":
         config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
+
+
