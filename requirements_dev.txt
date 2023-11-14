@@ -14,7 +14,7 @@ pandas==1.2.4
 ipydatagrid
 halo==0.0.31
 mfom
-pydantic==1.8.1
+pydantic==1.8.2
 plotly==4.14.3
 ipyfilechooser==0.4.3
 ipywidgets==7.6.3
