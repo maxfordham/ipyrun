@@ -8,7 +8,7 @@ halo==0.0.31
 immutables==0.16
 ipython==8.10.0
 Markdown==3.3.6
-pydantic==1.9.0
+pydantic==1.8.2
 PyYAML==6.0
 stringcase==1.2.0
 ipyautoui==0.2.1
