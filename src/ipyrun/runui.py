@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.5
+#       jupytext_version: 1.16.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -40,7 +40,7 @@ from ipyautoui.custom import FileChooser
 
 # from this repo
 from ipyrun.actions import RunActions, BatchActions, DefaultRunActions
-from ipyrun._utils import make_dir, del_matching, validate
+from ipyrun._utils import make_dir, del_matching
 from ipyrun.constants import (
     BUTTON_WIDTH_MIN,
     BUTTON_WIDTH_MEDIUM,
@@ -76,7 +76,7 @@ class UiComponents:
     def _init_UiButtons(
         self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion
     ):
-        self.check = widgets.Checkbox()
+        self.check = widgets.Checkbox(tooltip="select run")
         self.status_indicator = widgets.Button(disabled=True)
         self.help_ui = widgets.ToggleButton()
         self.help_run = widgets.ToggleButton()
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 # +
 class RunUiConfig(BaseModel):
-    include_show_hide = True
+    include_show_hide: bool = True
 
 
 class RunActionsUi(UiComponents):
@@ -528,8 +528,8 @@ if __name__ == "__main__":
     run_actions1 = DefaultRunActions(check=None)
     run_ui1 = RunUi(run_actions=run_actions1)
     display(run_ui1.run_form)
+# -
 
-# + tags=[]
 if __name__ == "__main__":
     # actions can be changed on the fly and the form will update
     # but the whole actions object must be updated rather than component parts
@@ -538,7 +538,6 @@ if __name__ == "__main__":
     run_ui.actions = actions
 
 
-# + tags=[]
 class RunApp(widgets.HBox, RunUi):
     """
     The goal of RunApp is to simplify the process of making a functional UI that interacts
@@ -617,16 +616,15 @@ class RunApp(widgets.HBox, RunUi):
         self.actions.update_status()
 
 
-# + tags=[]
 if __name__ == "__main__":
-    from ipyrun.runshell import ConfigShell
+    from ipyrun.runshell import ConfigShell, DefaultConfigShell
 
-    config = ConfigShell(path_run="script.py", long_name="pretty name")
+    config = DefaultConfigShell(path_run="examplerun", long_name="pretty name")
     app = RunApp(config)
     display(app)
 
 
-# + tags=[]
+# +
 class BatchActionsUi(RunActionsUi):
     """maps actions to buttons
 
@@ -768,7 +766,7 @@ KWARGS_OUT_WIDGET_LAYOUT = dict(
     # justify_content="space-between",
     align_content="stretch",
 )
-
+from ipyautoui.custom.iterable import ItemControl
 
 class BatchUi(BatchActionsUi):
     """takes run_actions object as an argument and initiates UI objects using
@@ -780,7 +778,7 @@ class BatchUi(BatchActionsUi):
         batch_actions: BatchActions(wizard_show=None),
         title: str = "# markdown batch title",
         runs: Dict[str, Type[RunUi]] = None,
-        fn_add=None,
+        fn_add=lambda: "fn_add",
         cls_runs_box=Dictionary,
     ):
         self._init_BatchUi(batch_actions, title, runs, fn_add, cls_runs_box)
@@ -802,7 +800,7 @@ class BatchUi(BatchActionsUi):
         batch_actions: BatchActions(wizard_show=None),
         title: str = "# markdown batch title",
         runs: Dict[str, Type[RunUi]] = None,
-        fn_add=None,
+        fn_add=lambda: "fn_add",
         cls_runs_box=Dictionary,
     ):
         self.title = widgets.HTML(markdown(title))
@@ -896,7 +894,7 @@ class BatchUi(BatchActionsUi):
         self.runs = self.cls_runs_box(
             toggle=False,
             watch_value=False,
-            add_remove_controls=None,
+            add_remove_controls=ItemControl.none,
             fn_add=self.fn_add,
             show_hash=None,
         )
