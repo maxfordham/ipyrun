@@ -21,7 +21,7 @@
 # +
 import functools
 from typing import Optional, Callable, Any, Dict, Callable
-from pydantic import Field, validator
+from pydantic import Field, ValidationInfo, field_validator, ConfigDict
 from markdown import markdown
 
 from IPython.display import Image, clear_output, display
@@ -52,7 +52,11 @@ class RunActions(BaseModel):
     uncheck: Optional[Callable] = lambda: "uncheck"
     get_status: Optional[Callable] = lambda: "get_status"
     update_status: Optional[Callable] = lambda: "update_status"
-    renderers: Dict[str, Callable] = Field(None, description="renderer UI objects that get attached to AutoDisplay", exclude=True)
+    renderers: Dict[str, Callable] = Field(
+        None,
+        description="renderer UI objects that get attached to AutoDisplay",
+        exclude=True,
+    )
     help_ui_show: Optional[Callable] = lambda: "help_ui_show"  # Image(PATH_RUNAPP_HELP)
     help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
     help_run_show: Optional[Callable] = lambda: "help_run_show"
@@ -79,8 +83,7 @@ class RunActions(BaseModel):
 
 
 def display_runui_tooltips(runui):
-    """pass a ui object and display all items that contain tooltips with the tooltips exposed
-    """
+    """pass a ui object and display all items that contain tooltips with the tooltips exposed"""
     li = [k for k, v in runui.map_actions.items() if v is not None]
     li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
     return widgets.VBox(
@@ -109,28 +112,28 @@ def hide(app):
 
 
 class DefaultRunActions(RunActions):
-    @validator("show", always=True)
-    def _show(cls, v, values):
+    @field_validator("show")
+    def _show(cls, v: int, info: ValidationInfo):
         return None
 
-    @validator("hide", always=True)
-    def _hide(cls, v, values):
+    @field_validator("hide")
+    def _hide(cls, v: int, info: ValidationInfo):
         return None
 
-    @validator("activate", always=True)
-    def _activate(cls, v, values):
-        return functools.partial(show, values["app"])
+    @field_validator("activate")
+    def _activate(cls, v: int, info: ValidationInfo):
+        return functools.partial(show, info.data["app"])
 
-    @validator("deactivate", always=True)
-    def _deactivate(cls, v, values):
-        return functools.partial(hide, values["app"])
+    @field_validator("deactivate")
+    def _deactivate(cls, v: int, info: ValidationInfo):
+        return functools.partial(hide, info.data["app"])
 
-    @validator("help_ui_show", always=True)
-    def _help_ui_show(cls, v, values):
-        return functools.partial(display_runui_tooltips, values["app"])
+    @field_validator("help_ui_show")
+    def _help_ui_show(cls, v: int, info: ValidationInfo):
+        return functools.partial(display_runui_tooltips, info.data["app"])
 
 
-#  as the RunActions are so generic, the same actions can be applied to Batch operations
+#  as the RunActions are generic, the same actions can be applied to Batch operations
 #  with the addition of some batch specific operations
 class BatchActions(RunActions):
     """actions associated within managing a batch of RunApps. As with the RunActions,
@@ -172,3 +175,5 @@ class DefaultBatchActions(DefaultRunActions):
     wizard_hide: Optional[Callable] = lambda: "wizard_hide"
     review_show: Optional[Callable] = lambda: "review_show"
     review_hide: Optional[Callable] = lambda: "review_hide"
+
+    model_config = ConfigDict(check_fields=False)
