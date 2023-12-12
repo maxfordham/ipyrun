@@ -47,39 +47,39 @@ class RunActions(BaseModel):
 
     config: Any = Field(None, description=des_config)
     app: Any = Field(None, description=des_app)
-    save_config: Optional[Callable] = lambda: "save_config"
-    check: Optional[Callable[[], Any]] = lambda: "check"
-    uncheck: Optional[Callable] = lambda: "uncheck"
-    get_status: Optional[Callable] = lambda: "get_status"
-    update_status: Optional[Callable] = lambda: "update_status"
-    renderers: Dict[str, Callable] = Field(
+    save_config: Optional[Callable] = Field(lambda: "save_config", validate_default=True)
+    check: Optional[Callable[[], Any]] = Field(lambda: "check", validate_default=True)
+    uncheck: Optional[Callable] = Field(lambda: "uncheck", validate_default=True)
+    get_status: Optional[Callable] = Field(lambda: "get_status", validate_default=True)
+    update_status: Optional[Callable] = Field(lambda: "update_status", validate_default=True)
+    renderers: Optional[Dict[str, Callable]] = Field(
         None,
         description="renderer UI objects that get attached to AutoDisplay",
         exclude=True,
-    )
-    help_ui_show: Optional[Callable] = lambda: "help_ui_show"  # Image(PATH_RUNAPP_HELP)
-    help_ui_hide: Optional[Callable] = lambda: "help_ui_hide"
-    help_run_show: Optional[Callable] = lambda: "help_run_show"
-    help_run_hide: Optional[Callable] = lambda: "help_run_hide"
-    help_config_show: Optional[Callable] = lambda: "help_config_show"
-    help_config_hide: Optional[Callable] = lambda: "help_config_hide"
-    inputs_show: Optional[Callable] = lambda: "inputs_show"
-    inputs_hide: Optional[Callable] = lambda: "inputs_hide"
-    outputs_show: Optional[Callable] = lambda: "outputs_show"
-    outputs_hide: Optional[Callable] = lambda: "outputs_hide"
-    runlog_show: Optional[Callable] = lambda: "runlog_show"
-    runlog_hide: Optional[Callable] = lambda: "runlog_hide"
-    load_show: Optional[Callable] = lambda: display(widgets.HTML("load_show"))
-    load_hide: Optional[Callable] = lambda: display(widgets.HTML("load_hide"))
-    load: Optional[Callable] = lambda: display(widgets.HTML("load"))
-    get_loaded: Optional[Callable] = lambda: display(widgets.HTML("get_loaded"))
-    open_loaded: Optional[Callable] = lambda: display(widgets.HTML("open_loaded"))
-    run: Optional[Callable] = lambda: "run"
-    run_hide: Optional[Callable] = lambda: "console_hide"
-    activate: Optional[Callable] = lambda: "activate"
-    deactivate: Optional[Callable] = lambda: "deactivate"
-    show: Optional[Callable] = lambda: "show"
-    hide: Optional[Callable] = lambda: display(widgets.HTML("hide"))
+        validate_default=True)
+    help_ui_show: Optional[Callable] = Field(lambda: "help_ui_show", validate_default=True)
+    help_ui_hide: Optional[Callable] = Field(lambda: "help_ui_hide", validate_default=True)
+    help_run_show: Optional[Callable] = Field(lambda: "help_run_show", validate_default=True)
+    help_run_hide: Optional[Callable] = Field(lambda: "help_run_hide", validate_default=True)
+    help_config_show: Optional[Callable] = Field(lambda: "help_config_show", validate_default=True)
+    help_config_hide: Optional[Callable] =Field( lambda: "help_config_hide", validate_default=True)
+    inputs_show: Optional[Callable] = Field(lambda: "inputs_show", validate_default=True)
+    inputs_hide: Optional[Callable] = Field(lambda: "inputs_hide", validate_default=True)
+    outputs_show: Optional[Callable] = Field(lambda: "outputs_show", validate_default=True)
+    outputs_hide: Optional[Callable] = Field(lambda: "outputs_hide", validate_default=True)
+    runlog_show: Optional[Callable] = Field(lambda: "runlog_show", validate_default=True)
+    runlog_hide: Optional[Callable] = Field(lambda: "runlog_hide", validate_default=True)
+    load_show: Optional[Callable] = Field(lambda: display(widgets.HTML("load_show")), validate_default=True)
+    load_hide: Optional[Callable] = Field(lambda: display(widgets.HTML("load_hide")), validate_default=True)
+    load: Optional[Callable] = Field(lambda: display(widgets.HTML("load")), validate_default=True)
+    get_loaded: Optional[Callable] = Field(lambda: display(widgets.HTML("get_loaded")), validate_default=True)
+    open_loaded: Optional[Callable] = Field(lambda: display(widgets.HTML("open_loaded")), validate_default=True)
+    run: Optional[Callable] = Field(lambda: "run", validate_default=True)
+    run_hide: Optional[Callable] = Field(lambda: "console_hide", validate_default=True)
+    activate: Optional[Callable] = Field(lambda: "activate", validate_default=True)
+    deactivate: Optional[Callable] = Field(lambda: "deactivate", validate_default=True)
+    show: Optional[Callable] = Field(lambda: "show", validate_default=True)
+    hide: Optional[Callable] = Field(lambda: display(widgets.HTML("hide")), validate_default=True)
 
 
 def display_runui_tooltips(runui):
