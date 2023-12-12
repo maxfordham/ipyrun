@@ -1,19 +1,19 @@
 {
     "index": 0,
-    "path_run": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun",
-    "pythonpath": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun",
+    "path_run": "/home/jovyan/ipyrun/src/ipyrun/examplerun",
+    "pythonpath": "/home/jovyan/ipyrun/src/ipyrun",
     "run": "examplerun",
     "name": "examplerun",
     "long_name": "00 - Examplerun",
     "key": "00-examplerun",
-    "fdir_root": "/mnt/c/engDev/git_mf/ipyrun/tests/examples/fdir_appdata",
+    "fdir_root": "/home/jovyan/ipyrun/tests/examples/fdir_appdata",
     "fdir_appdata": "00-examplerun",
     "in_batch": false,
     "status": "up_to_date",
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
         {
-            "path": "/mnt/c/engDev/git_mf/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
+            "path": "/home/jovyan/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
             "obj_name": "LineGraph",
             "module_name": "input_schema_linegraph",
             "ftype": "in",
