@@ -8,7 +8,7 @@ import subprocess
 from typing import Type
 
 
-def file(self: Type[BaseModel], path: pathlib.Path, **json_kwargs):
+def file(self: Type[BaseModel], path: pathlib.Path):
     """
     this is a method that is added to the pydantic BaseModel within AutoUi using
     "setattr".
@@ -22,9 +22,7 @@ def file(self: Type[BaseModel], path: pathlib.Path, **json_kwargs):
     """
     if type(path) == str:
         path = pathlib.Path(path)
-    if "indent" not in json_kwargs.keys():
-        json_kwargs.update({"indent": 4})
-    path.write_text(self.json(**json_kwargs), encoding="utf-8")
+    path.write_text(self.model_dump_json(indent=4), encoding="utf-8")
 
 
 def file_schema(self: Type[BaseModel], path: pathlib.Path, **json_kwargs):
@@ -54,14 +52,14 @@ def file_mdschema(self: Type[BaseModel], path: pathlib.Path, **json_kwargs):
 
 def check_validators(self: Type[BaseModel]):
     model = self.model_validate(self.model_dump())
-
-    try:
-        setattr(self, "__dict__", model.model_dump())
-    except TypeError as e:
-        raise TypeError(
-            "Model values must be a dict; you may not have returned "
-            + "a dictionary from a root validator"
-        ) from e
+    self = model
+    # try:
+    #     setattr(self, "__dict__", model.model_dump())
+    # except TypeError as e:
+    #     raise TypeError(
+    #         "Model values must be a dict; you may not have returned "
+    #         + "a dictionary from a root validator"
+    #     ) from e
 
 
 class BaseModel(BaseModel):

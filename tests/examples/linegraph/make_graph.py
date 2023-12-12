@@ -10,8 +10,10 @@ import plotly.express as px
 from .input_schema_linegraph import LineGraph
 import os
 
+
 def fpth_chg_extension(fpth, new_ext="plotly"):
     return os.path.splitext(fpth)[0] + "." + new_ext
+
 
 def graph(
     formula, x_range, title="", display_plot=False, fpth_save_plot=None, returndf=True
@@ -54,6 +56,7 @@ def graph(
     if returndf:
         return df
 
+
 def graph_filehandler(fpth_in, fpth_out_csv, fpth_out_plotly):
     """
     Args:
@@ -63,7 +66,7 @@ def graph_filehandler(fpth_in, fpth_out_csv, fpth_out_plotly):
     Returns:
         fpth_out_csv
     """
-    inputs = LineGraph.parse_file(fpth_in)
+    inputs = LineGraph(**json.loads(pathlib.Path(fpth_in).read_text()))
     formula = "{} * x + {}".format(inputs.m, inputs.c)
     x_range = np.arange(inputs.x_range[0], inputs.x_range[1], step=1)
     df = graph(

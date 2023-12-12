@@ -38,6 +38,7 @@ from jinja2 import Template
 from markdown import markdown
 import json
 import logging
+import importlib
 
 # object models
 from pydantic import (
@@ -106,13 +107,15 @@ class PyObj(BaseModel):
 
     path: pathlib.Path
     obj_name: str
-    module_name: str = Field(
-        None, description="ignore, this is overwritten by a validator"
+    module_name: ty.Optional[str] = Field(
+        None,
+        description="ignore, this is overwritten by a validator",
+        validate_default=True,
     )
 
     @field_validator("module_name")
-    def _module_name(cls, v, values):
-        return values["path"].stem
+    def _module_name(cls, v, info: ValidationInfo):
+        return info.data["path"].stem
 
 
 def load_PyObj(obj: PyObj):
@@ -290,6 +293,7 @@ class ConfigShell(BaseModel):
     autodisplay_definitions: List[AutoDisplayDefinition] = Field(
         default_factory=list,
         description="autoui definitions for displaying files. see ipyautoui",
+        validate_default=True,
     )
     autodisplay_inputs_kwargs: Dict = Field(default_factory=dict)
     autodisplay_outputs_kwargs: Dict = Field(default_factory=dict)
@@ -534,7 +538,7 @@ if __name__ == "__main__":
     config = DefaultConfigShell(
         path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
     )
-    display(config.dict())
+    display(config.model_dump())
 
 
 # +
@@ -724,7 +728,14 @@ if __name__ == "__main__":
     config = DefaultConfigShell(
         path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
     )
-    display(config.dict())
+    display(config.model_dump())
+
+if __name__ == "__main__":
+    config = DefaultConfigShell(
+        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
+    )
+    actions = RunShellActions(config=config)
+    display(actions)
 
 if __name__ == "__main__":
 
@@ -850,7 +861,7 @@ if __name__ == "__main__":
         cls_config=ConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
-    display(config_batch.dict())
+    display(config_batch.model_dump())
 
 
 # +
@@ -940,7 +951,7 @@ def load_dir(app=None, fdir_root=None):
     cl = type(app.config)
     config_batch = cl(fdir_root=fdir_root)
     if config_batch.fpth_config.is_file():
-        config_batch = cl.parse_file(config_batch.fpth_config)
+        config_batch = cl(**json.loads(config_batch.fpth_config.read_text()))
     print("loading")
     app.config = config_batch
     app.loaded.value = f"{str(get_fpth_win(fdir_root))}"
@@ -1117,6 +1128,8 @@ if __name__ == "__main__":
         title="""# Plot Straight Lines\n### example RunApp""",
     )
     if config_batch.fpth_config.is_file():
-        config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
+        config_batch = LineGraphConfigBatch(**json.loads(config_batch.fpth_config.read_text()))
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+
