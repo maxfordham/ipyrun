@@ -39,47 +39,88 @@ the app instance. this allows actions to be associated to the app using the vali
 """
 
 
-class RunActions(BaseModel):
+class RunActions(BaseModel, validate_assignment=True):
     """map containing callables that are called when buttons in the RunApp are
     activated. Default values contain dummy calls. setting the values to "None"
     hides the button in the App. The actions here are used to show / hide another
     UI element that the user can edit."""
 
-    config: Any = Field(None, description=des_config)
+    config: Any = Field(None, description=des_config, validate_default=True)
     app: Any = Field(None, description=des_app)
-    save_config: Optional[Callable] = Field(lambda: "save_config", validate_default=True)
+    save_config: Optional[Callable] = Field(
+        lambda: "save_config", validate_default=True
+    )
     check: Optional[Callable[[], Any]] = Field(lambda: "check", validate_default=True)
     uncheck: Optional[Callable] = Field(lambda: "uncheck", validate_default=True)
     get_status: Optional[Callable] = Field(lambda: "get_status", validate_default=True)
-    update_status: Optional[Callable] = Field(lambda: "update_status", validate_default=True)
+    update_status: Optional[Callable] = Field(
+        lambda: "update_status", validate_default=True
+    )
     renderers: Optional[Dict[str, Callable]] = Field(
         None,
         description="renderer UI objects that get attached to AutoDisplay",
         exclude=True,
-        validate_default=True)
-    help_ui_show: Optional[Callable] = Field(lambda: "help_ui_show", validate_default=True)
-    help_ui_hide: Optional[Callable] = Field(lambda: "help_ui_hide", validate_default=True)
-    help_run_show: Optional[Callable] = Field(lambda: "help_run_show", validate_default=True)
-    help_run_hide: Optional[Callable] = Field(lambda: "help_run_hide", validate_default=True)
-    help_config_show: Optional[Callable] = Field(lambda: "help_config_show", validate_default=True)
-    help_config_hide: Optional[Callable] =Field( lambda: "help_config_hide", validate_default=True)
-    inputs_show: Optional[Callable] = Field(lambda: "inputs_show", validate_default=True)
-    inputs_hide: Optional[Callable] = Field(lambda: "inputs_hide", validate_default=True)
-    outputs_show: Optional[Callable] = Field(lambda: "outputs_show", validate_default=True)
-    outputs_hide: Optional[Callable] = Field(lambda: "outputs_hide", validate_default=True)
-    runlog_show: Optional[Callable] = Field(lambda: "runlog_show", validate_default=True)
-    runlog_hide: Optional[Callable] = Field(lambda: "runlog_hide", validate_default=True)
-    load_show: Optional[Callable] = Field(lambda: display(widgets.HTML("load_show")), validate_default=True)
-    load_hide: Optional[Callable] = Field(lambda: display(widgets.HTML("load_hide")), validate_default=True)
-    load: Optional[Callable] = Field(lambda: display(widgets.HTML("load")), validate_default=True)
-    get_loaded: Optional[Callable] = Field(lambda: display(widgets.HTML("get_loaded")), validate_default=True)
-    open_loaded: Optional[Callable] = Field(lambda: display(widgets.HTML("open_loaded")), validate_default=True)
+        validate_default=True,
+    )
+    help_ui_show: Optional[Callable] = Field(
+        lambda: "help_ui_show", validate_default=True
+    )
+    help_ui_hide: Optional[Callable] = Field(
+        lambda: "help_ui_hide", validate_default=True
+    )
+    help_run_show: Optional[Callable] = Field(
+        lambda: "help_run_show", validate_default=True
+    )
+    help_run_hide: Optional[Callable] = Field(
+        lambda: "help_run_hide", validate_default=True
+    )
+    help_config_show: Optional[Callable] = Field(
+        lambda: "help_config_show", validate_default=True
+    )
+    help_config_hide: Optional[Callable] = Field(
+        lambda: "help_config_hide", validate_default=True
+    )
+    inputs_show: Optional[Callable] = Field(
+        lambda: "inputs_show", validate_default=True
+    )
+    inputs_hide: Optional[Callable] = Field(
+        lambda: "inputs_hide", validate_default=True
+    )
+    outputs_show: Optional[Callable] = Field(
+        lambda: "outputs_show", validate_default=True
+    )
+    outputs_hide: Optional[Callable] = Field(
+        lambda: "outputs_hide", validate_default=True
+    )
+    runlog_show: Optional[Callable] = Field(
+        lambda: "runlog_show", validate_default=True
+    )
+    runlog_hide: Optional[Callable] = Field(
+        lambda: "runlog_hide", validate_default=True
+    )
+    load_show: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("load_show")), validate_default=True
+    )
+    load_hide: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("load_hide")), validate_default=True
+    )
+    load: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("load")), validate_default=True
+    )
+    get_loaded: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("get_loaded")), validate_default=True
+    )
+    open_loaded: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("open_loaded")), validate_default=True
+    )
     run: Optional[Callable] = Field(lambda: "run", validate_default=True)
     run_hide: Optional[Callable] = Field(lambda: "console_hide", validate_default=True)
     activate: Optional[Callable] = Field(lambda: "activate", validate_default=True)
     deactivate: Optional[Callable] = Field(lambda: "deactivate", validate_default=True)
     show: Optional[Callable] = Field(lambda: "show", validate_default=True)
-    hide: Optional[Callable] = Field(lambda: display(widgets.HTML("hide")), validate_default=True)
+    hide: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("hide")), validate_default=True
+    )
 
 
 def display_runui_tooltips(runui):
@@ -144,16 +185,28 @@ class BatchActions(RunActions):
         RunActions ([type]): [description]
     """
 
-    add: Optional[Callable] = lambda: "add"  # ????/
-    remove: Optional[Callable] = lambda: "remove"  # ????
-    add_show: Optional[Callable] = lambda: "add_show"
-    add_hide: Optional[Callable] = lambda: "add_hide"
-    remove_show: Optional[Callable] = lambda: "remove_show"
-    remove_hide: Optional[Callable] = lambda: "remove_hide"
-    wizard_show: Optional[Callable] = lambda: "wizard_show"
-    wizard_hide: Optional[Callable] = lambda: "wizard_hide"
-    review_show: Optional[Callable] = lambda: "review_show"
-    review_hide: Optional[Callable] = lambda: "review_hide"
+    add: Optional[Callable] = Field(lambda: "add", validate_default=True)
+    remove: Optional[Callable] = Field(lambda: "remove", validate_default=True)
+    add_show: Optional[Callable] = Field(lambda: "add_show", validate_default=True)
+    add_hide: Optional[Callable] = Field(lambda: "add_hide", validate_default=True)
+    remove_show: Optional[Callable] = Field(
+        lambda: "remove_show", validate_default=True
+    )
+    remove_hide: Optional[Callable] = Field(
+        lambda: "remove_hide", validate_default=True
+    )
+    wizard_show: Optional[Callable] = Field(
+        lambda: "wizard_show", validate_default=True
+    )
+    wizard_hide: Optional[Callable] = Field(
+        lambda: "wizard_hide", validate_default=True
+    )
+    review_show: Optional[Callable] = Field(
+        lambda: "review_show", validate_default=True
+    )
+    review_hide: Optional[Callable] = Field(
+        lambda: "review_hide", validate_default=True
+    )
 
 
 class DefaultBatchActions(DefaultRunActions):
@@ -165,15 +218,27 @@ class DefaultBatchActions(DefaultRunActions):
         RunActions ([type]): [description]
     """
 
-    add: Optional[Callable] = lambda: "add"  # ????/
-    remove: Optional[Callable] = lambda: "remove"  # ????
-    add_show: Optional[Callable] = lambda: "add_show"
-    add_hide: Optional[Callable] = lambda: "add_hide"
-    remove_show: Optional[Callable] = lambda: "remove_show"
-    remove_hide: Optional[Callable] = lambda: "remove_hide"
-    wizard_show: Optional[Callable] = lambda: "wizard_show"
-    wizard_hide: Optional[Callable] = lambda: "wizard_hide"
-    review_show: Optional[Callable] = lambda: "review_show"
-    review_hide: Optional[Callable] = lambda: "review_hide"
+    add: Optional[Callable] = Field(lambda: "add", validate_default=True)
+    remove: Optional[Callable] = Field(lambda: "remove", validate_default=True)
+    add_show: Optional[Callable] = Field(lambda: "add_show", validate_default=True)
+    add_hide: Optional[Callable] = Field(lambda: "add_hide", validate_default=True)
+    remove_show: Optional[Callable] = Field(
+        lambda: "remove_show", validate_default=True
+    )
+    remove_hide: Optional[Callable] = Field(
+        lambda: "remove_hide", validate_default=True
+    )
+    wizard_show: Optional[Callable] = Field(
+        lambda: "wizard_show", validate_default=True
+    )
+    wizard_hide: Optional[Callable] = Field(
+        lambda: "wizard_hide", validate_default=True
+    )
+    review_show: Optional[Callable] = Field(
+        lambda: "review_show", validate_default=True
+    )
+    review_hide: Optional[Callable] = Field(
+        lambda: "review_hide", validate_default=True
+    )
 
     model_config = ConfigDict(check_fields=False)

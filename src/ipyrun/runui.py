@@ -768,6 +768,7 @@ KWARGS_OUT_WIDGET_LAYOUT = dict(
 )
 from ipyautoui.custom.iterable import ItemControl
 
+
 class BatchUi(BatchActionsUi):
     """takes run_actions object as an argument and initiates UI objects using
     RunActionsUi. This class places these objects in containers to create a
@@ -812,14 +813,14 @@ class BatchUi(BatchActionsUi):
         self._update_batch_controls()
         if runs is None:
             runs = {}
-        self.runs.items = runs
+        self.runs.items = runs  # TODO: fix
 
     def _update_batch_controls(self):
         self.check.observe(self.check_all, names="value")
 
     def check_all(self, onchange):
         for k, v in self.runs.items.items():
-            v.check.value = self.check.value
+            v.check.value = self.check.value  # TODO: fix
 
     def update_form(self):
         """update the form if the actions have changed"""
@@ -1003,7 +1004,7 @@ class BatchApp(widgets.VBox, BatchUi):
 
     @config.setter
     def config(self, value):
-        # value.check_validators() # TODO: consider removing the run config data from the batch config
+        value.check_validators()  # TODO: consider removing the run config data from the batch config
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
@@ -1029,7 +1030,7 @@ class BatchApp(widgets.VBox, BatchUi):
     def configs_append(self, config):  # TODO: remove config dependent code?
         self.actions.config.configs.append(config)
         newapp = self.make_run(config)
-        self.runs.add_row(new_key=config.key, item=newapp)
+        self.runs.add_row(new_key=config.key, widget=newapp)
         self.update_in_batch()
         # print(f"save config: {self.actions.config.fpth_config}")
         self.actions.save_config()
@@ -1096,10 +1097,6 @@ if __name__ == "__main__":
 #     make_dir(self.fdir_runlog)
 #     self.df_runlog.to_csv(self.fpth_runlog)
 #     return
-
-
-# path_runlog = '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/runlog/runlog-expansion_vessel_sizing.csv'
-
 
 # -
 if __name__ == "__main__":
