@@ -19,6 +19,8 @@ FPTH_USER_ICON = PATH_PACKAGE / "images" / "user-icon.png"
 FPTH_EXAMPLE_SCRIPT = PATH_PACKAGE / "examplerun"
 FPTH_EXAMPLE_INPUTSCHEMA = PATH_PACKAGE / "examplerun" / "input_schema_linegraph.py"
 
+FPTH_EXAMPLE_RUN = PATH_PACKAGE / "examples" / "linegraph" / "linegraph"
+
 # default names of files in RunShell
 PATH_CONFIG = pathlib.Path("config-shell_handler.json")
 PATH_RUNHISTORY = pathlib.Path("runhistory.csv")
@@ -216,6 +218,7 @@ WIZARD = dict(
 # ------------------------------------------------
 
 
+# TODO: delete
 def load_test_constants():
     """only in use for debugging within the package. not used in production code.
 

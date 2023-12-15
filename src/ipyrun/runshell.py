@@ -23,6 +23,14 @@ By default it is used for running python scripts on the command line.
 # %run __init__.py
 # %load_ext lab_black
 
+if __name__ == "__main__":
+    FDIR_TEST_EXAMPLES = (
+        pathlib.Path("__init__.py").absolute().parent.parent.parent
+        / "tests"
+        / "examples"
+    )
+    FDIR_APPDATA = FDIR_TEST_EXAMPLES / "fdir_appdata"
+
 # +
 # core libs
 import os
@@ -71,6 +79,7 @@ from ipyautoui._utils import (
 # load pydantic object:
 # TODO: update this!!!
 # ---------------------------------------------------
+from ipyrun.basemodel import file
 
 
 class SerializableCallable(BaseModel):  # NOT IN USE
@@ -155,16 +164,10 @@ def create_pydantic_json_file(
         obj = SerializableCallable(pyobj).callable_obj
     else:
         obj = load_PyObj(pyobj)
-    assert (
-        str(type(obj)) == "<class 'pydantic.main.ModelMetaclass'>"
+    assert "ModelMetaclass" in str(
+        type(obj)
     ), "the python object must be a pydantic model"
-    if not hasattr(obj, "file"):
-        setattr(obj, "file", file)
-    assert hasattr(
-        obj, "file"
-    ), "the pydantic BaseModel must be extended to have method 'file' for writing model to json"
-    myobj = obj(**kwargs)
-    myobj.file(path)
+    file(obj(), path)
     return path
 
 
@@ -236,28 +239,28 @@ def create_autodisplay_map(ddf: AutoDisplayDefinition, **kwargs):
     return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
 
 
-class BaseConfigShell(BaseModel):
-    fdir_root: pathlib.Path = Field(
-        default=None,
-        description=(
-            "root folder. same as fdir_root within batch config."
-            " facilitates running many processes. this is the working dir."
-        ),
-    )
-    fpths_inputs: Optional[List[pathlib.Path]] = None
-    fpths_outputs: Optional[List[pathlib.Path]] = None
-    path_run: pathlib.Path = pathlib.Path("script.py")
-    pythonpath: pathlib.Path = None
-    run: str = None
-    call: str = "python -O"
-    params: Dict = {}
-    shell_template: str = """\
-{{ call }} {{ run }}\
-{% for f in fpths_inputs %} {{f}}{% endfor %}\
-{% for f in fpths_outputs %} {{f}}{% endfor %}\
-{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
-"""
-    shell: str = ""
+# class BaseConfigShell(BaseModel):
+#     fdir_root: pathlib.Path = Field(
+#         default=None,
+#         description=(
+#             "root folder. same as fdir_root within batch config."
+#             " facilitates running many processes. this is the working dir."
+#         ),
+#     )
+#     fpths_inputs: Optional[List[pathlib.Path]] = None
+#     fpths_outputs: Optional[List[pathlib.Path]] = None
+#     path_run: pathlib.Path = pathlib.Path("script.py")
+#     pythonpath: pathlib.Path = None
+#     run: str = None
+#     call: str = "python -O"
+#     params: Dict = {}
+#     shell_template: str = """\
+# {{ call }} {{ run }}\
+# {% for f in fpths_inputs %} {{f}}{% endfor %}\
+# {% for f in fpths_outputs %} {{f}}{% endfor %}\
+# {% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
+# """
+#     shell: str = ""
 
 
 class ConfigShell(BaseModel):
@@ -532,12 +535,9 @@ def run(config: Type[ConfigShell]):
 
 
 if __name__ == "__main__":
-    from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
+    from ipyrun.constants import FPTH_EXAMPLE_RUN
 
-    test_constants = load_test_constants()
-    config = DefaultConfigShell(
-        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
-    )
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
     display(config.model_dump())
 
 
@@ -617,12 +617,15 @@ def run_shell(app=None, display_hide_btn=True):
     app.actions.update_status()
 
 
-class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects."""
-
-    config: DefaultConfigShell = (
-        None  # not a config type is defined - get pydantic to validate it
+class BaseShell(BaseModel):
+    config: ty.Optional[ty.Type[DefaultConfigShell]] = Field(
+        None,
+        validate_default=True,  # not a config type is defined - get pydantic to validate it
     )
+
+
+class RunShellActions(DefaultRunActions, BaseShell):
+    """extends RunActions by creating Callables based on data within the app or the config objects."""
 
     @field_validator("renderers")
     def _renderers(cls, v, info: ValidationInfo):
@@ -722,68 +725,20 @@ class RunShellActions(DefaultRunActions):
 # extend RunApp to make a default RunShell
 # -
 if __name__ == "__main__":
-    from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
+    from ipyrun.constants import FPTH_EXAMPLE_RUN
 
-    test_constants = load_test_constants()
-    config = DefaultConfigShell(
-        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
-    )
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
     display(config.model_dump())
 
 if __name__ == "__main__":
-    config = DefaultConfigShell(
-        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
-    )
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
     actions = RunShellActions(config=config)
     display(actions)
 
 if __name__ == "__main__":
+    from ipyrun.examples.linegraph.linegraph_app import LineGraphConfigShell
 
-    class LineGraphConfigShell(DefaultConfigShell):
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("path_run")
-        def _set_path_run(cls, v, info: ValidationInfo):
-            return FPTH_EXAMPLE_SCRIPT
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("fpths_outputs")
-        def _fpths_outputs(cls, v, info: ValidationInfo):
-            fdir = info.data["fdir_appdata"]
-            nm = info.data["name"]
-            paths = [
-                fdir / pathlib.Path("out-" + nm + ".csv"),
-                fdir / pathlib.Path("out-" + nm + ".plotly.json"),
-            ]
-            return paths
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("autodisplay_definitions")
-        def _autodisplay_definitions(cls, v, info: ValidationInfo):
-            return [
-                AutoDisplayDefinition(
-                    path=FPTH_EXAMPLE_INPUTSCHEMA,
-                    obj_name="LineGraph",
-                    ext=".lg.json",
-                    ftype=FiletypeEnum.input,
-                )
-            ]
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("autodisplay_inputs_kwargs")
-        def _autodisplay_inputs_kwargs(cls, v, info: ValidationInfo):
-            return dict(patterns="*")
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("autodisplay_outputs_kwargs")
-        def _autodisplay_outputs_kwargs(cls, v, info: ValidationInfo):
-            return dict(patterns="*.plotly.json")
-
-    config = LineGraphConfigShell(fdir_root=test_constants.FDIR_APPDATA)
+    config = LineGraphConfigShell(fdir_root=FDIR_APPDATA)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
 
@@ -805,9 +760,13 @@ class ConfigBatch(BaseModel):
             " use case)"
         ),
         exclude=True,
+        validate_default=True,
     )
     cls_app: Union[Type, Callable] = Field(
-        default=RunApp, description="the class that defines the RunApp.", exclude=True
+        default=RunApp,
+        description="the class that defines the RunApp.",
+        exclude=True,
+        validate_default=True,
     )
     cls_config: Union[Type, Callable] = Field(
         default=DefaultConfigShell,
@@ -816,6 +775,7 @@ class ConfigBatch(BaseModel):
             " baked in"
         ),
         exclude=True,
+        validate_default=True,
     )
     configs: List = []
     # runs: List[Callable] = Field(default=lambda: [], description="a list of RunApps", exclude=True)
@@ -853,11 +813,9 @@ class ConfigBatch(BaseModel):
 
 
 if __name__ == "__main__":
-    from ipyrun.constants import load_test_constants
-
-    test_constants = load_test_constants()
+    DIR_EXAMPLE_BATCH = FDIR_TEST_EXAMPLES / "line_graph_batch"
     config_batch = ConfigBatch(
-        fdir_root=test_constants.DIR_EXAMPLE_BATCH,
+        fdir_root=DIR_EXAMPLE_BATCH,
         cls_config=ConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
@@ -866,7 +824,6 @@ if __name__ == "__main__":
 
 # +
 def fn_add(app, **kwargs):
-    print(kwargs)
     cls_config = app.config.cls_config
     if "index" not in kwargs:
         if len(app.config.configs) == 0:
@@ -874,6 +831,7 @@ def fn_add(app, **kwargs):
         else:
             kwargs["index"] = app.config.configs[-1].index + 1
     kwargs["fdir_root"] = app.config.fdir_root
+    print(kwargs)
     config = cls_config(**kwargs)
     app.configs_append(config)
     app.add.value = False
@@ -890,7 +848,8 @@ def fn_add_hide(app):
     return "add hide"
 
 
-def fn_remove(app=None, key=None):
+def fn_remove(arg):
+    key = arg.key
     if key is None:
         print("key is None")
         key = app.runs.iterable[-1].key
@@ -927,7 +886,7 @@ def run_batch(app=None):
         print("run the following:")
         [print(k) for k, v in sel.items() if v is True]
     [
-        v.run(display_hide_btn=False) for v in app.run_actions if v.config.in_batch
+        v.run() for v in app.run_actions if v.config.in_batch  # display_hide_btn=False
     ]  # TODO add "hide_button" arg
 
 
@@ -1082,54 +1041,19 @@ class BatchShellActions(DefaultBatchActions):
 if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
     # TODO: configure so that the value of the RunApp is the config?
-
-    from ipyrun.constants import load_test_constants
-    from ipyautoui.custom.workingdir import WorkingDirsUi
-
-    test_constants = load_test_constants()
-
-    class LineGraphConfigBatch(ConfigBatch):
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("cls_actions")
-        def _cls_actions(cls, v, info: ValidationInfo):
-            """bundles RunApp up as a single argument callable"""
-            return RunShellActions
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("cls_config")
-        def _cls_config(cls, v, info: ValidationInfo):
-            """bundles RunApp up as a single argument callable"""
-            return LineGraphConfigShell
-
-    def fn_loaddir_handler(value, app=None):
-        fdir_root = value["fdir"] / "06_Models"
-        app.actions.load(fdir_root=fdir_root)
-
-    class LineGraphBatchActions(BatchShellActions):
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("runlog_show")
-        def _runlog_show(cls, v, info: ValidationInfo):
-            return None
-
-        # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-        # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-        @field_validator("load_show")
-        def _load_show(cls, v, info: ValidationInfo):
-            return lambda: WorkingDirsUi(
-                fn_onload=wrapped_partial(fn_loaddir_handler, app=info.data["app"])
-            )
+    from ipyrun.examples.linegraph.linegraph_app import (
+        LineGraphConfigShell,
+        LineGraphConfigBatch,
+        LineGraphBatchActions,
+    )
 
     config_batch = LineGraphConfigBatch(
-        fdir_root=test_constants.DIR_EXAMPLE_BATCH,
-        # cls_config=MyConfigShell,
+        fdir_root=DIR_EXAMPLE_BATCH,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
     if config_batch.fpth_config.is_file():
-        config_batch = LineGraphConfigBatch(**json.loads(config_batch.fpth_config.read_text()))
+        config_batch = LineGraphConfigBatch(
+            **json.loads(config_batch.fpth_config.read_text())
+        )
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
-
-
