@@ -163,8 +163,7 @@ class RunActionsUi(UiComponents):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
+        # NOTE: validate_assignment==True so validators are run on assignment
 
     def _status_indicator(self, onclick):
         self.actions.get_status()
@@ -433,8 +432,6 @@ class RunUi(RunActionsUi):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
     def update_form(self):
@@ -603,13 +600,20 @@ class RunApp(widgets.HBox, RunUi):
         self.cls_actions = cls_actions
         self.config = config  # the setter updates the ui.actions using fn_buildactions. can be updated on the fly
 
+    # @property
+    # def value(self):
+    #     return self._value
+
+    # @value.setter
+    # def value(self, value):
+    #     self._value = value
+
     @property
     def config(self):
         return self.actions.config
 
     @config.setter
     def config(self, value):
-        value.check_validators()
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
@@ -792,8 +796,6 @@ class BatchUi(BatchActionsUi):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
     def _init_BatchUi(
@@ -813,13 +815,17 @@ class BatchUi(BatchActionsUi):
         self._update_batch_controls()
         if runs is None:
             runs = {}
-        self.runs.items = runs  # TODO: fix
+        # self.runs.items = runs  # TODO: fix
+
+    @property
+    def di_runs(self):
+        return {run.key: run.widget for run in self.runs.boxes}
 
     def _update_batch_controls(self):
         self.check.observe(self.check_all, names="value")
 
     def check_all(self, onchange):
-        for k, v in self.runs.items.items():
+        for k, v in self.di_runs.items():
             v.check.value = self.check.value  # TODO: fix
 
     def update_form(self):
@@ -991,12 +997,12 @@ class BatchApp(widgets.VBox, BatchUi):
         self.actions.update_status()
 
     def watch_run_statuses(self):
-        for k, v in self.runs.items.items():
+        for k, v in self.di_runs.items():
             v.observe(self._update_batch_status, "status")
 
     @property
     def run_actions(self):
-        return [v.actions for k, v in self.runs.items.items()]
+        return [v.actions for k, v in self.di_runs.items()]
 
     @property
     def config(self):
@@ -1004,27 +1010,28 @@ class BatchApp(widgets.VBox, BatchUi):
 
     @config.setter
     def config(self, value):
-        value.check_validators()  # TODO: consider removing the run config data from the batch config
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
+        di_widgets = {}
         try:
-            self.runs.items = {
-                c.key: self.make_run(c) for c in self.config.configs
-            }  # TODO: remove config dependent code?
+            for c in self.config.configs:
+                di_widgets[c.key] = self.make_run(c)
         except:
             print("error building runs fron config")
             print(f"self.config == {str(self.config)}")
+        self.runs.widgets = di_widgets
         self.update_in_batch()
         self.actions.update_status()
         self.actions.get_loaded()
 
     def update_in_batch(self):  # TODO: remove config dependent code?
-        for k, v in self.runs.items.items():
+        for k, v in self.di_runs.items():
             v.check.value = v.config.in_batch
 
     def make_run(self, config):
         """builds RunApp from config"""
+        # TODO: add try except?
         return self.config.cls_app(config)
 
     def configs_append(self, config):  # TODO: remove config dependent code?
@@ -1032,7 +1039,6 @@ class BatchApp(widgets.VBox, BatchUi):
         newapp = self.make_run(config)
         self.runs.add_row(new_key=config.key, widget=newapp)
         self.update_in_batch()
-        # print(f"save config: {self.actions.config.fpth_config}")
         self.actions.save_config()
 
     def configs_remove(self, key):  # TODO: remove config dependent code?

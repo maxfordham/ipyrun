@@ -50,18 +50,6 @@ def file_mdschema(self: Type[BaseModel], path: pathlib.Path, **json_kwargs):
     subprocess.run(["jsonschema2md", str(path_schema), str(path)])
 
 
-def check_validators(self: Type[BaseModel]):
-    model = self.model_validate(self.model_dump())
-    self = model
-    # try:
-    #     setattr(self, "__dict__", model.model_dump())
-    # except TypeError as e:
-    #     raise TypeError(
-    #         "Model values must be a dict; you may not have returned "
-    #         + "a dictionary from a root validator"
-    #     ) from e
-
-
 class BaseModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
 
@@ -69,4 +57,3 @@ class BaseModel(BaseModel):
 setattr(BaseModel, "file", file)
 setattr(BaseModel, "file_schema", file_schema)
 setattr(BaseModel, "file_mdschema", file_mdschema)
-setattr(BaseModel, "check_validators", check_validators)
