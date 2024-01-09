@@ -233,10 +233,13 @@ class AutoDisplayDefinition(PyObj):
     ext: str
 
 
+from ipyautoui.autoui import get_autodisplay_map
+
+
 def create_autodisplay_map(ddf: AutoDisplayDefinition, **kwargs):
     model = load_PyObj(ddf)
     kwargs = kwargs | dict(show_savebuttonbar=True)
-    return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
+    return get_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
 
 
 # class BaseConfigShell(BaseModel):
@@ -313,7 +316,7 @@ class ConfigShell(BaseModel):
     )
     fpth_runhistory: pathlib.Path = Field(PATH_RUNHISTORY)  # ,const=True
     fpth_log: ty.Optional[pathlib.Path] = Field(None)  # ,const=True
-    call: str = "python -O"
+    call: str = Field("python -O", validate_default=True)
     params: Dict = {}
     shell_template: str = """\
 {{ call }} {{ run }}\
@@ -400,7 +403,6 @@ class DefaultConfigShell(ConfigShell):
             # so no we remove the parent to create the shell cmd
             v = prun.stem
         else:
-            print(prun)
             raise ValidationError(
                 f"{str(prun)} must be python package dir or python script"
             )
@@ -506,6 +508,10 @@ class DefaultConfigShell(ConfigShell):
     def _call(cls, v, info: ValidationInfo):
         if "-m" not in str(v):
             v = v + " -m"
+        if "python " in v and "/python " not in v:
+            import sys
+
+            v = v.replace("python ", f"{sys.executable} ")
         return v
 
     @field_validator("shell")
@@ -848,7 +854,7 @@ def fn_add_hide(app):
     return "add hide"
 
 
-def fn_remove(arg):
+def fn_remove(arg, app=None):
     key = arg.key
     if key is None:
         print("key is None")
@@ -866,11 +872,11 @@ def fn_remove_show(app=None):
 
 
 def fn_remove_hide(app=None):
-    app.runs.add_remove_controls = None
+    app.runs.add_remove_controls = "none"
 
 
 def check_batch(app, fn_saveconfig, bool_=True):
-    [setattr(v.check, "value", bool_) for k, v in app.runs.items.items()]
+    [setattr(v.check, "value", bool_) for k, v in app.di_runs.items()]
     [setattr(c, "in_batch", bool_) for c in app.config.configs]
     fn_saveconfig()
 
@@ -894,7 +900,10 @@ def batch_get_status(app=None):
     st = [a.get_status() for a in app.run_actions]
     if st is None:
         st = "error"
-    bst = "error"
+    if len(st) == 0:
+        bst = "no_outputs"
+    else:
+        bst = "error"
     for s in ["up_to_date", "no_outputs", "outputs_need_updating", "error"]:
         if s in st:
             bst = s
@@ -996,7 +1005,7 @@ class BatchShellActions(DefaultBatchActions):
 
     @field_validator("remove")
     def _remove(cls, v, info: ValidationInfo):
-        info.data["app"].runs.fn_remove = wrapped_partial(
+        info.data["app"].runs.fn_remove = functools.partial(
             fn_remove, app=info.data["app"]
         )
         return info.data["app"].runs.remove_row
@@ -1057,3 +1066,24 @@ if __name__ == "__main__":
         )
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
+
+# +
+
+# TODO: use computed fields in the future...
+# from pydantic import BaseModel, computed_field
+
+# class My(BaseModel, validate_assignment=True):
+#     fdir: pathlib.Path = pathlib.Path(".")
+
+#     @computed_field
+#     @property
+#     def fdirs(self) -> pathlib.Path:
+#         return [
+#             f
+#             for f in self.fdir.glob("*")
+#             if f.is_dir() and len(list(f.glob("config-shell_handler.json"))) > 0
+#         ]
+
+
+# my = My()
+# my
