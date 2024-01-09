@@ -163,6 +163,13 @@ LOAD = dict(
     button_style="info",
     layout={"width": BUTTON_WIDTH_MIN},
 )
+UPLOAD = dict(
+    icon="upload",
+    tooltip="upload data",
+    style={"font_weight": "bold"},
+    button_style="info",
+    layout={"width": BUTTON_WIDTH_MIN},
+)
 OPEN_LOADED = dict(
     icon="folder-open",
     tooltip="open active application directory",
@@ -184,6 +191,7 @@ DEFAULT_BUTTON_STYLES = frozenmap(
     help_config=HELP_CONFIG,
     inputs=INPUTS,
     outputs=OUTPUTS,
+    upload=UPLOAD,
     runlog=RUNLOG,
     run=RUN,
     show=SHOW,

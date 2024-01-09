@@ -85,6 +85,7 @@ class UiComponents:
         self.outputs = widgets.ToggleButton()
         self.runlog = widgets.ToggleButton()
         self.load = widgets.ToggleButton()
+        self.upload = widgets.ToggleButton()
         self.loaded = widgets.HTML()
         self.open_loaded = widgets.Button()
         self.hbx_load = widgets.HBox([self.loaded, self.load, self.open_loaded])
@@ -99,6 +100,7 @@ class UiComponents:
         self.out_outputs = widgets.Output()
         self.out_runlog = widgets.Output()
         self.out_load = widgets.Output()
+        self.out_upload = widgets.Output()
         self.out_console = widgets.Output()
 
         self.di_button_styles = di_button_styles
@@ -122,6 +124,7 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     from ipyrun._utils import display_ui_tooltips
+    import ipywidgets as w
 
     uiobj = UiComponents()
     display(display_ui_tooltips(uiobj))
@@ -176,6 +179,7 @@ class RunActionsUi(UiComponents):
         self.outputs.observe(self._outputs, names="value")
         self.runlog.observe(self._runlog, names="value")
         self.load.observe(self._load, names="value")
+        self.upload.observe(self._upload, names="value")
         if "selected_index" in self.container.traits():
             self.container.observe(self._container, names="selected_index")
         self.run.on_click(self._run)
@@ -297,6 +301,14 @@ class RunActionsUi(UiComponents):
             self.actions.load_hide,
         )
 
+    def _upload(self, on_change):
+        self._show_hide_output(
+            self.out_upload,
+            self.upload,
+            self.actions.upload_show,
+            self.actions.upload_hide,
+        )
+
     # ------------------------------------
 
     def _run(self, on_change):
@@ -319,6 +331,7 @@ class RunActionsUi(UiComponents):
             self.outputs: self.actions.outputs_show,
             self.runlog: self.actions.runlog_show,
             self.load: self.actions.load_show,
+            self.upload: self.actions.upload_show,
             self.run: self.actions.run,
             self.show: self.actions.show,
             self.hide: self.actions.hide,
@@ -349,6 +362,7 @@ def test_display_runapp(app):
             widgets.HBox([app.outputs, app.out_outputs]),
             widgets.HBox([app.runlog, app.out_runlog]),
             widgets.HBox([app.load, app.out_load]),
+            widgets.HBox([app.upload, app.out_upload]),
             widgets.HBox([app.check]),
             widgets.HBox([app.status_indicator]),
             widgets.HBox([app.run, app.out_console]),
@@ -702,6 +716,7 @@ class BatchActionsUi(RunActionsUi):
             self.outputs: self.actions.outputs_show,
             self.runlog: self.actions.runlog_show,
             self.load: self.actions.load_show,
+            self.upload: self.actions.upload_show,
             self.run: self.actions.run,
             self.show: self.actions.show,
             self.hide: self.actions.hide,
@@ -804,7 +819,7 @@ class BatchUi(BatchActionsUi):
         title: str = "# markdown batch title",
         runs: Dict[str, Type[RunUi]] = None,
         fn_add=lambda: "fn_add",
-        cls_runs_box=Dictionary,
+        cls_runs_box=Dictionary,  # NOTE: must be Dictionary or Array from ipyautoui.custom.iterable
     ):
         self.title = widgets.HTML(markdown(title))
         self.cls_runs_box = cls_runs_box
@@ -841,6 +856,7 @@ class BatchUi(BatchActionsUi):
                 "show",
                 "inputs",
                 "outputs",
+                "upload",
                 "runlog",
                 "run",
                 "add",
@@ -866,6 +882,7 @@ class BatchUi(BatchActionsUi):
             self.out_help_run,
             self.out_help_config,
             self.out_box_main,
+            self.out_upload,
         ]
         self.out_box_addremove.children = [
             self.out_add,
@@ -1152,3 +1169,5 @@ if __name__ == "__main__":
         widgets.Button(**LOAD_BUTTON_KWARGS),
     ]
     display(hbx_main)
+
+
