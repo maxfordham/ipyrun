@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.5
+#       jupytext_version: 1.16.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -40,7 +40,7 @@ from ipyautoui.custom import FileChooser
 
 # from this repo
 from ipyrun.actions import RunActions, BatchActions, DefaultRunActions
-from ipyrun._utils import make_dir, del_matching, validate
+from ipyrun._utils import make_dir, del_matching
 from ipyrun.constants import (
     BUTTON_WIDTH_MIN,
     BUTTON_WIDTH_MEDIUM,
@@ -76,7 +76,7 @@ class UiComponents:
     def _init_UiButtons(
         self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion
     ):
-        self.check = widgets.Checkbox()
+        self.check = widgets.Checkbox(tooltip="select run")
         self.status_indicator = widgets.Button(disabled=True)
         self.help_ui = widgets.ToggleButton()
         self.help_run = widgets.ToggleButton()
@@ -85,6 +85,7 @@ class UiComponents:
         self.outputs = widgets.ToggleButton()
         self.runlog = widgets.ToggleButton()
         self.load = widgets.ToggleButton()
+        self.upload = widgets.ToggleButton()
         self.loaded = widgets.HTML()
         self.open_loaded = widgets.Button()
         self.hbx_load = widgets.HBox([self.loaded, self.load, self.open_loaded])
@@ -99,6 +100,7 @@ class UiComponents:
         self.out_outputs = widgets.Output()
         self.out_runlog = widgets.Output()
         self.out_load = widgets.Output()
+        self.out_upload = widgets.Output()
         self.out_console = widgets.Output()
 
         self.di_button_styles = di_button_styles
@@ -122,6 +124,7 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     from ipyrun._utils import display_ui_tooltips
+    import ipywidgets as w
 
     uiobj = UiComponents()
     display(display_ui_tooltips(uiobj))
@@ -129,7 +132,7 @@ if __name__ == "__main__":
 
 # +
 class RunUiConfig(BaseModel):
-    include_show_hide = True
+    include_show_hide: bool = True
 
 
 class RunActionsUi(UiComponents):
@@ -163,8 +166,7 @@ class RunActionsUi(UiComponents):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
+        # NOTE: validate_assignment==True so validators are run on assignment
 
     def _status_indicator(self, onclick):
         self.actions.get_status()
@@ -177,6 +179,7 @@ class RunActionsUi(UiComponents):
         self.outputs.observe(self._outputs, names="value")
         self.runlog.observe(self._runlog, names="value")
         self.load.observe(self._load, names="value")
+        self.upload.observe(self._upload, names="value")
         if "selected_index" in self.container.traits():
             self.container.observe(self._container, names="selected_index")
         self.run.on_click(self._run)
@@ -298,6 +301,14 @@ class RunActionsUi(UiComponents):
             self.actions.load_hide,
         )
 
+    def _upload(self, on_change):
+        self._show_hide_output(
+            self.out_upload,
+            self.upload,
+            self.actions.upload_show,
+            self.actions.upload_hide,
+        )
+
     # ------------------------------------
 
     def _run(self, on_change):
@@ -320,6 +331,7 @@ class RunActionsUi(UiComponents):
             self.outputs: self.actions.outputs_show,
             self.runlog: self.actions.runlog_show,
             self.load: self.actions.load_show,
+            self.upload: self.actions.upload_show,
             self.run: self.actions.run,
             self.show: self.actions.show,
             self.hide: self.actions.hide,
@@ -350,6 +362,7 @@ def test_display_runapp(app):
             widgets.HBox([app.outputs, app.out_outputs]),
             widgets.HBox([app.runlog, app.out_runlog]),
             widgets.HBox([app.load, app.out_load]),
+            widgets.HBox([app.upload, app.out_upload]),
             widgets.HBox([app.check]),
             widgets.HBox([app.status_indicator]),
             widgets.HBox([app.run, app.out_console]),
@@ -433,8 +446,6 @@ class RunUi(RunActionsUi):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
     def update_form(self):
@@ -528,8 +539,8 @@ if __name__ == "__main__":
     run_actions1 = DefaultRunActions(check=None)
     run_ui1 = RunUi(run_actions=run_actions1)
     display(run_ui1.run_form)
+# -
 
-# + tags=[]
 if __name__ == "__main__":
     # actions can be changed on the fly and the form will update
     # but the whole actions object must be updated rather than component parts
@@ -538,7 +549,6 @@ if __name__ == "__main__":
     run_ui.actions = actions
 
 
-# + tags=[]
 class RunApp(widgets.HBox, RunUi):
     """
     The goal of RunApp is to simplify the process of making a functional UI that interacts
@@ -604,29 +614,35 @@ class RunApp(widgets.HBox, RunUi):
         self.cls_actions = cls_actions
         self.config = config  # the setter updates the ui.actions using fn_buildactions. can be updated on the fly
 
+    # @property
+    # def value(self):
+    #     return self._value
+
+    # @value.setter
+    # def value(self, value):
+    #     self._value = value
+
     @property
     def config(self):
         return self.actions.config
 
     @config.setter
     def config(self, value):
-        value.check_validators()
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
         self.actions.update_status()
 
 
-# + tags=[]
 if __name__ == "__main__":
-    from ipyrun.runshell import ConfigShell
+    from ipyrun.runshell import ConfigShell, DefaultConfigShell
 
-    config = ConfigShell(path_run="script.py", long_name="pretty name")
+    config = DefaultConfigShell(path_run="examplerun", long_name="pretty name")
     app = RunApp(config)
     display(app)
 
 
-# + tags=[]
+# +
 class BatchActionsUi(RunActionsUi):
     """maps actions to buttons
 
@@ -700,6 +716,7 @@ class BatchActionsUi(RunActionsUi):
             self.outputs: self.actions.outputs_show,
             self.runlog: self.actions.runlog_show,
             self.load: self.actions.load_show,
+            self.upload: self.actions.upload_show,
             self.run: self.actions.run,
             self.show: self.actions.show,
             self.hide: self.actions.hide,
@@ -768,6 +785,7 @@ KWARGS_OUT_WIDGET_LAYOUT = dict(
     # justify_content="space-between",
     align_content="stretch",
 )
+from ipyautoui.custom.iterable import ItemControl
 
 
 class BatchUi(BatchActionsUi):
@@ -780,7 +798,7 @@ class BatchUi(BatchActionsUi):
         batch_actions: BatchActions(wizard_show=None),
         title: str = "# markdown batch title",
         runs: Dict[str, Type[RunUi]] = None,
-        fn_add=None,
+        fn_add=lambda: "fn_add",
         cls_runs_box=Dictionary,
     ):
         self._init_BatchUi(batch_actions, title, runs, fn_add, cls_runs_box)
@@ -793,8 +811,6 @@ class BatchUi(BatchActionsUi):
     def actions(self, value):
         value.app = self
         self._actions = value
-        self._actions.check_validators()
-        # ^ REF: https://github.com/samuelcolvin/pydantic/issues/1864#issuecomment-679044432
         self.update_form()
 
     def _init_BatchUi(
@@ -802,8 +818,8 @@ class BatchUi(BatchActionsUi):
         batch_actions: BatchActions(wizard_show=None),
         title: str = "# markdown batch title",
         runs: Dict[str, Type[RunUi]] = None,
-        fn_add=None,
-        cls_runs_box=Dictionary,
+        fn_add=lambda: "fn_add",
+        cls_runs_box=Dictionary,  # NOTE: must be Dictionary or Array from ipyautoui.custom.iterable
     ):
         self.title = widgets.HTML(markdown(title))
         self.cls_runs_box = cls_runs_box
@@ -814,14 +830,18 @@ class BatchUi(BatchActionsUi):
         self._update_batch_controls()
         if runs is None:
             runs = {}
-        self.runs.items = runs
+        # self.runs.items = runs  # TODO: fix
+
+    @property
+    def di_runs(self):
+        return {run.key: run.widget for run in self.runs.boxes}
 
     def _update_batch_controls(self):
         self.check.observe(self.check_all, names="value")
 
     def check_all(self, onchange):
-        for k, v in self.runs.items.items():
-            v.check.value = self.check.value
+        for k, v in self.di_runs.items():
+            v.check.value = self.check.value  # TODO: fix
 
     def update_form(self):
         """update the form if the actions have changed"""
@@ -836,6 +856,7 @@ class BatchUi(BatchActionsUi):
                 "show",
                 "inputs",
                 "outputs",
+                "upload",
                 "runlog",
                 "run",
                 "add",
@@ -861,6 +882,7 @@ class BatchUi(BatchActionsUi):
             self.out_help_run,
             self.out_help_config,
             self.out_box_main,
+            self.out_upload,
         ]
         self.out_box_addremove.children = [
             self.out_add,
@@ -896,7 +918,7 @@ class BatchUi(BatchActionsUi):
         self.runs = self.cls_runs_box(
             toggle=False,
             watch_value=False,
-            add_remove_controls=None,
+            add_remove_controls=ItemControl.none,
             fn_add=self.fn_add,
             show_hash=None,
         )
@@ -992,12 +1014,12 @@ class BatchApp(widgets.VBox, BatchUi):
         self.actions.update_status()
 
     def watch_run_statuses(self):
-        for k, v in self.runs.items.items():
+        for k, v in self.di_runs.items():
             v.observe(self._update_batch_status, "status")
 
     @property
     def run_actions(self):
-        return [v.actions for k, v in self.runs.items.items()]
+        return [v.actions for k, v in self.di_runs.items()]
 
     @property
     def config(self):
@@ -1005,35 +1027,35 @@ class BatchApp(widgets.VBox, BatchUi):
 
     @config.setter
     def config(self, value):
-        # value.check_validators() # TODO: consider removing the run config data from the batch config
         actions = self.cls_actions(config=value, app=self)
         self.actions = actions
         self.actions.save_config()
+        di_widgets = {}
         try:
-            self.runs.items = {
-                c.key: self.make_run(c) for c in self.config.configs
-            }  # TODO: remove config dependent code?
+            for c in self.config.configs:
+                di_widgets[c.key] = self.make_run(c)
         except:
             print("error building runs fron config")
             print(f"self.config == {str(self.config)}")
+        self.runs.widgets = di_widgets
         self.update_in_batch()
         self.actions.update_status()
         self.actions.get_loaded()
 
     def update_in_batch(self):  # TODO: remove config dependent code?
-        for k, v in self.runs.items.items():
+        for k, v in self.di_runs.items():
             v.check.value = v.config.in_batch
 
     def make_run(self, config):
         """builds RunApp from config"""
+        # TODO: add try except?
         return self.config.cls_app(config)
 
     def configs_append(self, config):  # TODO: remove config dependent code?
         self.actions.config.configs.append(config)
         newapp = self.make_run(config)
-        self.runs.add_row(new_key=config.key, item=newapp)
+        self.runs.add_row(new_key=config.key, widget=newapp)
         self.update_in_batch()
-        # print(f"save config: {self.actions.config.fpth_config}")
         self.actions.save_config()
 
     def configs_remove(self, key):  # TODO: remove config dependent code?
@@ -1099,10 +1121,6 @@ if __name__ == "__main__":
 #     self.df_runlog.to_csv(self.fpth_runlog)
 #     return
 
-
-# path_runlog = '/mnt/c/engDev/git_mf/ipyrun/examples/J0000/test_appdir/appdata/runlog/runlog-expansion_vessel_sizing.csv'
-
-
 # -
 if __name__ == "__main__":
     display(Markdown("change add remove to ToggleButtons? (probs not)"))
@@ -1151,3 +1169,5 @@ if __name__ == "__main__":
         widgets.Button(**LOAD_BUTTON_KWARGS),
     ]
     display(hbx_main)
+
+

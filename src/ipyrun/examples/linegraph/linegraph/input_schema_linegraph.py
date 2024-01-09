@@ -22,11 +22,11 @@ class LineGraph(BaseModel):
     title: str = Field(default="line equation", description="add chart title here")
     m: float = Field(default=2, description="gradient")
     c: float = Field(default=5, description="intercept")
-    x_range: tuple[int, int] = Field(
-        default=(0, 5), ge=0, le=50, description="x-range for chart"
+    x_range: tuple[conint(ge=0, le=50), conint(ge=0, le=50)] = Field(
+        default=(0, 5), description="x-range for chart"
     )
-    y_range: tuple[int, int] = Field(
-        default=(0, 5), ge=0, le=50, description="y-range for chart"
+    y_range: tuple[conint(ge=0, le=50), conint(ge=0, le=50)] = Field(
+        default=(0, 5), description="y-range for chart"
     )
     # references: typing.Dict[str, File] = Field(default_factory=lambda: {},
     #             autoui="ipyautoui.custom.fileupload.FileUploadToDir", maximumItems=1, minimumItems=0

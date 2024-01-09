@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.0
+#       jupytext_version: 1.16.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -23,11 +23,20 @@ By default it is used for running python scripts on the command line.
 # %run __init__.py
 # %load_ext lab_black
 
+if __name__ == "__main__":
+    FDIR_TEST_EXAMPLES = (
+        pathlib.Path("__init__.py").absolute().parent.parent.parent
+        / "tests"
+        / "examples"
+    )
+    FDIR_APPDATA = FDIR_TEST_EXAMPLES / "fdir_appdata"
+
 # +
 # core libs
 import os
 import sys
 import io
+import typing as ty
 import shutil
 import pathlib
 import functools
@@ -37,9 +46,18 @@ from jinja2 import Template
 from markdown import markdown
 import json
 import logging
+import importlib
 
 # object models
-from pydantic import validator, Field
+from pydantic import (
+    validator,
+    Field,
+    field_validator,
+    ValidationInfo,
+    ValidationError,
+    BaseModel,
+    ConfigDict,
+)
 from typing import Optional, List, Dict, Type, Callable, Union
 from enum import Enum
 
@@ -51,15 +69,110 @@ from markdown import markdown
 
 from ipyautoui import AutoUi, AutoDisplay
 from ipyautoui._utils import (
-    PyObj,
-    load_PyObj,
-    create_pydantic_json_file,
     display_pydantic_json,
     check_installed,
     open_path,
     # get_user
 )
 
+# ---------------------------------------------------
+# load pydantic object:
+# TODO: update this!!!
+# ---------------------------------------------------
+from ipyrun.basemodel import file
+
+
+class SerializableCallable(BaseModel):  # NOT IN USE
+    callable_str: ty.Union[ty.Callable, str] = Field(
+        ...,
+        validate_default=True,
+        description="import string that can use importlib\
+                    to create a python obj. Note. if a Callable object\
+                    is given it will be converted into a string",
+    )
+    callable_obj: ty.Union[ty.Callable, ty.Type] = Field(
+        None, exclude=True, validate_default=True
+    )
+
+    @field_validator("callable_str")
+    def _callable_str(cls, v):
+        if type(v) != str:
+            return obj_to_importstr(v)
+        invalid = [i for i in "!@#£[]()<>|¬$%^&*,?''- "]
+        for i in invalid:
+            if i in v:
+                raise ValueError(
+                    f"callable_str = {v}. import_str must not contain spaces {i}"
+                )
+        return v
+
+    @field_validator("callable_obj")
+    def _callable_obj(cls, v, info: ValidationInfo):
+        return obj_from_importstr(info.data["callable_str"])
+
+
+class PyObj(BaseModel):
+    """a definition of a python object"""
+
+    path: pathlib.Path
+    obj_name: str
+    module_name: ty.Optional[str] = Field(
+        None,
+        description="ignore, this is overwritten by a validator",
+        validate_default=True,
+    )
+
+    @field_validator("module_name")
+    def _module_name(cls, v, info: ValidationInfo):
+        return info.data["path"].stem
+
+
+def load_PyObj(obj: PyObj):
+    submodule_search_locations = None
+    p = obj.path
+    if obj.path.is_dir():
+        p = p / "__main__.py"
+        submodule_search_locations = []
+    spec = importlib.util.spec_from_file_location(
+        obj.module_name, p, submodule_search_locations=submodule_search_locations
+    )
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
+    return getattr(foo, obj.obj_name)
+
+
+def create_pydantic_json_file(
+    pyobj: ty.Union[str, PyObj], path: pathlib.Path, **kwargs
+):
+    """
+    loads a pyobj (which must be a pydantic model) and then saves the default Json to file.
+    this requires defaults for all pydantic attributes.
+
+    Todo:
+        could extend the functionality to cover models that don't have defaults
+        using [pydantic-factories](https://github.com/Goldziher/pydantic-factories)
+
+    Args:
+        pyobj (SerializableCallable): definition of where to get a pydantic model
+        path (pathlib.Path): where to save the pydantic json
+        **kwargs : passed to the pydantic model upon initiation
+
+    Returns:
+        path
+    """
+    if type(pyobj) == str:
+        obj = SerializableCallable(pyobj).callable_obj
+    else:
+        obj = load_PyObj(pyobj)
+    assert "ModelMetaclass" in str(
+        type(obj)
+    ), "the python object must be a pydantic model"
+    file(obj(), path)
+    return path
+
+
+# ---------------------------------------------------
+# ---------------------------------------------------
 
 # from this repo
 from ipyrun.runui import RunApp, BatchApp
@@ -104,9 +217,10 @@ class FiletypeEnum(str, Enum):
 #     """a definition of a python object"""
 #     pyobject: str
 #     object: ty.Callable = Field(None, exclude=True)
-#     @validator("object", always=True)
-#     def _object(cls, v, values):
-#         return obj_from_importstr(values["pyobject"])
+#     @field_validator("object")
+#     def _object(cls, v, info: ValidationInfo):
+#         return obj_from_importstr(info.data["pyobject"])
+
 
 # TODO:
 # if we make a rule that is the input schema must be imported into `path_run`
@@ -119,34 +233,37 @@ class AutoDisplayDefinition(PyObj):
     ext: str
 
 
+from ipyautoui.autoui import get_autodisplay_map
+
+
 def create_autodisplay_map(ddf: AutoDisplayDefinition, **kwargs):
     model = load_PyObj(ddf)
     kwargs = kwargs | dict(show_savebuttonbar=True)
-    return AutoUi.create_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
+    return get_autodisplay_map(schema=model, ext=ddf.ext, **kwargs)
 
 
-class BaseConfigShell(BaseModel):
-    fdir_root: pathlib.Path = Field(
-        default=None,
-        description=(
-            "root folder. same as fdir_root within batch config."
-            " facilitates running many processes. this is the working dir."
-        ),
-    )
-    fpths_inputs: Optional[List[pathlib.Path]] = None
-    fpths_outputs: Optional[List[pathlib.Path]] = None
-    path_run: pathlib.Path = pathlib.Path("script.py")
-    pythonpath: pathlib.Path = None
-    run: str = None
-    call: str = "python -O"
-    params: Dict = {}
-    shell_template: str = """\
-{{ call }} {{ run }}\
-{% for f in fpths_inputs %} {{f}}{% endfor %}\
-{% for f in fpths_outputs %} {{f}}{% endfor %}\
-{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
-"""
-    shell: str = ""
+# class BaseConfigShell(BaseModel):
+#     fdir_root: pathlib.Path = Field(
+#         default=None,
+#         description=(
+#             "root folder. same as fdir_root within batch config."
+#             " facilitates running many processes. this is the working dir."
+#         ),
+#     )
+#     fpths_inputs: Optional[List[pathlib.Path]] = None
+#     fpths_outputs: Optional[List[pathlib.Path]] = None
+#     path_run: pathlib.Path = pathlib.Path("script.py")
+#     pythonpath: pathlib.Path = None
+#     run: str = None
+#     call: str = "python -O"
+#     params: Dict = {}
+#     shell_template: str = """\
+# {{ call }} {{ run }}\
+# {% for f in fpths_inputs %} {{f}}{% endfor %}\
+# {% for f in fpths_outputs %} {{f}}{% endfor %}\
+# {% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}
+# """
+#     shell: str = ""
 
 
 class ConfigShell(BaseModel):
@@ -157,21 +274,21 @@ class ConfigShell(BaseModel):
 
     index: int = 0
     path_run: pathlib.Path = "script.py"
-    pythonpath: pathlib.Path = None
-    run: str = None
-    name: str = None
-    long_name: str = None
-    key: str = None
-    fdir_root: pathlib.Path = Field(
+    pythonpath: ty.Optional[pathlib.Path] = None
+    run: ty.Optional[str] = None
+    name: ty.Optional[str] = None
+    long_name: ty.Optional[str] = None
+    key: ty.Optional[str] = None
+    fdir_root: ty.Optional[pathlib.Path] = Field(
         default=None,
         description=(
             "root folder. same as fdir_root within batch config."
             " facilitates running many processes. this is the working dir."
         ),
     )
-    fdir_appdata: pathlib.Path = Field(default=None)
+    fdir_appdata: ty.Optional[pathlib.Path] = Field(default=None)
     in_batch: bool = False
-    status: str = None
+    status: ty.Optional[str] = None
     update_config_at_runtime: bool = Field(
         default=False,
         description=(
@@ -182,13 +299,14 @@ class ConfigShell(BaseModel):
     autodisplay_definitions: List[AutoDisplayDefinition] = Field(
         default_factory=list,
         description="autoui definitions for displaying files. see ipyautoui",
+        validate_default=True,
     )
     autodisplay_inputs_kwargs: Dict = Field(default_factory=dict)
     autodisplay_outputs_kwargs: Dict = Field(default_factory=dict)
     fpths_inputs: Optional[List[pathlib.Path]] = None
     fpths_outputs: Optional[List[pathlib.Path]] = None
-    fpth_params: pathlib.Path = None
-    fpth_config: pathlib.Path = Field(
+    fpth_params: ty.Optional[pathlib.Path] = None
+    fpth_config: ty.Optional[pathlib.Path] = Field(
         None,
         description=(
             "there is a single unique folder and config file for each RunApp."
@@ -197,8 +315,8 @@ class ConfigShell(BaseModel):
         # const=True
     )
     fpth_runhistory: pathlib.Path = Field(PATH_RUNHISTORY)  # ,const=True
-    fpth_log: pathlib.Path = Field(None)  # ,const=True
-    call: str = "python -O"
+    fpth_log: ty.Optional[pathlib.Path] = Field(None)  # ,const=True
+    call: str = Field("python -O", validate_default=True)
     params: Dict = {}
     shell_template: str = """\
 {{ call }} {{ run }}\
@@ -243,77 +361,82 @@ class DefaultConfigShell(ConfigShell):
 
             class LineGraphConfigShell(DefaultConfigShell):
                 # script specific outputs defined by custom ConfigShell class
-                @validator("fpths_outputs", always=True)
-                def _fpths_outputs(cls, v, values):
-                    fdir = values['fdir_appdata']
-                    nm = values['name']
+                @field_validator("fpths_outputs")
+                def _fpths_outputs(cls, v, info: ValidationInfo):
+                    fdir = info.data['fdir_appdata']
+                    nm = info.data['name']
                     paths = [fdir / ('out-'+nm+'.csv'), fdir / ('out-' + nm + '.plotly.json')]
                     return paths
     """
 
-    @validator("status")
-    def _status(cls, v, values):
+    model_config = ConfigDict(validate_default=True)
+
+    @field_validator("status")
+    @classmethod
+    def _status(cls, v):
         li = list(DI_STATUS_MAP.keys()) + [None]
         if v not in li:
-            ValueError(f"status must be in {str(li)}")
+            ValidationError(f"status must be in {str(li)}")
         return v
 
-    @validator("path_run", always=True)
+    @field_validator("path_run")
     def validate_path_run(cls, v):
         assert " " not in str(v.stem), "must be alphanumeric"
         return v
 
-    @validator("pythonpath", always=True)
-    def _pythonpath(cls, v, values):
+    @field_validator("pythonpath")
+    def _pythonpath(cls, v, info: ValidationInfo):
         # then we are executing a package rather than a script
         # so we need to add the package to the PYTHONPATH
         # TODO: Tasks pending completion -@jovyan at 9/29/2022, 9:31:39 AM
         #       this should append the parent to allow users to also specify
         #       a PYTHONPATH
-        v = values["path_run"].parent
+        v = info.data["path_run"].parent
         return v
 
-    @validator("run", always=True)
-    def _run(cls, v, values):
-        prun = values["path_run"]
+    @field_validator("run")
+    def _run(cls, v, info: ValidationInfo):
+        prun = pathlib.Path(info.data["path_run"])
         if prun.is_dir() or prun.is_file():
             # then we are executing a package rather than a script
             # and we just assigned the PYTHONPATH
             # so no we remove the parent to create the shell cmd
             v = prun.stem
         else:
-            raise ValueError(f"{str(prun)} must be python package dir or python script")
+            raise ValidationError(
+                f"{str(prun)} must be python package dir or python script"
+            )
         return v
 
-    @validator("name", always=True)
-    def _name(cls, v, values):
+    @field_validator("name")
+    def _name(cls, v, info: ValidationInfo):
         if v is None:
-            return values["path_run"].stem.replace("script_", "")
+            return info.data["path_run"].stem.replace("script_", "")
         else:
             if " " in v:
-                raise ValueError("the name must not contain any spaces")
+                raise ValidationError("the name must not contain any spaces")
             return v
 
-    @validator("long_name", always=True)
-    def _long_name(cls, v, values):
+    @field_validator("long_name")
+    def _long_name(cls, v, info: ValidationInfo):
         if v is None:
             return (
-                str(values["index"]).zfill(2)
+                str(info.data["index"]).zfill(2)
                 + " - "
-                + stringcase.titlecase(values["name"])
+                + stringcase.titlecase(info.data["name"])
             )
         else:
             return v
 
-    @validator("key", always=True)
-    def _key(cls, v, values):
+    @field_validator("key")
+    def _key(cls, v, info: ValidationInfo):
         if v is None:
-            return str(values["index"]).zfill(2) + "-" + values["name"]
+            return str(info.data["index"]).zfill(2) + "-" + info.data["name"]
         else:
             return v
 
-    @validator("fdir_root", always=True)
-    def _fdir_root(cls, v, values):
+    @field_validator("fdir_root")
+    def _fdir_root(cls, v, info: ValidationInfo):
         if v is None:
             v = pathlib.Path(".")
         os.chdir(str(v))  # TODO: this will fail if the code is run twice...?
@@ -321,75 +444,79 @@ class DefaultConfigShell(ConfigShell):
         # TODO: Tasks pending completion -@jovyan at 9/29/2022, 11:51:24 AM
         #       rename to `cwd`
 
-    @validator("fdir_appdata", always=True)
-    def _fdir_appdata(cls, v, values):
-        v = values["fdir_root"] / values["key"]
+    @field_validator("fdir_appdata")
+    def _fdir_appdata(cls, v, info: ValidationInfo):
+        v = info.data["fdir_root"] / info.data["key"]
         v.mkdir(exist_ok=True)
-        return pathlib.Path(values["key"])
+        return pathlib.Path(info.data["key"])
 
-    @validator("fpths_inputs", always=True)
-    def _fpths_inputs(cls, v, values):
+    @field_validator("fpths_inputs")
+    def _fpths_inputs(cls, v, info: ValidationInfo):
         if v is None:
             v = []
-            if values["autodisplay_definitions"] is not None:
+            if info.data["autodisplay_definitions"] is not None:
                 ddfs = [
                     v_
-                    for v_ in values["autodisplay_definitions"]
+                    for v_ in info.data["autodisplay_definitions"]
                     if v_.ftype.value == "in"
                 ]
                 paths = [
-                    values["fdir_root"]
-                    / values["fdir_appdata"]
-                    / ("in-" + values["key"] + ddf.ext)
+                    info.data["fdir_root"]
+                    / info.data["fdir_appdata"]
+                    / ("in-" + info.data["key"] + ddf.ext)
                     for ddf in ddfs
                 ]
                 for ddf, path in zip(ddfs, paths):
                     if not path.is_file():
                         create_pydantic_json_file(ddf, path)  # TODO: remove from here?
-                v = [p.relative_to(values["fdir_root"]) for p in paths]
+                v = [p.relative_to(info.data["fdir_root"]) for p in paths]
 
             # ^ NOTE: while generic-ish, this code is probs not generic enough to be in the
             #   root default definition
         assert type(v) == list, "type(v) != list"
         return v
 
-    @validator("fpths_outputs", always=True)
-    def _fpths_outputs(cls, v, values):
+    @field_validator("fpths_outputs")
+    def _fpths_outputs(cls, v, info: ValidationInfo):
         if v is None:
             v = []
         return v
 
-    @validator("fpth_config", always=True)
-    def _fpth_config(cls, v, values):
-        v = values["fdir_root"] / values["fdir_appdata"] / PATH_CONFIG
-        return v.relative_to(values["fdir_root"])
+    @field_validator("fpth_config")
+    def _fpth_config(cls, v, info: ValidationInfo):
+        v = info.data["fdir_root"] / info.data["fdir_appdata"] / PATH_CONFIG
+        return v.relative_to(info.data["fdir_root"])
 
-    @validator("fpth_runhistory", always=True)
-    def _fpth_runhistory(cls, v, values):
-        v = values["fdir_root"] / values["fdir_appdata"] / PATH_RUNHISTORY
-        return v.relative_to(values["fdir_root"])
+    @field_validator("fpth_runhistory")
+    def _fpth_runhistory(cls, v, info: ValidationInfo):
+        v = info.data["fdir_root"] / info.data["fdir_appdata"] / PATH_RUNHISTORY
+        return v.relative_to(info.data["fdir_root"])
 
-    @validator("fpth_log", always=True)
-    def _fpth_log(cls, v, values):
-        v = values["fdir_root"] / values["fdir_appdata"] / PATH_LOG
-        return v.relative_to(values["fdir_root"])
+    @field_validator("fpth_log")
+    def _fpth_log(cls, v, info: ValidationInfo):
+        v = info.data["fdir_root"] / info.data["fdir_appdata"] / PATH_LOG
+        return v.relative_to(info.data["fdir_root"])
 
-    @validator("params", always=True)
-    def _params(cls, v, values):
-        if values["fpth_params"] is not None:
-            with open(values["fpth_params"], "r") as f:
+    @field_validator("params")
+    def _params(cls, v, info: ValidationInfo):
+        if info.data["fpth_params"] is not None:
+            with open(info.data["fpth_params"], "r") as f:
                 v = json.load(f)
         return v
 
-    @validator("call", always=True)
-    def _call(cls, v, values):
+    @field_validator("call")
+    def _call(cls, v, info: ValidationInfo):
         if "-m" not in str(v):
             v = v + " -m"
+        if "python " in v and "/python " not in v:
+            import sys
+
+            v = v.replace("python ", f"{sys.executable} ")
         return v
 
-    @validator("shell", always=True)
-    def _shell(cls, v, values):
-        return Template(values["shell_template"]).render(**values)
+    @field_validator("shell")
+    def _shell(cls, v, info: ValidationInfo):
+        return Template(info.data["shell_template"]).render(**info.data)
 
 
 def udpate_env(append_to_pythonpath: str):
@@ -414,13 +541,10 @@ def run(config: Type[ConfigShell]):
 
 
 if __name__ == "__main__":
-    from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
+    from ipyrun.constants import FPTH_EXAMPLE_RUN
 
-    test_constants = load_test_constants()
-    config = DefaultConfigShell(
-        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
-    )
-    display(config.dict())
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    display(config.model_dump())
 
 
 # +
@@ -499,148 +623,128 @@ def run_shell(app=None, display_hide_btn=True):
     app.actions.update_status()
 
 
-class RunShellActions(DefaultRunActions):
-    """extends RunActions by creating Callables based on data within the app or the config objects."""
-
-    config: DefaultConfigShell = (
-        None  # not a config type is defined - get pydantic to validate it
+class BaseShell(BaseModel):
+    config: ty.Optional[ty.Type[DefaultConfigShell]] = Field(
+        None,
+        validate_default=True,  # not a config type is defined - get pydantic to validate it
     )
 
-    @validator("renderers", always=True)
-    def _renderers(cls, v, values):
+
+class RunShellActions(DefaultRunActions, BaseShell):
+    """extends RunActions by creating Callables based on data within the app or the config objects."""
+
+    @field_validator("renderers")
+    def _renderers(cls, v, info: ValidationInfo):
         renderers = {}
-        for d in values["config"].autodisplay_definitions:
+        for d in info.data["config"].autodisplay_definitions:
             renderers = renderers | create_autodisplay_map(
-                d, fns_onsave=[values["update_status"]]
+                d, fns_onsave=[info.data["update_status"]]
             )
         return renderers
 
-    @validator("hide", always=True)
-    def _hide(cls, v, values):
+    @field_validator("hide")
+    def _hide(cls, v, info: ValidationInfo):
         return None
 
-    @validator("save_config", always=True)
-    def _save_config(cls, v, values):
-        if values["config"] is not None:
-            return wrapped_partial(values["config"].file, values["config"].fpth_config)
+    @field_validator("save_config")
+    def _save_config(cls, v, info: ValidationInfo):
+        if info.data["config"] is not None:
+            return wrapped_partial(
+                info.data["config"].file, info.data["config"].fpth_config
+            )
 
-    @validator("check", always=True)
-    def _check(cls, v, values):
-        return wrapped_partial(check, values["config"], values["save_config"])
+    @field_validator("check")
+    def _check(cls, v, info: ValidationInfo):
+        return wrapped_partial(check, info.data["config"], info.data["save_config"])
 
-    @validator("uncheck", always=True)
-    def _uncheck(cls, v, values):
-        return wrapped_partial(uncheck, values["config"], values["save_config"])
+    @field_validator("uncheck")
+    def _uncheck(cls, v, info: ValidationInfo):
+        return wrapped_partial(uncheck, info.data["config"], info.data["save_config"])
 
-    @validator("get_status", always=True)
-    def _get_status(cls, v, values):
+    @field_validator("get_status")
+    def _get_status(cls, v, info: ValidationInfo):
         return wrapped_partial(
-            get_status, values["config"].fpths_inputs, values["config"].fpths_outputs
+            get_status,
+            info.data["config"].fpths_inputs,
+            info.data["config"].fpths_outputs,
         )
 
-    @validator("update_status", always=True)
-    def _update_status(cls, v, values):
-        return wrapped_partial(update_status, values["app"], values["save_config"])
-
-    @validator("help_run_show", always=True)
-    def _help_run_show(cls, v, values):
+    @field_validator("update_status")
+    def _update_status(cls, v, info: ValidationInfo):
         return wrapped_partial(
-            AutoDisplay.from_paths, [values["config"].path_run], patterns="*"
+            update_status, info.data["app"], info.data["save_config"]
         )
 
-    @validator("help_config_show", always=True)
-    def _help_config_show(cls, v, values):
-        return wrapped_partial(display_pydantic_json, values["config"], as_yaml=False)
+    @field_validator("help_run_show")
+    def _help_run_show(cls, v, info: ValidationInfo):
+        return wrapped_partial(
+            AutoDisplay.from_paths, [info.data["config"].path_run], patterns="*"
+        )
 
-    @validator("inputs_show", always=True)
-    def _inputs_show(cls, v, values):
-        if values["config"] is not None:
-            if values["update_status"].__name__ != "update_status":
-                raise ValueError("update_status error")
-            paths = [f for f in values["config"].fpths_inputs]
+    @field_validator("help_config_show")
+    def _help_config_show(cls, v, info: ValidationInfo):
+        return wrapped_partial(
+            display_pydantic_json, info.data["config"], as_yaml=False
+        )
+
+    @field_validator("inputs_show")
+    def _inputs_show(cls, v, info: ValidationInfo):
+        if info.data["config"] is not None:
+            if info.data["update_status"].__name__ != "update_status":
+                raise ValidationError("update_status error")
+            paths = [f for f in info.data["config"].fpths_inputs]
             return wrapped_partial(
                 AutoDisplay.from_paths,
                 paths,
-                renderers=values["renderers"],
-                **values["config"].autodisplay_inputs_kwargs,
+                renderers=info.data["renderers"],
+                **info.data["config"].autodisplay_inputs_kwargs,
             )
         else:
             return None
 
-    @validator("outputs_show", always=True)
-    def _outputs_show(cls, v, values):
-        if values["config"] is not None and values["app"] is not None:
-            paths = [f for f in values["config"].fpths_outputs]
+    @field_validator("outputs_show")
+    def _outputs_show(cls, v, info: ValidationInfo):
+        if info.data["config"] is not None and info.data["app"] is not None:
+            paths = [f for f in info.data["config"].fpths_outputs]
             return wrapped_partial(
                 AutoDisplay.from_paths,
                 paths,
-                renderers=values["renderers"],
-                **values["config"].autodisplay_inputs_kwargs,
+                renderers=info.data["renderers"],
+                **info.data["config"].autodisplay_inputs_kwargs,
             )
         else:
             return None
 
-    @validator("run", always=True)
-    def _run(cls, v, values):
-        return wrapped_partial(run_shell, app=values["app"])
+    @field_validator("run")
+    def _run(cls, v, info: ValidationInfo):
+        return wrapped_partial(run_shell, app=info.data["app"])
 
-    @validator("runlog_show", always=True)
-    def _runlog_show(cls, v, values):
+    @field_validator("runlog_show")
+    def _runlog_show(cls, v, info: ValidationInfo):
         return None  # TODO: add logging!
 
-    @validator("load_show", always=True)
-    def _load_show(cls, v, values):
+    @field_validator("load_show")
+    def _load_show(cls, v, info: ValidationInfo):
         return None
 
 
 # extend RunApp to make a default RunShell
 # -
 if __name__ == "__main__":
-    from ipyrun.constants import FPTH_EXAMPLE_SCRIPT, load_test_constants
+    from ipyrun.constants import FPTH_EXAMPLE_RUN
 
-    test_constants = load_test_constants()
-    config = DefaultConfigShell(
-        path_run=FPTH_EXAMPLE_SCRIPT, fdir_root=test_constants.FDIR_APPDATA
-    )
-    display(config.dict())
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    display(config.model_dump())
 
 if __name__ == "__main__":
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    actions = RunShellActions(config=config)
+    display(actions)
 
-    class LineGraphConfigShell(DefaultConfigShell):
-        @validator("path_run", always=True, pre=True)
-        def _set_path_run(cls, v, values):
-            return FPTH_EXAMPLE_SCRIPT
+if __name__ == "__main__":
+    from ipyrun.examples.linegraph.linegraph_app import LineGraphConfigShell
 
-        @validator("fpths_outputs", always=True)
-        def _fpths_outputs(cls, v, values):
-            fdir = values["fdir_appdata"]
-            nm = values["name"]
-            paths = [
-                fdir / pathlib.Path("out-" + nm + ".csv"),
-                fdir / pathlib.Path("out-" + nm + ".plotly.json"),
-            ]
-            return paths
-
-        @validator("autodisplay_definitions", always=True)
-        def _autodisplay_definitions(cls, v, values):
-            return [
-                AutoDisplayDefinition(
-                    path=FPTH_EXAMPLE_INPUTSCHEMA,
-                    obj_name="LineGraph",
-                    ext=".lg.json",
-                    ftype=FiletypeEnum.input,
-                )
-            ]
-
-        @validator("autodisplay_inputs_kwargs", always=True)
-        def _autodisplay_inputs_kwargs(cls, v, values):
-            return dict(patterns="*")
-
-        @validator("autodisplay_outputs_kwargs", always=True)
-        def _autodisplay_outputs_kwargs(cls, v, values):
-            return dict(patterns="*.plotly.json")
-
-    config = LineGraphConfigShell(fdir_root=test_constants.FDIR_APPDATA)
+    config = LineGraphConfigShell(fdir_root=FDIR_APPDATA)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
 
@@ -654,7 +758,7 @@ class ConfigBatch(BaseModel):
         default=PATH_CONFIG, description="name of config file for batch app"
     )
     title: str = Field(default="", description="markdown description of BatchApp")
-    status: str = None
+    status: ty.Optional[str] = None
     cls_actions: Callable = Field(
         default=RunShellActions,
         description=(
@@ -662,9 +766,13 @@ class ConfigBatch(BaseModel):
             " use case)"
         ),
         exclude=True,
+        validate_default=True,
     )
     cls_app: Union[Type, Callable] = Field(
-        default=RunApp, description="the class that defines the RunApp.", exclude=True
+        default=RunApp,
+        description="the class that defines the RunApp.",
+        exclude=True,
+        validate_default=True,
     )
     cls_config: Union[Type, Callable] = Field(
         default=DefaultConfigShell,
@@ -673,57 +781,55 @@ class ConfigBatch(BaseModel):
             " baked in"
         ),
         exclude=True,
+        validate_default=True,
     )
     configs: List = []
     # runs: List[Callable] = Field(default=lambda: [], description="a list of RunApps", exclude=True)
 
-    # @validator("fpth_config", always=True, pre=True)
-    # def _fpth_config(cls, v, values):
+    # @field_validator("fpth_config")
+    # def _fpth_config(cls, v, info: ValidationInfo):
     #     """bundles RunApp up as a single argument callable"""
-    #     return values["fdir_root"] / v
+    #     return info.data["fdir_root"] / v
 
-    @validator("fdir_root", always=True)
-    def _fdir_root(cls, v, values):
+    @field_validator("fdir_root")
+    def _fdir_root(cls, v, info: ValidationInfo):
         if v is None:
             v = pathlib.Path(".")
         os.chdir(str(v))  # TODO: this will fail if the code is run twice...?
         return v
 
-    @validator("cls_app", always=True, pre=True)
-    def _cls_app(cls, v, values):
+    @field_validator("cls_app")
+    def _cls_app(cls, v, info: ValidationInfo):
         """bundles RunApp up as a single argument callable"""
         return wrapped_partial(
-            v, cls_actions=values["cls_actions"]  # cls_ui=values["cls_ui"],
+            v, cls_actions=info.data["cls_actions"]  # cls_ui=info.data["cls_ui"],
         )
 
-    @validator("configs", always=True)
-    def _configs(cls, v, values):
+    @field_validator("configs")
+    def _configs(cls, v, info: ValidationInfo):
         """bundles RunApp up as a single argument callable"""
-        return [values["cls_config"](**v_) for v_ in v]
+        return [info.data["cls_config"](**v_) for v_ in v]
 
-    @validator("status")
-    def _status(cls, v, values):
+    @field_validator("status")
+    def _status(cls, v, info: ValidationInfo):
         li = list(DI_STATUS_MAP.keys()) + [None]
         if v not in li:
-            ValueError(f"status must be in {str(li)}")
+            ValidationError(f"status must be in {str(li)}")
         return v
 
 
 if __name__ == "__main__":
-    from ipyrun.constants import load_test_constants
-
-    test_constants = load_test_constants()
+    DIR_EXAMPLE_BATCH = FDIR_TEST_EXAMPLES / "line_graph_batch"
     config_batch = ConfigBatch(
-        fdir_root=test_constants.DIR_EXAMPLE_BATCH,
+        fdir_root=DIR_EXAMPLE_BATCH,
         cls_config=ConfigShell,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
-    display(config_batch.dict())
+    display(config_batch.model_dump())
 
 
 # +
 def fn_add(app, **kwargs):
-    print(kwargs)
     cls_config = app.config.cls_config
     if "index" not in kwargs:
         if len(app.config.configs) == 0:
@@ -731,6 +837,7 @@ def fn_add(app, **kwargs):
         else:
             kwargs["index"] = app.config.configs[-1].index + 1
     kwargs["fdir_root"] = app.config.fdir_root
+    print(kwargs)
     config = cls_config(**kwargs)
     app.configs_append(config)
     app.add.value = False
@@ -747,7 +854,8 @@ def fn_add_hide(app):
     return "add hide"
 
 
-def fn_remove(app=None, key=None):
+def fn_remove(arg, app=None):
+    key = arg.key
     if key is None:
         print("key is None")
         key = app.runs.iterable[-1].key
@@ -764,11 +872,11 @@ def fn_remove_show(app=None):
 
 
 def fn_remove_hide(app=None):
-    app.runs.add_remove_controls = None
+    app.runs.add_remove_controls = "none"
 
 
 def check_batch(app, fn_saveconfig, bool_=True):
-    [setattr(v.check, "value", bool_) for k, v in app.runs.items.items()]
+    [setattr(v.check, "value", bool_) for k, v in app.di_runs.items()]
     [setattr(c, "in_batch", bool_) for c in app.config.configs]
     fn_saveconfig()
 
@@ -784,7 +892,7 @@ def run_batch(app=None):
         print("run the following:")
         [print(k) for k, v in sel.items() if v is True]
     [
-        v.run(display_hide_btn=False) for v in app.run_actions if v.config.in_batch
+        v.run() for v in app.run_actions if v.config.in_batch  # display_hide_btn=False
     ]  # TODO add "hide_button" arg
 
 
@@ -792,7 +900,10 @@ def batch_get_status(app=None):
     st = [a.get_status() for a in app.run_actions]
     if st is None:
         st = "error"
-    bst = "error"
+    if len(st) == 0:
+        bst = "no_outputs"
+    else:
+        bst = "error"
     for s in ["up_to_date", "no_outputs", "outputs_need_updating", "error"]:
         if s in st:
             bst = s
@@ -808,7 +919,7 @@ def load_dir(app=None, fdir_root=None):
     cl = type(app.config)
     config_batch = cl(fdir_root=fdir_root)
     if config_batch.fpth_config.is_file():
-        config_batch = cl.parse_file(config_batch.fpth_config)
+        config_batch = cl(**json.loads(config_batch.fpth_config.read_text()))
     print("loading")
     app.config = config_batch
     app.loaded.value = f"{str(get_fpth_win(fdir_root))}"
@@ -827,105 +938,111 @@ def open_loaded(app=None, fdir_root=None):
 
 
 class BatchShellActions(DefaultBatchActions):
-    @validator("load", always=True)
-    def _load(cls, v, values):
+    @field_validator("load")
+    def _load(cls, v, info: ValidationInfo):
         fn = lambda: None
-        if values["app"] is not None:
-            cl = type(values["app"].config)
-            fn = wrapped_partial(load_dir, app=values["app"])
+        if info.data["app"] is not None:
+            cl = type(info.data["app"].config)
+            fn = wrapped_partial(load_dir, app=info.data["app"])
         return fn
 
-    @validator("get_loaded", always=True)
-    def _get_loaded(cls, v, values):
+    @field_validator("get_loaded")
+    def _get_loaded(cls, v, info: ValidationInfo):
         fn = lambda: None
-        if values["app"] is not None and values["config"] is not None:
-            fdir_root = values["config"].fdir_root
+        if info.data["app"] is not None and info.data["config"] is not None:
+            fdir_root = info.data["config"].fdir_root
             fn = wrapped_partial(
                 set_loaded,
-                app=values["app"],
+                app=info.data["app"],
                 value=markdown(f"`{str(get_fpth_win(fdir_root))}`"),
             )
         return fn
 
-    @validator("open_loaded", always=True)
-    def _open_loaded(cls, v, values):
+    @field_validator("open_loaded")
+    def _open_loaded(cls, v, info: ValidationInfo):
         fn = lambda: None
-        if values["app"] is not None and values["config"] is not None:
+        if info.data["app"] is not None and info.data["config"] is not None:
             fn = wrapped_partial(
-                open_loaded, app=values["app"], fdir_root=values["config"].fdir_root
+                open_loaded,
+                app=info.data["app"],
+                fdir_root=info.data["config"].fdir_root,
             )
         return fn
 
-    @validator("save_config", always=True)
-    def _save_config(cls, v, values):
-        return wrapped_partial(values["config"].file, values["config"].fpth_config)
+    @field_validator("save_config")
+    def _save_config(cls, v, info: ValidationInfo):
+        return wrapped_partial(
+            info.data["config"].file, info.data["config"].fpth_config
+        )
 
-    @validator("wizard_show", always=True)
-    def _wizard_show(cls, v, values):
+    @field_validator("wizard_show")
+    def _wizard_show(cls, v, info: ValidationInfo):
         return None
 
-    @validator("check", always=True)
-    def _check(cls, v, values):
+    @field_validator("check")
+    def _check(cls, v, info: ValidationInfo):
         return wrapped_partial(
-            check_batch, values["app"], values["save_config"], bool_=True
+            check_batch, info.data["app"], info.data["save_config"], bool_=True
         )
 
-    @validator("uncheck", always=True)
-    def _uncheck(cls, v, values):
+    @field_validator("uncheck")
+    def _uncheck(cls, v, info: ValidationInfo):
         return wrapped_partial(
-            check_batch, values["app"], values["save_config"], bool_=False
+            check_batch, info.data["app"], info.data["save_config"], bool_=False
         )
 
-    @validator("add", always=True)
-    def _add(cls, v, values):
-        return wrapped_partial(fn_add, values["app"])
+    @field_validator("add")
+    def _add(cls, v, info: ValidationInfo):
+        return wrapped_partial(fn_add, info.data["app"])
 
-    @validator("add_show", always=True)
-    def _add_show(cls, v, values):
-        return wrapped_partial(fn_add_show, values["app"])
+    @field_validator("add_show")
+    def _add_show(cls, v, info: ValidationInfo):
+        return wrapped_partial(fn_add_show, info.data["app"])
 
-    @validator("add_hide", always=True)
-    def _add_hide(cls, v, values):
-        return wrapped_partial(fn_add_hide, values["app"])
+    @field_validator("add_hide")
+    def _add_hide(cls, v, info: ValidationInfo):
+        return wrapped_partial(fn_add_hide, info.data["app"])
 
-    @validator("remove", always=True)
-    def _remove(cls, v, values):
-        values["app"].runs.fn_remove = wrapped_partial(fn_remove, app=values["app"])
-        return values["app"].runs.remove_row
+    @field_validator("remove")
+    def _remove(cls, v, info: ValidationInfo):
+        info.data["app"].runs.fn_remove = functools.partial(
+            fn_remove, app=info.data["app"]
+        )
+        return info.data["app"].runs.remove_row
 
-    @validator("remove_show", always=True)
-    def _remove_show(cls, v, values):
-        return wrapped_partial(fn_remove_show, app=values["app"])
+    @field_validator("remove_show")
+    def _remove_show(cls, v, info: ValidationInfo):
+        return wrapped_partial(fn_remove_show, app=info.data["app"])
 
-    @validator("remove_hide", always=True)
-    def _remove_hide(cls, v, values):
-        return wrapped_partial(fn_remove_hide, values["app"])
+    @field_validator("remove_hide")
+    def _remove_hide(cls, v, info: ValidationInfo):
+        return wrapped_partial(fn_remove_hide, info.data["app"])
 
-    @validator("help_config_show", always=True)
-    def _help_config_show(cls, v, values):
+    @field_validator("help_config_show")
+    def _help_config_show(cls, v, info: ValidationInfo):
         return wrapped_partial(
-            display_pydantic_json, values["config"], as_yaml=False
+            display_pydantic_json, info.data["config"], as_yaml=False
         )  # TODO: revert to as_yaml=True when tested as working in Voila
 
-    @validator("run", always=True)
-    def _run(cls, v, values):
-        return wrapped_partial(run_batch, app=values["app"])
+    @field_validator("run")
+    def _run(cls, v, info: ValidationInfo):
+        return wrapped_partial(run_batch, app=info.data["app"])
 
-    @validator("inputs_show", always=True)
-    def _inputs_show(cls, v, values):
+    @field_validator("inputs_show")
+    def _inputs_show(cls, v, info: ValidationInfo):
         return None
 
-    @validator("outputs_show", always=True)
-    def _outputs_show(cls, v, values):
+    @field_validator("outputs_show")
+    def _outputs_show(cls, v, info: ValidationInfo):
         return None
 
-    @validator("get_status", always=True)
-    def _get_status(cls, v, values):
-        return wrapped_partial(batch_get_status, app=values["app"])
+    @field_validator("get_status")
+    def _get_status(cls, v, info: ValidationInfo):
+        return wrapped_partial(batch_get_status, app=info.data["app"])
 
-    @validator("update_status", always=True)
-    def _update_status(cls, v, values):
-        return wrapped_partial(batch_update_status, app=values["app"])
+    @field_validator("update_status")
+    def _update_status(cls, v, info: ValidationInfo):
+        return wrapped_partial(batch_update_status, app=info.data["app"])
 
 
 # -
@@ -933,48 +1050,40 @@ class BatchShellActions(DefaultBatchActions):
 if __name__ == "__main__":
     # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html
     # TODO: configure so that the value of the RunApp is the config?
-
-    from ipyrun.constants import load_test_constants
-    from ipyautoui.custom.workingdir import WorkingDirsUi
-
-    test_constants = load_test_constants()
-
-    class LineGraphConfigBatch(ConfigBatch):
-        @validator("cls_actions", always=True)
-        def _cls_actions(cls, v, values):
-            """bundles RunApp up as a single argument callable"""
-            return RunShellActions
-
-        @validator("cls_config", always=True)
-        def _cls_config(cls, v, values):
-            """bundles RunApp up as a single argument callable"""
-            return LineGraphConfigShell
-
-    def fn_loaddir_handler(value, app=None):
-        fdir_root = value["fdir"] / "06_Models"
-        app.actions.load(fdir_root=fdir_root)
-
-    class LineGraphBatchActions(BatchShellActions):
-        @validator("runlog_show", always=True)
-        def _runlog_show(cls, v, values):
-            return None
-
-        @validator("load_show", always=True)
-        def _load_show(cls, v, values):
-            return lambda: WorkingDirsUi(
-                fn_onload=wrapped_partial(fn_loaddir_handler, app=values["app"])
-            )
+    from ipyrun.examples.linegraph.linegraph_app import (
+        LineGraphConfigShell,
+        LineGraphConfigBatch,
+        LineGraphBatchActions,
+    )
 
     config_batch = LineGraphConfigBatch(
-        fdir_root=test_constants.DIR_EXAMPLE_BATCH,
-        # cls_config=MyConfigShell,
+        fdir_root=DIR_EXAMPLE_BATCH,
         title="""# Plot Straight Lines\n### example RunApp""",
     )
     if config_batch.fpth_config.is_file():
-        config_batch = LineGraphConfigBatch.parse_file(config_batch.fpth_config)
+        config_batch = LineGraphConfigBatch(
+            **json.loads(config_batch.fpth_config.read_text())
+        )
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     display(app)
 
+# +
+
+# TODO: use computed fields in the future...
+# from pydantic import BaseModel, computed_field
+
+# class My(BaseModel, validate_assignment=True):
+#     fdir: pathlib.Path = pathlib.Path(".")
+
+#     @computed_field
+#     @property
+#     def fdirs(self) -> pathlib.Path:
+#         return [
+#             f
+#             for f in self.fdir.glob("*")
+#             if f.is_dir() and len(list(f.glob("config-shell_handler.json"))) > 0
+#         ]
 
 
-
+# my = My()
+# my
