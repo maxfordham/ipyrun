@@ -45,71 +45,67 @@ from ipyrun.runshell import (
     BatchApp,
     RunShellActions,
 )
-from ipyautoui.custom.workingdir import WorkingDirsUi
 import json
 
 test_constants = load_test_constants()
 
 
-# class LineGraphConfigShell(DefaultConfigShell):
-#     @field_validator("path_run")
-#     def _set_path_run(cls, v):
-#         return FPTH_EXAMPLE_SCRIPT
-
-#     @field_validator("fpths_outputs")
-#     def _fpths_outputs(cls, v, info: ValidationInfo):
-#         fdir = info.data["fdir_appdata"]
-#         nm = info.data["name"]
-#         paths = [
-#             fdir / pathlib.Path("out-" + nm + ".csv"),
-#             fdir / pathlib.Path("out-" + nm + ".plotly.json"),
-#         ]
-#         return paths
-
-#     @field_validator("autodisplay_definitions")
-#     def _autodisplay_definitions(cls, v):
-#         return [
-#             AutoDisplayDefinition(
-#                 path=FPTH_EXAMPLE_INPUTSCHEMA,
-#                 obj_name="LineGraph",
-#                 ext=".lg.json",
-#                 ftype=FiletypeEnum.input,
-#             )
-#         ]
+import pytest
+from ipyrun.basemodel import file
 
 
-# class LineGraphConfigBatch(ConfigBatch):
-#     @field_validator("cls_config")
-#     def _cls_config(cls, v, info: ValidationInfo):
-#         """bundles RunApp up as a single argument callable"""
-#         return LineGraphConfigShell
+CONFIG_BATCH = {
+    "fdir_root": "/home/jovyan/ipyrun/tests/examples/line_graph_batch",
+    "fpth_config": "config-shell_handler.json",
+    "title": "# Plot Straight Lines\n### example RunApp",
+    "status": None,
+    "configs": [
+        {
+            "index": 0,
+            "path_run": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph/linegraph",
+            "pythonpath": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph",
+            "run": "linegraph",
+            "name": "linegraph",
+            "long_name": "00 - Linegraph",
+            "key": "00-linegraph",
+            "fdir_root": "/home/jovyan/ipyrun/tests/examples/line_graph_batch",
+            "fdir_appdata": "00-linegraph",
+            "in_batch": True,
+            "status": "outputs_need_updating",
+            "update_config_at_runtime": False,
+            "autodisplay_definitions": [
+                {
+                    "path": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph/linegraph/input_schema_linegraph.py",
+                    "obj_name": "LineGraph",
+                    "module_name": "input_schema_linegraph",
+                    "ftype": "in",
+                    "ext": ".lg.json",
+                }
+            ],
+            "autodisplay_inputs_kwargs": {"patterns": "*"},
+            "autodisplay_outputs_kwargs": {"patterns": "*.plotly.json"},
+            "fpths_inputs": ["00-linegraph/in-00-linegraph.lg.json"],
+            "fpths_outputs": [
+                "00-linegraph/out-linegraph.csv",
+                "00-linegraph/out-linegraph.plotly.json",
+            ],
+            "fpth_params": None,
+            "fpth_config": "00-linegraph/config-shell_handler.json",
+            "fpth_runhistory": "00-linegraph/runhistory.csv",
+            "fpth_log": "00-linegraph/log.csv",
+            "call": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m",
+            "params": {},
+            "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
+            "shell": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json",
+        }
+    ],
+}
 
-#     @field_validator("cls_actions")
-#     def _cls_actions(cls, v, info: ValidationInfo):
-#         """bundles RunApp up as a single argument callable"""
-#         return RunShellActions
 
-
-# def fn_loaddir_handler(value, app=None):
-#     fdir_root = value["fdir"] / "06_Models"
-#     app.actions.load(fdir_root=fdir_root)
-
-
-# class LineGraphBatchActions(BatchShellActions):
-#     @field_validator("runlog_show")
-#     def _runlog_show(cls, v, info: ValidationInfo):
-#         return None
-
-#     @field_validator("load_show")
-#     def _load_show(cls, v, info: ValidationInfo):
-#         return lambda: WorkingDirsUi(
-#             fn_onload=wrapped_partial(fn_loaddir_handler, app=info.data["app"])
-#         )
-
-
-### ----------------------------
-### ----------------------------
-### ----------------------------
+@pytest.fixture
+def remake_config():
+    config_batch = LineGraphConfigBatch(**CONFIG_BATCH)
+    file(config_batch, config_batch.fpth_config)
 
 
 def test_runapp():
@@ -118,7 +114,6 @@ def test_runapp():
     config = LineGraphConfigShell(
         path_run=FPTH_EXAMPLE_SCRIPT,
         fdir_root=FDIR_APPDATA,
-        shell="python -O -m",
     )
     pr = run(config)
     print("config")
@@ -143,7 +138,7 @@ def change_input(path):
     json.dump(di_in, path.open("w"))
 
 
-def test_run_batch():
+def test_run_batch(remake_config):
     config_batch = LineGraphConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
         # cls_config=MyConfigShell,
@@ -166,7 +161,7 @@ def test_run_batch():
     assert datetime.fromtimestamp(p_out.stat().st_mtime) == IsNow(delta=3)
 
 
-def test_batch_add_run():
+def test_batch_add_run(remake_config):
     config_batch = LineGraphConfigBatch(
         fdir_root=test_constants.DIR_EXAMPLE_BATCH,
         # cls_config=MyConfigShell,
@@ -178,5 +173,8 @@ def test_batch_add_run():
         )
     app = BatchApp(config_batch, cls_actions=LineGraphBatchActions)
     n = len(app.config.configs)
+    assert len(app.runs.children) != 0
+    assert n == 1
     app.actions.add()
     assert len(app.config.configs) == n + 1
+    assert len(app.runs.children) != 0

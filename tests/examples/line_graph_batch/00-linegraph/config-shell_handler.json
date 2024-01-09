@@ -1,8 +1,8 @@
 {
     "index": 0,
-    "path_run": "/home/jovyan/ipyrun/src/ipyrun/examplerun",
-    "pythonpath": "/home/jovyan/ipyrun/src/ipyrun",
-    "run": "examplerun",
+    "path_run": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph/linegraph",
+    "pythonpath": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph",
+    "run": "linegraph",
     "name": "linegraph",
     "long_name": "00 - Linegraph",
     "key": "00-linegraph",
@@ -13,7 +13,7 @@
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
         {
-            "path": "/home/jovyan/ipyrun/src/ipyrun/examplerun/input_schema_linegraph.py",
+            "path": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph/linegraph/input_schema_linegraph.py",
             "obj_name": "LineGraph",
             "module_name": "input_schema_linegraph",
             "ftype": "in",
@@ -37,8 +37,8 @@
     "fpth_config": "00-linegraph/config-shell_handler.json",
     "fpth_runhistory": "00-linegraph/runhistory.csv",
     "fpth_log": "00-linegraph/log.csv",
-    "call": "python -O -m",
+    "call": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m",
     "params": {},
     "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-    "shell": "python -O -m examplerun 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json"
+    "shell": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m linegraph 00-linegraph/in-00-linegraph.lg.json 00-linegraph/out-linegraph.csv 00-linegraph/out-linegraph.plotly.json"
 }
