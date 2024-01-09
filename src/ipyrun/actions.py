@@ -22,7 +22,6 @@
 import functools
 from typing import Optional, Callable, Any, Dict, Callable
 from pydantic import Field, ValidationInfo, field_validator, ConfigDict
-from markdown import markdown
 
 from IPython.display import Image, clear_output, display
 from ipywidgets import widgets
@@ -45,7 +44,9 @@ class RunActions(BaseModel, validate_assignment=True):
     hides the button in the App. The actions here are used to show / hide another
     UI element that the user can edit."""
 
-    config: Any = Field(None, description=des_config, validate_default=True)
+    config: Any = Field(
+        None, description=des_config, validate_default=True, check_fields=False
+    )
     app: Any = Field(None, description=des_app)
     save_config: Optional[Callable] = Field(
         lambda: "save_config", validate_default=True
@@ -98,6 +99,12 @@ class RunActions(BaseModel, validate_assignment=True):
     runlog_hide: Optional[Callable] = Field(
         lambda: "runlog_hide", validate_default=True
     )
+    upload_show: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("upload_show")), validate_default=True
+    )
+    upload_hide: Optional[Callable] = Field(
+        lambda: display(widgets.HTML("upload_hide")), validate_default=True
+    )
     load_show: Optional[Callable] = Field(
         lambda: display(widgets.HTML("load_show")), validate_default=True
     )
@@ -128,7 +135,7 @@ def display_runui_tooltips(runui):
     li = [k for k, v in runui.map_actions.items() if v is not None]
     li = [l for l in li if "tooltip" in l.__dict__["_trait_values"]]
     return widgets.VBox(
-        [widgets.HBox([l, widgets.HTML(markdown(f"*{l.tooltip}*"))]) for l in li]
+        [widgets.HBox([l, widgets.HTML(f"<b>{l.tooltip}</b>")]) for l in li]
     )
 
 
