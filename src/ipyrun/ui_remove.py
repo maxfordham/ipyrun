@@ -23,7 +23,6 @@ generic Add run dialogue
 # %%
 import typing
 import ipywidgets as widgets
-from markdown import markdown
 
 
 class RunApps:
@@ -79,7 +78,7 @@ class RemoveRun:
         self.form = widgets.HBox(
             [
                 self.delete_data,
-                widgets.HTML(markdown(self.md_question)),
+                widgets.HTML(self.md_question),
             ]
         )
 

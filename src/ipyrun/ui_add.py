@@ -26,7 +26,6 @@ import ipywidgets as widgets
 from IPython.display import display
 from ipyautoui.custom.modelrun import RunName
 from ipyautoui.constants import BUTTON_MIN_SIZE
-from markdown import markdown
 from ipyrun.constants import FILENAME_FORBIDDEN_CHARACTERS
 import traitlets
 import stringcase
@@ -50,12 +49,12 @@ class AddModelRun:
     ):
         """
         a ui element for adding new runs to RunApps
-        
+
         Args:
             app (RunApps): the app that will be modified by this class
             fn_add (typing.Callable): a function that is executed to add a new run to the "app"
                 on_click of a button. the main app is passed to the function using functools:
-        
+
         Code:
             ```
             def _init_controls(self):
@@ -85,7 +84,7 @@ class AddModelRun:
 
     @property
     def question_value(self):
-        return markdown(f"would you like to add new a run? `{self.run_name.value}`")
+        return f"would you like to add new a run? `{self.run_name.value}`"
 
     def _init_controls(self):
         self.add.on_click(self._add)
@@ -105,7 +104,6 @@ class AddModelRun:
 
 
 if __name__ == "__main__":
-
     add = AddModelRun(app=RunApps())
     display(add)
 
@@ -132,16 +130,18 @@ class AddNamedRun(traitlets.HasTraits):
     value = traitlets.Unicode()
 
     def __init__(
-        self, app: typing.Type[RunApps] = None, fn_add: typing.Callable = create_runapp,
+        self,
+        app: typing.Type[RunApps] = None,
+        fn_add: typing.Callable = create_runapp,
     ):
         """
         a ui element for adding new runs to RunApps
-        
+
         Args:
             app (RunApps): the app that will be modified by this class
             fn_add (typing.Callable): a function that is executed to add a new run to the "app"
                 on_click of a button. the main app is passed to the function using functools:
-        
+
         Code:
             ```
             def _init_controls(self):
@@ -168,7 +168,7 @@ class AddNamedRun(traitlets.HasTraits):
 
     @property
     def question_value(self):
-        return markdown(f"Would you like to add new a run? `{self.value}`")
+        return f"Would you like to add new a run? `{self.value}`"
 
     def _init_controls(self):
         self.add.on_click(self._add)
@@ -192,9 +192,10 @@ class AddNamedRun(traitlets.HasTraits):
 
 
 if __name__ == "__main__":
-
     add = AddNamedRun(app=RunApps())
     display(add)
+
+
 # +
 class AddRun:
     def __init__(
@@ -205,12 +206,12 @@ class AddRun:
     ):
         """
         a ui element for adding new runs to RunApps
-        
+
         Args:
             app (RunApps): the app that will be modified by this class
             fn_add (typing.Callable): a function that is executed to add a new run to the "app"
                 on_click of a button. the main app is passed to the function using functools:
-        
+
         Code:
             ```
             def _init_controls(self):
@@ -232,7 +233,7 @@ class AddRun:
         self.add = widgets.Button(
             icon="check", button_style="success", layout=dict(BUTTON_MIN_SIZE)
         )
-        self.question = widgets.HTML(markdown(f"would you like to add new a run?"))
+        self.question = widgets.HTML(f"would you like to add new a run?")
         self.form = widgets.HBox([self.add, self.question])
 
     def _init_controls(self):
@@ -249,9 +250,6 @@ class AddRun:
 
 
 if __name__ == "__main__":
-
     add = AddRun(app=RunApps())
     display(add)
 # -
-
-
