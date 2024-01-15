@@ -73,6 +73,20 @@ class UiComponents:
             ]
         self._di_button_styles = value
 
+    @property
+    def di_button_tooltips(self):
+        return {
+            k: getattr(self, k).tooltip
+            for k in self.di_button_styles.keys()
+            if getattr(self, k).tooltip is not None
+        }
+
+    @di_button_tooltips.setter
+    def di_button_tooltips(self, value):
+        for k, v in value.items():
+            getattr(self, k).tooltip = v
+        self._di_button_tooltips = value
+
     def _init_UiButtons(
         self, di_button_styles=DEFAULT_BUTTON_STYLES, container=widgets.Accordion
     ):
