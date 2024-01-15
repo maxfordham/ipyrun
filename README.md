@@ -52,23 +52,22 @@ for example it would be great to create a `RunSnake` app for executing SnakeMake
 
 ## Install
 
-TODO: publish publicly and update the install commands below
-
-- install from network channel
-
 ```bash
-conda config --add channels file:///mnt/conda-bld
-mamba install ipyrun
-# or 
-mamba install -c file:///mnt/conda-bld ipyrun
+pip install ipyrun
 ```
 
-- install pip dependencies
+## Develop
 
 ```bash
-pip install mydocstring
+mamba env create -f environment-dev.yml 
+pytest
 ```
 
-## Build
+## Packaging and Publish
 
-- [conda-bld](docs/conda-bld.md)
+```sh
+#  NOTE: restricted to core-maintainers only
+mamba activate hatcher # or conda env with hatch installed
+hatch build  # builds to local folder
+hatch publish -u __token__ -a <your-pypi-token>  # publishes to pypi
+```
