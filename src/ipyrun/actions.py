@@ -117,9 +117,6 @@ class RunActions(BaseModel, validate_assignment=True):
     get_loaded: Optional[Callable] = Field(
         lambda: display(widgets.HTML("get_loaded")), validate_default=True
     )
-    open_loaded: Optional[Callable] = Field(
-        lambda: display(widgets.HTML("open_loaded")), validate_default=True
-    )
     run: Optional[Callable] = Field(lambda: "run", validate_default=True)
     run_hide: Optional[Callable] = Field(lambda: "console_hide", validate_default=True)
     activate: Optional[Callable] = Field(lambda: "activate", validate_default=True)

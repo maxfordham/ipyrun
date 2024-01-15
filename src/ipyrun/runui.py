@@ -87,8 +87,7 @@ class UiComponents:
         self.load = widgets.ToggleButton()
         self.upload = widgets.ToggleButton()
         self.loaded = widgets.HTML()
-        self.open_loaded = widgets.Button()
-        self.hbx_load = widgets.HBox([self.loaded, self.load, self.open_loaded])
+        self.hbx_load = widgets.HBox([self.loaded, self.load])
         self.run = widgets.Button()
         self.show = widgets.Button()
         self.hide = widgets.Button()
@@ -186,7 +185,6 @@ class RunActionsUi(UiComponents):
         self.check.observe(self._check, names="value")
         self.show.on_click(self._show)
         self.hide.on_click(self._hide)
-        self.open_loaded.on_click(self._open_loaded)
         self.status_indicator.on_click(self._status_indicator)
 
     #     if self.load is not None:
@@ -215,10 +213,6 @@ class RunActionsUi(UiComponents):
     def _hide(self, on_click):
         """default hide run data. TODO - move to actions"""
         self.actions.hide()
-
-    def _open_loaded(self, on_click):
-        """default hide run data. TODO - move to actions"""
-        self.actions.open_loaded()
 
     def _check(self, on_change):
         if self.check.value:
@@ -335,7 +329,6 @@ class RunActionsUi(UiComponents):
             self.run: self.actions.run,
             self.show: self.actions.show,
             self.hide: self.actions.hide,
-            self.open_loaded: self.actions.open_loaded,
         }
 
     def get_buttons(self, li_buttons):
@@ -1169,5 +1162,3 @@ if __name__ == "__main__":
         widgets.Button(**LOAD_BUTTON_KWARGS),
     ]
     display(hbx_main)
-
-

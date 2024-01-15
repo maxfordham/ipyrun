@@ -65,7 +65,6 @@ from enum import Enum
 from IPython.display import Markdown, clear_output, display
 import ipywidgets as widgets
 from halo import HaloNotebook
-from markdown import markdown
 
 from ipyautoui import AutoUi, AutoDisplay
 from ipyautoui._utils import (
@@ -954,20 +953,10 @@ class BatchShellActions(DefaultBatchActions):
             fn = wrapped_partial(
                 set_loaded,
                 app=info.data["app"],
-                value=markdown(f"`{str(get_fpth_win(fdir_root))}`"),
+                value=f"<code>{str(get_fpth_win(fdir_root))}</code>",
             )
         return fn
 
-    @field_validator("open_loaded")
-    def _open_loaded(cls, v, info: ValidationInfo):
-        fn = lambda: None
-        if info.data["app"] is not None and info.data["config"] is not None:
-            fn = wrapped_partial(
-                open_loaded,
-                app=info.data["app"],
-                fdir_root=info.data["config"].fdir_root,
-            )
-        return fn
 
     @field_validator("save_config")
     def _save_config(cls, v, info: ValidationInfo):
