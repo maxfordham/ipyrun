@@ -19,6 +19,9 @@ dependencies:
   - emoji
   - plotly # for example: TODO: change to vega
   - jupyter-dash # for example: TODO: change to vega
+  - ripgrep
+  - jupyterlab-search-replace
+  - jupyterlab-unfold
   - pip
   - pip:
     - seedir
