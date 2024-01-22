@@ -4,6 +4,7 @@ import numpy as np
 from .input_schema_linegraph import LineGraph
 from .make_graph import graph
 
+
 def main(fpth_in, fpth_out_csv, fpth_out_plotly):
     """
     Args:
@@ -28,20 +29,21 @@ def main(fpth_in, fpth_out_csv, fpth_out_plotly):
 
 
 if __name__ == "__main__":
-    if __debug__:
-        import os
-        import pathlib
-        os.chdir(pathlib.Path(__file__).parent)
-        fpth_in = "inputs-line_graph.lg.json"
-        fpth_out_csv = "line_graph-output.csv"
-        fpth_out_plotly = "line_graph-output.plotly.json"
-        main(fpth_in, fpth_out_csv, fpth_out_plotly)
-    else:
-        import sys
-        fpth_in = sys.argv[1]
-        fpth_out_csv = sys.argv[2]
-        fpth_out_plotly = sys.argv[3]
-        print(f"fpth_in = {fpth_in}")
-        print(f"fpth_out_csv = {fpth_out_csv}")
-        print(f"fpth_out_plotly = {fpth_out_plotly}")
-        main(fpth_in, fpth_out_csv, fpth_out_plotly)
+    # if __debug__:
+    #     import os
+    #     import pathlib
+    #     os.chdir(pathlib.Path(__file__).parent)
+    #     fpth_in = "inputs-line_graph.lg.json"
+    #     fpth_out_csv = "line_graph-output.csv"
+    #     fpth_out_plotly = "line_graph-output.plotly.json"
+    #     main(fpth_in, fpth_out_csv, fpth_out_plotly)
+    # else:
+    import sys
+
+    fpth_in = sys.argv[1]
+    fpth_out_csv = sys.argv[2]
+    fpth_out_plotly = sys.argv[3]
+    print(f"fpth_in = {fpth_in}")
+    print(f"fpth_out_csv = {fpth_out_csv}")
+    print(f"fpth_out_plotly = {fpth_out_plotly}")
+    main(fpth_in, fpth_out_csv, fpth_out_plotly)

@@ -1,14 +1,13 @@
 {
     "title": "lines",
-    "m": 4.0,
+    "m": 0.0,
     "c": 5.0,
     "x_range": [
         0,
-        28
+        44
     ],
     "y_range": [
         0,
         5
-    ],
-    "references": {}
+    ]
 }

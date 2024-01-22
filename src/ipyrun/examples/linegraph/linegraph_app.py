@@ -12,9 +12,14 @@ PATH_RUN = pathlib.Path(__file__).parent / "linegraph"
 PATH_INPUTSCHEMA = PATH_RUN / "input_schema_linegraph.py"
 
 class LineGraphConfigShell(DefaultConfigShell):
+    
+    @field_validator("pythonpath")
+    def _pythonpath(cls, v, info: ValidationInfo):
+        return pathlib.Path(__file__).parent
+    
     @field_validator("path_run")
     def _set_path_run(cls, v, info: ValidationInfo):
-        return PATH_RUN
+        return pathlib.Path("linegraph")
 
     @field_validator("fpths_outputs")
     def _fpths_outputs(cls, v, info: ValidationInfo):
@@ -73,3 +78,10 @@ class LineGraphBatchActions(BatchShellActions):
         return lambda: WorkingDirsUi(
             fn_onload=wrapped_partial(fn_loaddir_handler, app=info.data["app"])
         )
+        
+    @field_validator("outputs_show")
+    def _outputs_show(cls, v, info: ValidationInfo):
+        import functools
+        fdir = info.data["config"].fdir_root
+        fn = lambda fdir: print(fdir)
+        return functools.partial(fn, fdir)
