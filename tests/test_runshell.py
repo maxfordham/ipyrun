@@ -11,6 +11,7 @@ from .constants import (
     DIR_EXAMPLE_APPDATA,
     DIR_EXAMPLE_PROCESS,
     FDIR_APPDATA,
+    FDIR_APPDATA1,
 )
 from datetime import datetime
 import subprocess
@@ -108,6 +109,9 @@ def remake_config():
     file(config_batch, config_batch.fpth_config)
 
 
+import os
+
+
 def test_runapp():
     """Test something."""
 
@@ -115,9 +119,29 @@ def test_runapp():
         path_run=FPTH_EXAMPLE_SCRIPT,
         fdir_root=FDIR_APPDATA,
     )
+    assert os.getcwd() == str(FDIR_APPDATA)
     pr = run(config)
     print("config")
     assert isinstance(config, ConfigShell)
+
+
+import shutil
+import time
+
+
+def test_runapp_portable():
+    """Test something."""
+    shutil.copytree(FDIR_APPDATA, FDIR_APPDATA1)
+    time.sleep(2)
+    config = LineGraphConfigShell(
+        path_run=FPTH_EXAMPLE_SCRIPT,
+        fdir_root=FDIR_APPDATA1,
+    )
+    assert os.getcwd() == str(FDIR_APPDATA1)
+    pr = run(config)
+    print("config")
+    assert isinstance(config, ConfigShell)
+    shutil.rmtree(FDIR_APPDATA1)
 
 
 # TODO: update example to this: https://examples.pyviz.org/attractors/attractors.html

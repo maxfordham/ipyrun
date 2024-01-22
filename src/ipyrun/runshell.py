@@ -8,7 +8,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.16.0
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         / "tests"
         / "examples"
     )
-    FDIR_APPDATA = FDIR_TEST_EXAMPLES / "fdir_appdata"
+    FDIR_ROOT = FDIR_TEST_EXAMPLES / "fdir_appdata"
 
 # +
 # core libs
@@ -206,6 +206,21 @@ def wrapped_partial(func, *args, **kwargs):
 
 
 # +
+from math import cos, pi
+
+from pydantic import BaseModel, ImportString, ValidationError
+
+
+class ImportThings(BaseModel):
+    obj: ImportString
+
+
+# A string value will cause an automatic import
+my_cos = ImportThings(obj="math.cos")
+my_cos.model_dump(mode="json")
+
+
+# +
 class FiletypeEnum(str, Enum):
     input = "in"
     output = "out"
@@ -272,7 +287,7 @@ class ConfigShell(BaseModel):
     """
 
     index: int = 0
-    path_run: pathlib.Path = "script.py"
+    path_run: pathlib.Path = Field("script.py", validate_default=True)
     pythonpath: ty.Optional[pathlib.Path] = None
     run: ty.Optional[str] = None
     name: ty.Optional[str] = None
@@ -284,6 +299,7 @@ class ConfigShell(BaseModel):
             "root folder. same as fdir_root within batch config."
             " facilitates running many processes. this is the working dir."
         ),
+        validate_default=True,
     )
     fdir_appdata: ty.Optional[pathlib.Path] = Field(default=None)
     in_batch: bool = False
@@ -299,9 +315,13 @@ class ConfigShell(BaseModel):
         default_factory=list,
         description="autoui definitions for displaying files. see ipyautoui",
         validate_default=True,
-    )
-    autodisplay_inputs_kwargs: Dict = Field(default_factory=dict)
-    autodisplay_outputs_kwargs: Dict = Field(default_factory=dict)
+    )  # TODO: replace with import string
+    autodisplay_inputs_kwargs: Dict = Field(
+        default_factory=dict
+    )  # TODO: remove this. can use functools...
+    autodisplay_outputs_kwargs: Dict = Field(
+        default_factory=dict
+    )  # TODO: remove this. can use functools...
     fpths_inputs: Optional[List[pathlib.Path]] = None
     fpths_outputs: Optional[List[pathlib.Path]] = None
     fpth_params: ty.Optional[pathlib.Path] = None
@@ -326,7 +346,8 @@ class ConfigShell(BaseModel):
     shell: str = ""
 
 
-# -
+# +
+import sys
 
 
 class DefaultConfigShell(ConfigShell):
@@ -383,28 +404,32 @@ class DefaultConfigShell(ConfigShell):
         assert " " not in str(v.stem), "must be alphanumeric"
         return v
 
-    @field_validator("pythonpath")
-    def _pythonpath(cls, v, info: ValidationInfo):
-        # then we are executing a package rather than a script
-        # so we need to add the package to the PYTHONPATH
-        # TODO: Tasks pending completion -@jovyan at 9/29/2022, 9:31:39 AM
-        #       this should append the parent to allow users to also specify
-        #       a PYTHONPATH
-        v = info.data["path_run"].parent
-        return v
+    # @field_validator("pythonpath")
+    # def _pythonpath(cls, v, info: ValidationInfo):
+    #     # then we are executing a package rather than a script
+    #     # so we need to add the package to the PYTHONPATH
+    #     # TODO: Tasks pending completion -@jovyan at 9/29/2022, 9:31:39 AM
+    #     #       this should append the parent to allow users to also specify
+    #     #       a PYTHONPATH
+
+    #     # TODO: add pythonpath to sys.path allowing import strings to work...
+    #     # v = info.data["path_run"].parent
+    #     return v
 
     @field_validator("run")
     def _run(cls, v, info: ValidationInfo):
         prun = pathlib.Path(info.data["path_run"])
-        if prun.is_dir() or prun.is_file():
-            # then we are executing a package rather than a script
-            # and we just assigned the PYTHONPATH
-            # so no we remove the parent to create the shell cmd
+        # if prun.is_dir() or prun.is_file():
+        #     # then we are executing a package rather than a script
+        #     # and we just assigned the PYTHONPATH
+        #     # so no we remove the parent to create the shell cmd
+        #     v = prun.stem
+        # else:
+        #     raise ValidationError(
+        #         f"{str(prun)} must be python package dir or python script"
+        #     )
+        if isinstance(prun, pathlib.Path):
             v = prun.stem
-        else:
-            raise ValidationError(
-                f"{str(prun)} must be python package dir or python script"
-            )
         return v
 
     @field_validator("name")
@@ -439,6 +464,7 @@ class DefaultConfigShell(ConfigShell):
         if v is None:
             v = pathlib.Path(".")
         os.chdir(str(v))  # TODO: this will fail if the code is run twice...?
+        v = pathlib.Path(".")
         return v
         # TODO: Tasks pending completion -@jovyan at 9/29/2022, 11:51:24 AM
         #       rename to `cwd`
@@ -505,17 +531,14 @@ class DefaultConfigShell(ConfigShell):
 
     @field_validator("call")
     def _call(cls, v, info: ValidationInfo):
-        if "-m" not in str(v):
-            v = v + " -m"
-        if "python " in v and "/python " not in v:
-            import sys
-
-            v = v.replace("python ", f"{sys.executable} ")
-        return v
+        return f"{sys.executable} -O -m"
 
     @field_validator("shell")
     def _shell(cls, v, info: ValidationInfo):
         return Template(info.data["shell_template"]).render(**info.data)
+
+
+# -
 
 
 def udpate_env(append_to_pythonpath: str):
@@ -533,17 +556,31 @@ def run(config: Type[ConfigShell]):
     save = sys.stdout
     sys.stdout = io.StringIO()
     env = udpate_env(config.pythonpath)
-    proc = subprocess.check_output(config.shell, env=env, shell=True)
+    cwd = os.getcwd()
+    proc = subprocess.check_output(config.shell, env=env, shell=True, cwd=cwd)
     in_stdout = sys.stdout.getvalue()
     sys.stdout = save
     return proc
 
 
 if __name__ == "__main__":
-    from ipyrun.constants import FPTH_EXAMPLE_RUN
+    from ipyrun.constants import FPTH_EXAMPLE_RUN, PATH_PYTHONPATH_EXAMPLE
 
-    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    FPTH_EXAMPLE_RUN = pathlib.Path(FPTH_EXAMPLE_RUN.stem)
+
+    config = DefaultConfigShell(
+        path_run=FPTH_EXAMPLE_RUN,
+        fdir_root=FDIR_ROOT,
+        pythonpath=PATH_PYTHONPATH_EXAMPLE,
+    )
     display(config.model_dump())
+
+# +
+# from IPython.display import SVG
+
+# string_svg = '<svg width="36" height="36" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_EUy1{animation:spinner_grm3 1.2s infinite}.spinner_f6oS{animation-delay:.1s}.spinner_g3nX{animation-delay:.2s}.spinner_nvEs{animation-delay:.3s}.spinner_MaNM{animation-delay:.4s}.spinner_4nle{animation-delay:.5s}.spinner_ZETM{animation-delay:.6s}.spinner_HXuO{animation-delay:.7s}.spinner_YaQo{animation-delay:.8s}.spinner_GOx1{animation-delay:.9s}.spinner_4vv9{animation-delay:1s}.spinner_NTs9{animation-delay:1.1s}.spinner_auJJ{transform-origin:center;animation:spinner_T3O6 6s linear infinite}@keyframes spinner_grm3{0%,50%{animation-timing-function:cubic-bezier(.27,.42,.37,.99);r:1px}25%{animation-timing-function:cubic-bezier(.53,0,.61,.73);r:2px}}@keyframes spinner_T3O6{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><g class="spinner_auJJ"><circle class="spinner_EUy1" cx="12" cy="3" r="1"/><circle class="spinner_EUy1 spinner_f6oS" cx="16.50" cy="4.21" r="1"/><circle class="spinner_EUy1 spinner_NTs9" cx="7.50" cy="4.21" r="1"/><circle class="spinner_EUy1 spinner_g3nX" cx="19.79" cy="7.50" r="1"/><circle class="spinner_EUy1 spinner_4vv9" cx="4.21" cy="7.50" r="1"/><circle class="spinner_EUy1 spinner_nvEs" cx="21.00" cy="12.00" r="1"/><circle class="spinner_EUy1 spinner_GOx1" cx="3.00" cy="12.00" r="1"/><circle class="spinner_EUy1 spinner_MaNM" cx="19.79" cy="16.50" r="1"/><circle class="spinner_EUy1 spinner_YaQo" cx="4.21" cy="16.50" r="1"/><circle class="spinner_EUy1 spinner_4nle" cx="16.50" cy="19.79" r="1"/><circle class="spinner_EUy1 spinner_HXuO" cx="7.50" cy="19.79" r="1"/><circle class="spinner_EUy1 spinner_ZETM" cx="12" cy="21" r="1"/></g></svg>'
+# SVG(string_svg)
+# ^ remove HaloNotebook ?
 
 
 # +
@@ -604,6 +641,7 @@ def run_shell(app=None, display_hide_btn=True):
     )
     display(Markdown(f"{pr}"))
     spinner = HaloNotebook(animation="marquee", text="Running", spinner="dots")
+    # display(SVG(string_svg))
     env = None
     if app.config.pythonpath is not None:
         env = udpate_env(app.config.pythonpath)
@@ -618,7 +656,9 @@ def run_shell(app=None, display_hide_btn=True):
         display(in_stdout)
         spinner.succeed("Finished")
     except subprocess.CalledProcessError as e:
+        print("error")
         spinner.fail("Error with Process")
+    spinner.stop()
     app.actions.update_status()
 
 
@@ -732,20 +772,30 @@ class RunShellActions(DefaultRunActions, BaseShell):
 if __name__ == "__main__":
     from ipyrun.constants import FPTH_EXAMPLE_RUN
 
-    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    FPTH_EXAMPLE_RUN = pathlib.Path(FPTH_EXAMPLE_RUN.stem)
+
+    config = DefaultConfigShell(
+        path_run=FPTH_EXAMPLE_RUN,
+        fdir_root=FDIR_ROOT,
+        pythonpath=PATH_PYTHONPATH_EXAMPLE,
+    )
     display(config.model_dump())
 
 if __name__ == "__main__":
-    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_APPDATA)
+    config = DefaultConfigShell(path_run=FPTH_EXAMPLE_RUN, fdir_root=FDIR_ROOT)
     actions = RunShellActions(config=config)
-    display(actions)
+    # display(actions)
 
 if __name__ == "__main__":
     from ipyrun.examples.linegraph.linegraph_app import LineGraphConfigShell
 
-    config = LineGraphConfigShell(fdir_root=FDIR_APPDATA)
+    config = LineGraphConfigShell(fdir_root=FDIR_ROOT)
     run_app = RunApp(config, cls_actions=RunShellActions)  # cls_ui=RunUi,
     display(run_app)
+
+if __name__ == "__main__":
+    print(run_app.config.pythonpath)
+
 
 if __name__ == "__main__":
     pr = run(config)
@@ -795,6 +845,7 @@ class ConfigBatch(BaseModel):
         if v is None:
             v = pathlib.Path(".")
         os.chdir(str(v))  # TODO: this will fail if the code is run twice...?
+        v = pathlib.Path(".")
         return v
 
     @field_validator("cls_app")
@@ -957,7 +1008,6 @@ class BatchShellActions(DefaultBatchActions):
             )
         return fn
 
-
     @field_validator("save_config")
     def _save_config(cls, v, info: ValidationInfo):
         return wrapped_partial(
@@ -1057,7 +1107,6 @@ if __name__ == "__main__":
     display(app)
 
 # +
-
 # TODO: use computed fields in the future...
 # from pydantic import BaseModel, computed_field
 

@@ -20,6 +20,7 @@ FPTH_EXAMPLE_SCRIPT = PATH_PACKAGE / "examplerun"
 FPTH_EXAMPLE_INPUTSCHEMA = PATH_PACKAGE / "examplerun" / "input_schema_linegraph.py"
 
 FPTH_EXAMPLE_RUN = PATH_PACKAGE / "examples" / "linegraph" / "linegraph"
+PATH_PYTHONPATH_EXAMPLE = PATH_PACKAGE / "examples" / "linegraph"
 
 # default names of files in RunShell
 PATH_CONFIG = pathlib.Path("config-shell_handler.json")

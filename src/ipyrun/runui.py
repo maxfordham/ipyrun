@@ -555,6 +555,7 @@ if __name__ == "__main__":
     actions.help_ui_show = None
     run_ui.actions = actions
 
+import pathlib
 
 class RunApp(widgets.HBox, RunUi):
     """
@@ -592,7 +593,8 @@ class RunApp(widgets.HBox, RunUi):
 
     def __init__(
         self,
-        config: Any,
+        # fdir: pathlib.Path, # TODO: add this and make config all relative dirs. could be a fn to make it more general in the future
+        config: Any, # : RunConfig. TODO: not required. remove from dir
         cls_actions: Type[RunActions] = DefaultRunActions,
     ):
         """

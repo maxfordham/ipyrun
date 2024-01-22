@@ -1,15 +1,15 @@
 {
     "index": 1,
-    "path_run": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph/linegraph",
+    "path_run": "linegraph",
     "pythonpath": "/home/jovyan/ipyrun/src/ipyrun/examples/linegraph",
     "run": "linegraph",
     "name": "linegraph",
     "long_name": "01 - Linegraph",
     "key": "01-linegraph",
-    "fdir_root": "/home/jovyan/ipyrun/tests/examples/line_graph_batch",
+    "fdir_root": ".",
     "fdir_appdata": "01-linegraph",
     "in_batch": false,
-    "status": "no_outputs",
+    "status": "up_to_date",
     "update_config_at_runtime": false,
     "autodisplay_definitions": [
         {
@@ -37,8 +37,8 @@
     "fpth_config": "01-linegraph/config-shell_handler.json",
     "fpth_runhistory": "01-linegraph/runhistory.csv",
     "fpth_log": "01-linegraph/log.csv",
-    "call": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python3.11 -O -m",
+    "call": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m",
     "params": {},
     "shell_template": "{{ call }} {{ run }}{% for f in fpths_inputs %} {{f}}{% endfor %}{% for f in fpths_outputs %} {{f}}{% endfor %}{% for k,v in params.items()%} --{{k}} {{v}}{% endfor %}\n",
-    "shell": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python3.11 -O -m linegraph 01-linegraph/in-01-linegraph.lg.json 01-linegraph/out-linegraph.csv 01-linegraph/out-linegraph.plotly.json"
+    "shell": "/home/jovyan/micromamba/envs/ipyrun-dev/bin/python -O -m linegraph 01-linegraph/in-01-linegraph.lg.json 01-linegraph/out-linegraph.csv 01-linegraph/out-linegraph.plotly.json"
 }
