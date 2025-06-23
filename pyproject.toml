@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
 ]
 dependencies = [
-    "ipyautoui>=0.7",
+    "ipyautoui==0.7.1",
     "pydantic>2",
     "Jinja2",
     "halo",
